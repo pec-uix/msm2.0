@@ -11,6 +11,7 @@
     <div class="filter-bar">
       <select v-model="filterStatus" class="filter-select">
         <option value="">全部狀態</option>
+        <option value="draft">草稿</option>
         <option value="pending">待審核</option>
         <option value="confirmed">已確認</option>
         <option value="processing">處理中</option>

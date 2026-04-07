@@ -17,6 +17,7 @@ export default {
     },
     label () {
       const labels = {
+        draft: '草稿',
         pending: '待審核',
         confirmed: '已確認',
         processing: '處理中',
@@ -37,11 +38,19 @@ export default {
   padding: 0 8px;
   border-radius: 2px;
   border: none;
+  font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.05em;
   white-space: nowrap;
   line-height: 1;
+}
+
+/* 草稿 — 極淡灰 / 中性文字，不搶眼 */
+.status--draft {
+  background: #F8FAFC;
+  color: #64748B;
+  border: 0.5px solid #E2E8F0;
 }
 
 /* 待審核 — 深鋼青 / 帶邊框強化實體感 */
