@@ -1,72 +1,84 @@
 export const products = [
   {
     id: 'P001',
-    name: '輕量防水工作鞋',
-    package: '雙入包',
-    price: 380,
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400&auto=format&fit=crop'
+    name: '台灣啤酒（罐裝）',
+    packages: [
+      { name: '24罐/箱', price: 580 },
+      { name: '48罐/兩箱', price: 1120 }
+    ],
+    image: 'https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P002',
-    name: '企業款保冷背包',
-    package: '單件',
-    price: 520,
-    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400&auto=format&fit=crop'
+    name: '麥香紅茶（利樂包）',
+    packages: [
+      { name: '24包/箱', price: 360 },
+      { name: '48包/兩箱', price: 700 }
+    ],
+    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P003',
-    name: '商務抗菌口罩',
-    package: '盒裝',
-    price: 180,
-    image: 'https://images.unsplash.com/photo-1608130836932-588377e8a38b?q=80&w=400&auto=format&fit=crop'
+    name: '維他露 O 鋁罐',
+    package: '24罐/箱',
+    price: 420,
+    image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P004',
-    name: '專業工業手套',
-    package: '雙入包',
-    price: 260,
+    name: '統一奶茶（寶特瓶）',
+    packages: [
+      { name: '12瓶/箱', price: 380 },
+      { name: '24瓶/兩箱', price: 740 }
+    ],
     image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P005',
-    name: '環保無痕膠帶',
-    package: '卷裝',
-    price: 95,
+    name: '舒跑運動飲料（瓶裝）',
+    package: '24瓶/箱',
+    price: 460,
     image: 'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P006',
-    name: '快速充電行動電源',
-    package: '單件',
-    price: 620,
+    name: '黑松沙士（罐裝）',
+    packages: [
+      { name: '24罐/箱', price: 400 },
+      { name: '48罐/兩箱', price: 780 }
+    ],
     image: 'https://images.unsplash.com/photo-1609592806492-6fbfe4e4d00b?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P007',
-    name: '企業款筆記本',
-    package: '本裝',
-    price: 240,
+    name: '御茶園每朝健康綠茶',
+    package: '24瓶/箱',
+    price: 520,
     image: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P008',
-    name: '高效能保溫杯',
-    package: '單件',
-    price: 330,
-    image: 'https://images.unsplash.com/photo-1612833609659-0e0e36ee2e9b?q=80&w=400&auto=format&fit=crop'
+    name: '光泉鮮乳（瓶裝）',
+    packages: [
+      { name: '6瓶/箱', price: 480 },
+      { name: '12瓶/兩箱', price: 940 }
+    ],
+    image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P009',
-    name: '辦公室桌上收納盒',
-    package: '組合包',
-    price: 190,
-    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=400&auto=format&fit=crop'
+    name: '可口可樂（罐裝）',
+    packages: [
+      { name: '24罐/箱', price: 440 },
+      { name: '48罐/兩箱', price: 860 }
+    ],
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=400&auto=format&fit=crop'
   },
   {
     id: 'P010',
-    name: '專業導電筆',
-    package: '單件',
-    price: 140,
-    image: 'https://images.unsplash.com/photo-1583069650051-6af39d42bded?q=80&w=400&auto=format&fit=crop'
+    name: '百事可樂（寶特瓶）',
+    package: '12瓶/箱',
+    price: 390,
+    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400&auto=format&fit=crop'
   }
 ]

@@ -51,10 +51,22 @@
           <span class="quick-line"></span>
         </p>
         <div class="quick-buttons">
-          <button type="button" class="quick-button" @click="quickLogin('customer')">客戶</button>
-          <button type="button" class="quick-button" @click="quickLogin('sales')">銷售人員</button>
-          <button type="button" class="quick-button" @click="quickLogin('company_admin')">公司管理員</button>
-          <button type="button" class="quick-button" @click="quickLogin('group_admin')">群管理員</button>
+          <div class="quick-btn-wrap">
+            <button type="button" class="quick-button" @click="quickLogin('customer')">客戶</button>
+            <span class="quick-hint">可體驗下單流程</span>
+          </div>
+          <div class="quick-btn-wrap">
+            <button type="button" class="quick-button" @click="quickLogin('sales')">銷售人員</button>
+            <span class="quick-hint">可體驗審單、盤點、市場活動</span>
+          </div>
+          <div class="quick-btn-wrap">
+            <button type="button" class="quick-button" @click="quickLogin('company_admin')">公司管理員</button>
+            <span class="quick-hint">可查看訂單列表</span>
+          </div>
+          <div class="quick-btn-wrap">
+            <button type="button" class="quick-button" @click="quickLogin('group_admin')">群管理員</button>
+            <span class="quick-hint">可查看跨公司訂單</span>
+          </div>
         </div>
       </div>
     </div>
@@ -258,9 +270,22 @@ export default {
 }
 
 .quick-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+
+.quick-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.quick-hint {
+  font-size: 11px;
+  color: var(--c-text-muted);
+  font-family: var(--font-sans);
+  padding-left: 2px;
 }
 
 .quick-button {
@@ -293,7 +318,7 @@ export default {
   }
 
   .quick-buttons {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 </style>
