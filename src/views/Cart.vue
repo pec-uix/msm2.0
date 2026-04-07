@@ -61,7 +61,7 @@
                     <span class="unit-price">NT$ {{ item.unitPrice }}</span>
                   </div>
                   <div class="item-right-col">
-                    <button type="button" class="remove-btn" @click="removeItem(item)">
+                    <button type="button" class="remove-btn" @click="askRemove(item)">
                       <trash2-icon :size="14" :stroke-width="1.5" />
                       移除
                     </button>
@@ -123,6 +123,28 @@
         <router-link class="checkout-btn" to="/cart/confirm">前往確認</router-link>
       </div>
     </template>
+
+    <!-- 確認刪除 Modal -->
+    <transition name="modal-fade">
+      <div v-if="confirmItem" class="confirm-overlay" @click.self="cancelRemove">
+        <div class="confirm-dialog">
+          <p class="confirm-title">確定要移除此品項嗎？</p>
+          <p class="confirm-sub">{{ confirmItem.productName }}（{{ confirmItem.packageName }}）</p>
+          <div class="confirm-actions">
+            <button type="button" class="confirm-cancel" @click="cancelRemove">取消</button>
+            <button type="button" class="confirm-ok" @click="confirmRemove">確定移除</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 撤酷 Bar -->
+    <transition name="undo-slide">
+      <div v-if="undoBar.show" class="undo-bar">
+        <span class="undo-msg">已移除「{{ undoBar.item && undoBar.item.productName }}」</span>
+        <button type="button" class="undo-btn" @click="undoRemove">撤酷</button>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -139,7 +161,9 @@ export default {
       productList: products,
       promotions,
       thumbReadySet: {},
-      thumbErrorSet: {}
+      thumbErrorSet: {},
+      confirmItem: null,
+      undoBar: { show: false, item: null, timer: null }
     }
   },
   computed: {
@@ -194,6 +218,36 @@ export default {
         packageName: item.packageName,
         delta
       })
+    },
+    askRemove (item) {
+      this.confirmItem = item
+    },
+    cancelRemove () {
+      this.confirmItem = null
+    },
+    confirmRemove () {
+      const item = this.confirmItem
+      this.confirmItem = null
+      this.$store.dispatch('removeFromCart', {
+        productId: item.productId,
+        packageName: item.packageName
+      })
+      // 儲存小計供撤酷使用
+      const snapshot = { ...item }
+      if (this.undoBar.timer) clearTimeout(this.undoBar.timer)
+      this.undoBar.show = true
+      this.undoBar.item = snapshot
+      this.undoBar.timer = setTimeout(() => {
+        this.undoBar.show = false
+        this.undoBar.item = null
+      }, 4000)
+    },
+    undoRemove () {
+      if (!this.undoBar.item) return
+      clearTimeout(this.undoBar.timer)
+      this.$store.dispatch('addToCart', { ...this.undoBar.item })
+      this.undoBar.show = false
+      this.undoBar.item = null
     },
     removeItem (item) {
       this.$store.dispatch('removeFromCart', {
@@ -412,15 +466,158 @@ export default {
 .remove-btn {
   border: none;
   background: none;
-  color: #8c2020;
+  color: #94a3b8;
   font-size: 12px;
   font-weight: 400;
   cursor: pointer;
-  padding: 0;
+  padding: 4px 0;
   display: inline-flex;
   align-items: center;
   gap: 3px;
   white-space: nowrap;
+  transition: color 0.15s;
+}
+
+.remove-btn:hover {
+  color: #8c2020;
+}
+
+/* ── Confirm Modal ────────────────────────── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 24px;
+}
+
+.confirm-dialog {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px 20px 20px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
+}
+
+.confirm-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
+  text-align: center;
+}
+
+.confirm-sub {
+  margin: 0 0 20px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #64748B;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-cancel {
+  flex: 1;
+  height: 40px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  background: transparent;
+  color: #334155;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirm-cancel:hover {
+  background: #F1F5F9;
+}
+
+.confirm-ok {
+  flex: 1;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: #8c2020;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirm-ok:hover {
+  background: #6e1818;
+}
+
+/* Modal 淡入淡出 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.modal-fade-enter,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+/* ── Undo Bar ─────────────────────────────── */
+.undo-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(26, 37, 64, 0.94);
+  border-radius: 20px;
+  z-index: 400;
+  white-space: nowrap;
+}
+
+.undo-msg {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.undo-btn {
+  border: none;
+  background: none;
+  color: #7dd3fc;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: 0.02em;
+}
+
+.undo-btn:hover {
+  color: #bae6fd;
+}
+
+/* Undo Bar 滑入滑出 */
+.undo-slide-enter-active,
+.undo-slide-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.undo-slide-enter,
+.undo-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
 }
 
 .package-select {
