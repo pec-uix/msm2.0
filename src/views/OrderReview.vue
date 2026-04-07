@@ -1,0 +1,968 @@
+<template>
+  <div class="order-review-page">
+
+    <!-- 頂部操作列 -->
+    <div class="top-bar">
+      <button type="button" class="back-btn" @click="$router.push('/orders/' + orderId)">
+        <chevron-left-icon :size="16" :stroke-width="1.5" />
+        返回訂單詳情
+      </button>
+    </div>
+
+    <!-- 頁面標題 -->
+    <div class="page-title-block">
+      <span class="eyebrow">MSM-CORE / ORDER REVIEW</span>
+      <div class="title-row">
+        <h2 class="page-title">訂單審核</h2>
+        <span class="title-en-badge">ORDER REVIEW</span>
+      </div>
+    </div>
+
+    <!-- 頂部資訊列 -->
+    <section class="info-card">
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">訂單編號</span>
+          <span class="info-value order-id-text">{{ orderId }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">客戶名稱</span>
+            <span class="info-value">{{ customerName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">預計到貨日</span>
+          <input v-model="deliveryDate" type="date" class="edit-input delivery-input" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 桌機可編輯明細表格 -->
+    <div class="table-section">
+      <div class="table-scroll">
+        <table class="review-table">
+          <thead>
+            <tr>
+              <th>來源</th>
+              <th>產品代號</th>
+              <th>產品名稱</th>
+              <th>包裝別</th>
+              <th class="col-num">主單位<br/>數量</th>
+              <th class="col-num">小單位<br/>數量</th>
+              <th class="col-num">當前<br/>庫存</th>
+              <th class="col-num">剩餘<br/>庫存</th>
+              <th class="col-num">單價</th>
+              <th class="col-num">小計</th>
+              <th class="col-action">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(row, idx) in editRows"
+              :key="row._rowId"
+              :class="['review-row', rowBgClass(row.source)]"
+            >
+              <td>
+                <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
+              </td>
+              <td>
+                <input
+                  v-if="row.source === 'sales_add'"
+                  v-model="row.productId"
+                  class="edit-input code-input"
+                  placeholder="如 P001"
+                  @change="onProductIdChange(idx)"
+                />
+                <span v-else class="cell-text">{{ row.productId || '—' }}</span>
+              </td>
+              <td>
+                <input
+                  v-if="row.source === 'sales_add'"
+                  v-model="row.name"
+                  class="edit-input name-input"
+                  placeholder="產品名稱"
+                />
+                <span v-else class="cell-text">{{ row.name }}</span>
+              </td>
+              <td>
+                <select
+                  v-model="row.package"
+                  class="edit-input edit-select"
+                  :disabled="row.source === 'customer' || row.source === 'system_gift'"
+                  @change="onPackageChange(idx)"
+                >
+                  <option v-for="pkg in packageOptions" :key="pkg" :value="pkg">{{ pkg }}</option>
+                </select>
+              </td>
+              <td class="col-num">
+                <input
+                  v-model.number="row.mainQty"
+                  type="number"
+                  min="0"
+                  class="edit-input num-input"
+                  :disabled="row.source === 'customer' || row.source === 'system_gift'"
+                  @change="onQtyChange()"
+                />
+              </td>
+              <td class="col-num">
+                <input
+                  v-model.number="row.subQty"
+                  type="number"
+                  min="0"
+                  class="edit-input num-input"
+                  :disabled="row.source === 'customer' || row.source === 'system_gift' || row.conversionRate <= 1"
+                  @blur="onSubQtyBlur(idx)"
+                />
+              </td>
+              <td class="col-num">
+                <span
+                  class="cell-text readonly-text stock-mono"
+                >{{ row.currentStock }}</span>
+              </td>
+              <td class="col-num">
+                <span
+                  class="cell-text stock-mono"
+                  :class="{ 'is-negative': remainingStock(row) < 0 }"
+                >{{ remainingStock(row) }}</span>
+              </td>
+              <td class="col-num">
+                <div class="price-cell">
+                  <input
+                    v-model.number="row.unitPrice"
+                    type="number"
+                    min="0"
+                    class="edit-input num-input"
+                    :disabled="row.isGift || row.source === 'customer'"
+                  />
+                  <span v-if="row.noPrice" class="price-warn" title="無價格資料">⚠</span>
+                </div>
+              </td>
+              <td class="col-num">
+                <span class="cell-text readonly-text">{{ row.isGift ? '—' : rowSubtotal(row) }}</span>
+              </td>
+              <td class="col-action">
+                <button
+                  v-if="row.source === 'system_gift'"
+                  type="button"
+                  class="row-btn cancel-btn"
+                  @click="cancelGiftRow(idx)"
+                >取消</button>
+                <button
+                  v-else-if="row.source === 'sales_add'"
+                  type="button"
+                  class="row-btn delete-btn"
+                  @click="removeRow(idx)"
+                ><trash2-icon :size="13" :stroke-width="1.5" /></button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="add-row-foot">
+              <td colspan="11">
+                <button type="button" class="add-row-btn" @click="addRow">+ 新增品項</button>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- 手機卡片列表 -->
+    <ul class="mobile-cards">
+      <li
+        v-for="(row, idx) in editRows"
+        :key="'m_' + row._rowId"
+        :class="['mobile-card', rowBgClass(row.source)]"
+      >
+        <div class="mc-header">
+          <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
+          <div class="mc-actions">
+            <button
+              v-if="row.source === 'system_gift'"
+              type="button"
+              class="row-btn cancel-btn"
+              @click="cancelGiftRow(idx)"
+            >取消</button>
+            <button
+              v-else-if="row.source === 'sales_add'"
+              type="button"
+              class="row-btn delete-btn"
+              @click="removeRow(idx)"
+            ><trash2-icon :size="13" :stroke-width="1.5" /></button>
+          </div>
+        </div>
+
+        <div class="mc-row">
+          <span class="mc-label">產品代號</span>
+          <input
+            v-if="row.source === 'sales_add'"
+            v-model="row.productId"
+            class="edit-input code-input"
+            placeholder="如 P001"
+            @change="onProductIdChange(idx)"
+          />
+          <span v-else class="mc-value">{{ row.productId || '—' }}</span>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">產品名稱</span>
+          <input
+            v-if="row.source === 'sales_add'"
+            v-model="row.name"
+            class="edit-input name-input"
+            placeholder="產品名稱"
+          />
+          <span v-else class="mc-value">{{ row.name }}</span>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">包裝別</span>
+          <select
+            v-model="row.package"
+            class="edit-input edit-select"
+            :disabled="row.source === 'customer' || row.source === 'system_gift'"
+            @change="onPackageChange(idx)"
+          >
+            <option v-for="pkg in packageOptions" :key="pkg" :value="pkg">{{ pkg }}</option>
+          </select>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">主單位數量</span>
+          <input
+            v-model.number="row.mainQty"
+            type="number"
+            min="0"
+            class="edit-input num-input"
+            :disabled="row.source === 'customer' || row.source === 'system_gift'"
+            @change="onQtyChange()"
+          />
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">小單位數量</span>
+          <input
+            v-model.number="row.subQty"
+            type="number"
+            min="0"
+            class="edit-input num-input"
+            :disabled="row.source === 'customer' || row.source === 'system_gift' || row.conversionRate <= 1"
+            @blur="onSubQtyBlur(idx)"
+          />
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">當前庫存</span>
+          <span class="mc-value stock-mono">{{ row.currentStock }}</span>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">剩餘庫存</span>
+          <span class="mc-value stock-mono" :class="{ 'is-negative': remainingStock(row) < 0 }">{{ remainingStock(row) }}</span>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">單價</span>
+          <div class="price-cell">
+            <input
+              v-model.number="row.unitPrice"
+              type="number"
+              min="0"
+              class="edit-input num-input"
+              :disabled="row.isGift || row.source === 'customer'"
+            />
+            <span v-if="row.noPrice" class="price-warn" title="無價格資料">⚠</span>
+          </div>
+        </div>
+        <div class="mc-row">
+          <span class="mc-label">小計</span>
+          <span class="mc-value mc-subtotal">{{ row.isGift ? '—' : rowSubtotal(row) }}</span>
+        </div>
+      </li>
+      <li class="mobile-add-item">
+        <button type="button" class="add-row-btn" @click="addRow">+ 新增品項</button>
+      </li>
+    </ul>
+
+    <!-- 底部操作區 -->
+    <div class="bottom-bar">
+      <div class="total-area">
+        <span class="total-label">訂單金額小計</span>
+        <span class="total-amount">NT$ {{ totalAmount.toLocaleString() }}</span>
+      </div>
+      <div class="bottom-actions">
+        <button type="button" class="draft-btn" @click="saveDraft">儲存草稿</button>
+        <button type="button" class="submit-btn" @click="submitOrder">確認送出</button>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script>
+import { orderDetails } from '../mock/orderDetails'
+import { products } from '../mock/products'
+import { promotions } from '../mock/promotions'
+import { customers } from '../mock/customers'
+import { ChevronLeft as ChevronLeftIcon, Trash2 as Trash2Icon } from 'lucide-vue'
+
+// 各產品 mock 庫存
+const MOCK_STOCKS = {
+  P001: 45, P002: 28, P003: 120, P004: 60, P005: 200,
+  P006: 15, P007: 80, P008: 35, P009: 90, P010: 150
+}
+
+// 小單位換算係數（1 = 無小單位）
+const MOCK_CONVERSION_RATES = {
+  P001: 1, P002: 1, P003: 12, P004: 1, P005: 6,
+  P006: 1, P007: 10, P008: 1, P009: 1, P010: 1
+}
+
+let rowIdCounter = 1
+
+function buildRow (item) {
+  const product = products.find(p => p.name === item.name)
+  const productId = product ? product.id : ''
+  const currentStock = MOCK_STOCKS[productId] !== undefined ? MOCK_STOCKS[productId] : 0
+  const conversionRate = MOCK_CONVERSION_RATES[productId] || 1
+  return {
+    _rowId: rowIdCounter++,
+    _promoId: null,
+    source: item.source,
+    productId,
+    name: item.name,
+    package: item.package || (product ? product.package : ''),
+    mainQty: item.qty || 0,
+    subQty: 0,
+    currentStock,
+    conversionRate,
+    unitPrice: item.unitPrice || 0,
+    isGift: !!item.isGift,
+    noPrice: false
+  }
+}
+
+function newSalesRow () {
+  return {
+    _rowId: rowIdCounter++,
+    _promoId: null,
+    source: 'sales_add',
+    productId: '',
+    name: '',
+    package: '單件',
+    mainQty: 1,
+    subQty: 0,
+    currentStock: 0,
+    conversionRate: 1,
+    unitPrice: 0,
+    isGift: false,
+    noPrice: false
+  }
+}
+
+function newGiftRow (gift, promoId) {
+  return {
+    _rowId: rowIdCounter++,
+    _promoId: promoId,
+    source: 'system_gift',
+    productId: '',
+    name: gift.name,
+    package: '單件',
+    mainQty: gift.quantity,
+    subQty: 0,
+    currentStock: 0,
+    conversionRate: 1,
+    unitPrice: 0,
+    isGift: true,
+    noPrice: false
+  }
+}
+
+export default {
+  name: 'OrderReviewPage',
+  components: { ChevronLeftIcon, Trash2Icon },
+  props: ['orderId'],
+  data () {
+    const detail = orderDetails[this.orderId] || {}
+    const sourceItems = detail.items || []
+    return {
+      deliveryDate: detail.deliveryDate || '',
+      editRows: sourceItems.map(item => buildRow(item)),
+      promotions
+    }
+  },
+  computed: {
+    order () {
+      return this.$store.state.orders.find(o => o.orderId === this.orderId) || null
+    },
+    customerName () {
+      if (!this.order) return '—'
+      const c = customers.find(c => c.id === this.order.customerId)
+      return c ? c.name : (this.order.customerId || '—')
+    },
+    packageOptions () {
+      return [...new Set(products.map(p => p.package)), '單件', '單件掃描', '箱裝', '卷裝']
+        .filter((v, i, arr) => arr.indexOf(v) === i)
+    },
+    totalAmount () {
+      return this.editRows.reduce((sum, row) => {
+        if (row.isGift) return sum
+        return sum + (row.mainQty || 0) * (row.unitPrice || 0)
+      }, 0)
+    }
+  },
+  methods: {
+    sourceLabel (source) {
+      const map = { customer: '客戶送單', sales_add: '業務新增', system_gift: '系統贈品' }
+      return map[source] || source
+    },
+    rowBgClass (source) {
+      const map = { customer: 'bg-customer', sales_add: 'bg-sales', system_gift: 'bg-gift' }
+      return map[source] || ''
+    },
+    remainingStock (row) {
+      if (!row.productId) return row.currentStock
+      const rate = row.conversionRate || 1
+      const usedQty = this.editRows
+        .filter(r => r.productId === row.productId)
+        .reduce((sum, r) => sum + (r.mainQty || 0) * rate + (r.subQty || 0), 0)
+      return row.currentStock - usedQty
+    },
+    rowSubtotal (row) {
+      const val = (row.mainQty || 0) * (row.unitPrice || 0)
+      return 'NT$ ' + val.toLocaleString()
+    },
+    onSubQtyBlur (idx) {
+      const row = this.editRows[idx]
+      const rate = row.conversionRate || 1
+      if (rate <= 1) return
+      const sub = row.subQty || 0
+      if (sub >= rate) {
+        this.$set(this.editRows[idx], 'mainQty', (row.mainQty || 0) + Math.floor(sub / rate))
+        this.$set(this.editRows[idx], 'subQty', sub % rate)
+      }
+    },
+    onProductIdChange (idx) {
+      const row = this.editRows[idx]
+      const product = products.find(p => p.id === row.productId)
+      if (product) {
+        this.$set(this.editRows[idx], 'name', product.name)
+        this.$set(this.editRows[idx], 'package', product.package)
+        this.$set(this.editRows[idx], 'unitPrice', product.price)
+        this.$set(this.editRows[idx], 'conversionRate', MOCK_CONVERSION_RATES[product.id] || 1)
+        this.$set(this.editRows[idx], 'currentStock', MOCK_STOCKS[product.id] || 0)
+        this.$set(this.editRows[idx], 'noPrice', product.price === 0 && !row.isGift)
+      }
+      this.recalcPromotions()
+    },
+    onPackageChange (idx) {
+      const row = this.editRows[idx]
+      if (row.source !== 'sales_add') return
+      const product = products.find(p => p.id === row.productId)
+      if (product) {
+        const price = product.price || 0
+        this.$set(this.editRows[idx], 'unitPrice', price)
+        this.$set(this.editRows[idx], 'noPrice', price === 0 && !row.isGift)
+      }
+      this.recalcPromotions()
+    },
+    onQtyChange () {
+      this.recalcPromotions()
+    },
+    cancelGiftRow (idx) {
+      this.$set(this.editRows[idx], 'mainQty', 0)
+    },
+    addRow () {
+      this.editRows.push(newSalesRow())
+    },
+    removeRow (idx) {
+      this.editRows.splice(idx, 1)
+    },
+    recalcPromotions () {
+      this.promotions.forEach(promo => {
+        let isMet = false
+        if (promo.minTotalQty !== undefined) {
+          const totalQty = this.editRows
+            .filter(r => !r.isGift)
+            .reduce((sum, r) => sum + (r.mainQty || 0), 0)
+          isMet = totalQty >= promo.minTotalQty
+        } else if (promo.targetProductId) {
+          const matched = this.editRows.find(r => r.productId === promo.targetProductId && !r.isGift)
+          isMet = !!matched && (matched.mainQty || 0) >= promo.minQty
+        }
+        promo.gifts.forEach(gift => {
+          const existingIdx = this.editRows.findIndex(
+            r => r.source === 'system_gift' && r._promoId === promo.id && r.name === gift.name
+          )
+          if (isMet) {
+            if (existingIdx === -1) {
+              this.editRows.push(newGiftRow(gift, promo.id))
+            } else if (this.editRows[existingIdx].mainQty === 0) {
+              this.$set(this.editRows[existingIdx], 'mainQty', gift.quantity)
+            }
+          } else {
+            if (existingIdx !== -1) {
+              this.$set(this.editRows[existingIdx], 'mainQty', 0)
+            }
+          }
+        })
+      })
+    },
+    saveDraft () {
+      this.$store.dispatch('updateOrderStatus', { orderId: this.orderId, status: 'draft' })
+      this.$store.dispatch('showSnackbar', { message: '草稿已儲存', type: 'success' })
+    },
+    submitOrder () {
+      this.$store.dispatch('updateOrderStatus', { orderId: this.orderId, status: 'transferred' })
+      this.$store.dispatch('showSnackbar', { message: '訂單已確認送出', type: 'success' })
+      this.$router.push('/orders')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.order-review-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 80px;
+}
+
+/* ── 頂部 ─────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+}
+
+.back-btn {
+  border: none;
+  background: none;
+  color: var(--c-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── 資訊卡片 ─────────────────────── */
+.info-card {
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a8;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.order-id-text {
+  color: var(--c-primary);
+}
+
+.delivery-input {
+  height: 34px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* ── 可編輯 input 通用 ────────────── */
+.edit-input {
+  border: 0.5px solid #E2E8F0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #334155;
+  background: #ffffff;
+  outline: none;
+}
+
+.edit-input:disabled {
+  background: #F8FAFC;
+  color: #8b95a8;
+}
+
+.edit-select {
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.num-input {
+  width: 68px;
+  text-align: right;
+}
+
+.code-input {
+  width: 72px;
+}
+
+.name-input {
+  width: 120px;
+}
+
+/* ── 桌機表格 ─────────────────────── */
+.table-section {
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 960px;
+}
+
+.review-table thead tr {
+  background: #F8FAFC;
+}
+
+.review-table th {
+  padding: 12px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--c-text-muted);
+  text-align: left;
+  border-bottom: 0.5px solid #E2E8F0;
+  white-space: nowrap;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.col-num {
+  text-align: right;
+}
+
+.col-action {
+  text-align: center;
+  width: 72px;
+}
+
+.review-table td {
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-text-body);
+  border-bottom: 0.5px solid #F1F5F9;
+  vertical-align: middle;
+}
+
+.review-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.review-row {
+  transition: background 0.1s;
+}
+
+.review-row:hover td {
+  background: #EEF3FB !important;
+}
+
+/* ── 列背景 ───────────────────────── */
+.bg-customer td {
+  background: #F8FAFC;
+}
+
+.bg-gift td {
+  background: #FAFEF5;
+}
+
+.bg-sales td {
+  background: #FFFFFF;
+}
+
+/* ── 唯讀文字 ─────────────────────── */
+.cell-text {
+  display: inline-block;
+}
+
+.readonly-text {
+  color: #4b5568;
+}
+
+.is-negative {
+  color: #8c2020;
+  font-weight: 700;
+}
+
+/* ── 庫存 Mono 字體 ──────────── */
+.stock-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #334155;
+}
+
+/* ── 來源 badge ────────────────────── */
+.source-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.source--customer {
+  background: #eef3fb;
+  color: var(--c-primary);
+}
+
+.source--sales_add {
+  background: #edf7f1;
+  color: #1a5c38;
+}
+
+.source--system_gift {
+  background: #f2eefb;
+  color: #4a2a8c;
+}
+
+/* ── 操作按鈕 ─────────────────────── */
+.row-btn {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cancel-btn {
+  border: 0.5px solid #8b95a8;
+  background: transparent;
+  color: #4b5568;
+}
+
+.delete-btn {
+  border: 0.5px solid #E2E8F0;
+  background: transparent;
+  color: #8c2020;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+/* ── 新增品項 ─────────────────────── */
+.add-row-foot td {
+  padding: 10px 12px;
+  border-top: 0.5px solid var(--c-divider);
+  background: #ffffff;
+}
+
+.add-row-btn {
+  border: none;
+  background: none;
+  color: var(--c-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── 手機卡片（桌機隱藏） ──────────── */
+.mobile-cards {
+  display: none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-card {
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-card.bg-customer {
+  background: #F8FAFC;
+}
+
+.mobile-card.bg-gift {
+  background: #fafff5;
+}
+
+.mobile-card.bg-sales {
+  background: #ffffff;
+}
+
+.mc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mc-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a8;
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.mc-value {
+  font-size: 13px;
+  font-weight: 400;
+  color: #334155;
+  text-align: right;
+}
+
+.mc-subtotal {
+  font-weight: 500;
+  color: var(--c-primary);
+}
+
+.mobile-add-item {
+  padding: 12px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── 底部操作區 ───────────────────── */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: #ffffff;
+  border-top: 0.5px solid #E2E8F0;
+  z-index: 50;
+}
+
+.total-area {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.total-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a8;
+}
+
+.total-amount {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--c-primary);
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.draft-btn {
+  height: 40px;
+  padding: 0 18px;
+  border: 0.5px solid var(--c-primary);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--c-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit-btn {
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 6px;
+  background: var(--c-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ── 無價格警告 ─────────────────────── */
+.price-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.price-warn {
+  color: #8c2020;
+  font-size: 13px;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+/* ── RWD ──────────────────────────── */
+@media (max-width: 768px) {
+  .table-section {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: flex;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bottom-bar {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .bottom-actions {
+    width: 100%;
+  }
+
+  .draft-btn,
+  .submit-btn {
+    flex: 1;
+  }
+}
+</style>
