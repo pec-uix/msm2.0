@@ -9,6 +9,10 @@
 
     <!-- 篩選列 -->
     <div class="filter-bar">
+      <select v-if="isGroupAdmin" v-model="filterCompany" class="filter-select">
+        <option value="">全部公司</option>
+        <option v-for="co in companies" :key="co" :value="co">{{ co }}</option>
+      </select>
       <select v-model="filterStatus" class="filter-select">
         <option value="">全部狀態</option>
         <option value="draft">草稿</option>
@@ -17,6 +21,7 @@
         <option value="processing">處理中</option>
         <option value="cancelled">已取消</option>
         <option value="transferred">已拋轉</option>
+        <option value="error">拋轉異常</option>
       </select>
       <div class="date-range">
         <input v-model="dateFrom" type="date" class="date-input" :max="dateTo || undefined" />
@@ -34,6 +39,7 @@
       <table class="orders-table">
         <thead>
           <tr>
+            <th v-if="isGroupAdmin" class="col-company">銷售公司</th>
             <th>訂單編號</th>
             <th>訂單日期</th>
             <th v-if="showCustomer">客戶名稱</th>
@@ -49,6 +55,7 @@
             :class="['table-row', { 'is-pending': order.status === 'pending' }]"
             @click="goToOrder(order.orderId)"
           >
+            <td v-if="isGroupAdmin" class="col-company">{{ order.salesCompany }}</td>
             <td class="col-order-id mono">{{ order.orderId }}</td>
             <td>{{ order.date }}</td>
             <td v-if="showCustomer">{{ customerMap[order.customerId] || order.customerId }}</td>
@@ -83,6 +90,10 @@
           <span class="mobile-order-id mono">{{ order.orderId }}</span>
         </div>
         <div class="mobile-kv">
+          <div v-if="isGroupAdmin" class="kv-item">
+            <span class="kv-label">銷售公司</span>
+            <span class="kv-value">{{ order.salesCompany }}</span>
+          </div>
           <div class="kv-item">
             <span class="kv-label">日期</span>
             <span class="kv-value">{{ order.date }}</span>
@@ -199,6 +210,7 @@ export default {
     return {
       customerMap,
       filterStatus: '',
+      filterCompany: '',
       dateFrom: '',
       dateTo: '',
       currentPage: 1,
@@ -215,14 +227,22 @@ export default {
     showCustomer () {
       return ['sales', 'company_admin', 'group_admin'].includes(this.currentUser.role)
     },
+    isGroupAdmin () {
+      return this.currentUser.role === 'group_admin'
+    },
     isSales () {
       return this.currentUser.role === 'sales'
     },
     colSpan () {
       let cols = 4
+      if (this.isGroupAdmin) cols++
       if (this.showCustomer) cols++
       if (this.isSales) cols++
       return cols
+    },
+    companies () {
+      const all = this.$store.state.orders.map(o => o.salesCompany).filter(Boolean)
+      return [...new Set(all)].sort()
     },
     filteredCustomers () {
       if (!this.modalSearch) return this.customers
@@ -231,6 +251,7 @@ export default {
     },
     filteredOrders () {
       return this.$store.state.orders.filter(order => {
+        if (this.filterCompany && order.salesCompany !== this.filterCompany) return false
         if (this.filterStatus && order.status !== this.filterStatus) return false
         if (this.dateFrom && order.date < this.dateFrom) return false
         if (this.dateTo && order.date > this.dateTo) return false
@@ -261,6 +282,7 @@ export default {
     }
   },
   watch: {
+    filterCompany () { this.currentPage = 1 },
     filterStatus () { this.currentPage = 1 },
     dateFrom () { this.currentPage = 1 },
     dateTo () { this.currentPage = 1 }
@@ -294,7 +316,7 @@ export default {
 .page-title {
   font-family: var(--font-serif);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--c-text-title);
   margin: 0;
   letter-spacing: 0.02em;
@@ -395,6 +417,12 @@ export default {
 
 .col-amount {
   text-align: right;
+}
+
+.col-company {
+  color: var(--c-text-sub);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .orders-table td {
@@ -521,7 +549,7 @@ tr.is-pending td:first-child {
 }
 
 .kv-amount {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .mobile-actions {

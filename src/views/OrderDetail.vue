@@ -11,7 +11,7 @@
         v-if="canReview"
         :to="`/orders/${orderId}/review`"
         class="review-btn"
-      >前往審單</router-link>
+      >{{ reviewBtnLabel }}</router-link>
     </div>
 
     <!-- 頁面標題 -->
@@ -182,7 +182,7 @@
       </section>
 
       <!-- 二階系統資訊 -->
-      <section v-if="order.status === 'transferred' && detail.transferredOrderId" class="transfer-card">
+      <section v-if="(order.status === 'transferred' || order.status === 'error') && detail.transferredOrderId" class="transfer-card">
         <h3 class="section-title">二階系統資訊</h3>
         <div class="transfer-grid">
           <div class="info-item">
@@ -209,7 +209,7 @@ import {
   Package as PackageIcon
 } from 'lucide-vue'
 
-const REVIEWED_STATUSES = ['confirmed', 'processing', 'transferred', 'cancelled']
+const REVIEWED_STATUSES = ['confirmed', 'processing', 'transferred', 'cancelled', 'error']
 
 export default {
   name: 'OrderDetailPage',
@@ -245,8 +245,11 @@ export default {
       return (
         this.order &&
         this.currentUser.role === 'sales' &&
-        this.order.status === 'pending'
+        (this.order.status === 'pending' || this.order.status === 'error')
       )
+    },
+    reviewBtnLabel () {
+      return this.order && this.order.status === 'error' ? '重新拋轉' : '前往審單'
     }
   },
   methods: {
@@ -581,7 +584,7 @@ export default {
 }
 
 .mic-total {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .mic-foot {

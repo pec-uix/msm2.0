@@ -59,7 +59,7 @@
             <tr
               v-for="(row, idx) in editRows"
               :key="row._rowId"
-              :class="['review-row', rowBgClass(row.source)]"
+              :class="['review-row', rowBgClass(row.source), stockRowClass(row)]"
             >
               <td>
                 <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
@@ -140,7 +140,7 @@
               <td class="col-num">
                 <span
                   class="cell-text stock-mono"
-                  :class="{ 'is-negative': remainingStock(row) < 0 }"
+                  :class="stockValueClass(row)"
                 >{{ remainingStock(row) }}</span>
               </td>
               <td class="col-num">
@@ -288,7 +288,7 @@
         </div>
         <div class="mc-row">
           <span class="mc-label">剩餘庫存</span>
-          <span class="mc-value stock-mono" :class="{ 'is-negative': remainingStock(row) < 0 }">{{ remainingStock(row) }}</span>
+          <span class="mc-value stock-mono" :class="stockValueClass(row)">{{ remainingStock(row) }}</span>
         </div>
         <div class="mc-row">
           <span class="mc-label">單價</span>
@@ -320,8 +320,7 @@
         <span class="total-amount">NT$ {{ totalAmount.toLocaleString() }}</span>
       </div>
       <div class="bottom-actions">
-        <button type="button" class="draft-btn" @click="saveDraft">儲存草稿</button>
-        <button type="button" class="submit-btn" @click="submitOrder">確認送出</button>
+        <button type="button" class="submit-btn" @click="submitOrder">確認拋轉</button>
       </div>
     </div>
 
@@ -470,6 +469,19 @@ export default {
       const map = { customer: 'bg-customer', sales_add: 'bg-sales', system_gift: 'bg-gift' }
       return map[source] || ''
     },
+    stockRowClass (row) {
+      if (row.isGift || !row.productId) return ''
+      const rem = this.remainingStock(row)
+      if (rem < 0) return 'row-oversell'
+      return ''
+    },
+    stockValueClass (row) {
+      if (row.isGift || !row.productId) return ''
+      const rem = this.remainingStock(row)
+      if (rem < 0) return 'is-negative'
+      if (rem <= 10) return 'is-tight'
+      return ''
+    },
     remainingStock (row) {
       if (!row.productId) return row.currentStock
       const rate = row.conversionRate || 1
@@ -557,14 +569,6 @@ export default {
           }
         })
       })
-    },
-    saveDraft () {
-      if (this.isNew) {
-        this.$store.dispatch('showSnackbar', { message: '新增單不支援草稿', type: 'error' })
-        return
-      }
-      this.$store.dispatch('updateOrderStatus', { orderId: this.orderId, status: 'draft' })
-      this.$store.dispatch('showSnackbar', { message: '草稿已儲存', type: 'success' })
     },
     submitOrder () {
       if (this.isNew) {
@@ -744,8 +748,8 @@ export default {
   z-index: 300;
   background: #ffffff;
   border: 0.5px solid var(--c-border);
+  border-top: 2px solid var(--c-primary);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -877,11 +881,26 @@ export default {
 }
 
 .is-negative {
-  color: #8c2020;
-  font-weight: 700;
+  color: #8c2020 !important;
+  font-weight: 500;
 }
 
-/* ── 庫存 Mono 字體 ──────────── */
+.is-tight {
+  color: #8a6a28 !important;
+  font-weight: 500;
+}
+
+/* 超賣列標記：背景虚紅 */
+.row-oversell td {
+  background: #fbeeee !important;
+}
+
+/* 停用 hover 覆蓋超賣警示色 */
+.row-oversell:hover td {
+  background: #f7e2e2 !important;
+}
+
+/* ── 庫存 Mono 字體 ────────── */
 .stock-mono {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -1073,18 +1092,6 @@ export default {
   gap: 10px;
 }
 
-.draft-btn {
-  height: 40px;
-  padding: 0 18px;
-  border: 0.5px solid var(--c-primary);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--c-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
 .submit-btn {
   height: 40px;
   padding: 0 18px;
@@ -1135,7 +1142,6 @@ export default {
     width: 100%;
   }
 
-  .draft-btn,
   .submit-btn {
     flex: 1;
   }

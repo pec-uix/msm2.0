@@ -42,7 +42,7 @@ const routes = [
         path: 'products',
         name: 'products',
         component: ProductsView,
-        meta: { roles: ['customer', 'sales'] }
+        meta: { roles: ['customer'] }
       },
       {
         path: 'cart',

@@ -60,17 +60,23 @@
           </div>
           <p class="product-id">{{ product.id }}</p>
 
-          <div v-if="packageOptionsMap[product.id].length > 1" class="package-tabs">
-            <button
-              v-for="option in packageOptionsMap[product.id]"
-              :key="option.label"
-              type="button"
-              :class="['package-tab', { active: selectedPackageMap[product.id] === option.label }]"
-              @click="setSelectedPackage(product.id, option.label)"
-            >
-              {{ option.label }}
-            </button>
+          <!-- 規格區塊：常態渲染以保持固定高度 -->
+          <div class="pkg-area">
+            <div v-if="packageOptionsMap[product.id].length > 1" class="package-tabs">
+              <button
+                v-for="option in packageOptionsMap[product.id]"
+                :key="option.label"
+                type="button"
+                :class="['package-tab', { active: selectedPackageMap[product.id] === option.label }]"
+                @click="setSelectedPackage(product.id, option.label)"
+              >
+                {{ option.label }}
+              </button>
+            </div>
           </div>
+
+          <!-- Flexbox Spacer：將金額與按鈕強制推向底部 -->
+          <div class="content-spacer"></div>
 
           <div class="price-qty-row">
             <span class="price-text">NT$ {{ selectedOption(product.id).price }}</span>
@@ -82,8 +88,6 @@
           </div>
 
           <p v-if="isNoPrice(product.id)" class="price-warning">無價格資料</p>
-
-          <div class="content-spacer"></div>
 
           <button
             type="button"
@@ -246,7 +250,7 @@ export default {
 .page-title {
   font-family: var(--font-serif);
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--c-text-title);
   margin: 0;
   letter-spacing: 0.02em;
@@ -392,7 +396,7 @@ export default {
 
 .placeholder-watermark {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--c-border);
   letter-spacing: 0.1em;
   user-select: none;
@@ -416,7 +420,7 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
-  min-height: 2.8em;
+  min-height: 3rem;
 }
 
 .product-id {
@@ -431,8 +435,15 @@ export default {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  min-height: 30px;
   align-content: flex-start;
+}
+
+/* 規格區塊容器：始終佔位 */
+.pkg-area {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .package-tab {
@@ -482,7 +493,7 @@ export default {
 .price-text {
   color: #334155;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   font-family: var(--font-mono);
 }
 

@@ -1,5 +1,7 @@
 <template>
-  <span class="status-badge" :class="statusClass">{{ label }}</span>
+  <span class="status-badge" :class="statusClass">
+    <span class="status-dot" aria-hidden="true"></span>{{ label }}
+  </span>
 </template>
 
 <script>
@@ -22,7 +24,8 @@ export default {
         confirmed: '已確認',
         processing: '處理中',
         cancelled: '已取消',
-        transferred: '已拋轉'
+        transferred: '已拋轉',
+        error: '拋轉異常'
       }
       return labels[this.status] || this.status
     }
@@ -34,56 +37,79 @@ export default {
 .status-badge {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   height: 22px;
-  padding: 0 8px;
-  border-radius: 2px;
-  border: none;
+  padding: 0 10px;
+  border-radius: 20px;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   line-height: 1;
+  border: 0.5px solid transparent;
 }
 
-/* 草稿 — 極淡灰 / 中性文字，不搶眼 */
+.status-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 草稿 */
 .status--draft {
-  background: #F8FAFC;
-  color: #64748B;
-  border: 0.5px solid #E2E8F0;
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
 }
+.status--draft .status-dot { background: #94a3b8; }
 
-/* 待審核 — 深鋼青 / 帶邊框強化實體感 */
+/* 待審核 */
 .status--pending {
-  background: #F1F5F9;
-  color: #334155;
-  font-weight: 600;
-  border: 0.5px solid var(--c-border);
+  background: #eef3fb;
+  color: #1a2f5e;
+  border-color: #c4d4ec;
 }
+.status--pending .status-dot { background: #2e4f8a; }
 
-/* 已確認 — 極淡藍 / 系統主色文字 */
+/* 已確認 */
 .status--confirmed {
-  background: #E0E7FF;
-  color: var(--c-primary);
+  background: #edf7f1;
+  color: #1a5c38;
+  border-color: #a0d4b4;
 }
+.status--confirmed .status-dot { background: #2a7a4a; }
 
-/* 處理中 — 極淡米黃 / 深棕色文字 */
+/* 處理中 */
 .status--processing {
-  background: #FEF3C7;
-  color: #92400E;
+  background: #fdf8ee;
+  color: #8a6a28;
+  border-color: #dfc97a;
 }
+.status--processing .status-dot { background: #c8980a; }
 
-/* 已取消 — 極淡粉紅 / 深磚紅文字 */
+/* 已取消 */
 .status--cancelled {
-  background: #FEE2E2;
-  color: #991B1B;
+  background: #fbeeee;
+  color: #8c2020;
+  border-color: #e4aaaa;
 }
+.status--cancelled .status-dot { background: #b03030; }
 
-/* 已拋轉 — 極淡灰 / 帶邊框確保邊界 */
+/* 已拋轉 */
 .status--transferred {
-  background: #F8FAFC;
-  color: #475569;
-  font-weight: 500;
-  border: 0.5px solid var(--c-border);
+  background: #f2eefb;
+  color: #4a2a8c;
+  border-color: #c0aae8;
 }
+.status--transferred .status-dot { background: #6040b0; }
+
+/* 拋轉異常 */
+.status--error {
+  background: #fff1f0;
+  color: #cf1322;
+  border-color: #ffa39e;
+}
+.status--error .status-dot { background: #f5222d; }
 </style>

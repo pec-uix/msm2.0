@@ -4,201 +4,190 @@
 //   sales_add   → 業務新增
 //   sales_edit  → 業務修改
 //   system_gift → 系統贈品
-// 每筆明細必須包含 productId，供 UI 透過 ID 查找圖片與即時資訊
 export const orderDetails = {
   'SO-1001': {
-    deliveryDate: '2026-03-27',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-04-10',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 2, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 3, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '24罐/箱', qty: 10, unitPrice: 580, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '24罐/箱', qty: 12, unitPrice: 400, isGift: false, source: 'customer' },
+      { productId: 'GIFT001', name: '品牌帆布袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1002': {
-    deliveryDate: '2026-03-25',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-04-08',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 4, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 3, unitPrice: 330, isGift: false, source: 'customer' }
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 20, unitPrice: 440, isGift: false, source: 'customer' },
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '24包/箱', qty: 15, unitPrice: 360, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 4, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 3, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 2, unitPrice: 140, isGift: false, source: 'sales_add' }
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 20, unitPrice: 440, isGift: false, source: 'customer' },
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '24包/箱', qty: 15, unitPrice: 360, isGift: false, source: 'customer' },
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 5, unitPrice: 390, isGift: false, source: 'sales_add' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1003': {
-    deliveryDate: '2026-03-22',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-04-07',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 5, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 4, unitPrice: 190, isGift: false, source: 'customer' }
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 10, unitPrice: 520, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '12瓶/箱', qty: 8, unitPrice: 380, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 5, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 4, unitPrice: 190, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 2, unitPrice: 240, isGift: false, source: 'sales_add' }
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 10, unitPrice: 520, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '12瓶/箱', qty: 8, unitPrice: 380, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 4, unitPrice: 420, isGift: false, source: 'sales_add' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1004': {
     deliveryDate: null,
-    salesCompany: '環球流通有限公司',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 10, unitPrice: 95, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 2, unitPrice: 330, isGift: false, source: 'customer' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 8, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 5, unitPrice: 420, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1005': {
-    deliveryDate: '2026-03-18',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-04-02',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 5, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 8, unitPrice: 240, isGift: false, source: 'customer' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 18, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '48罐/兩箱', qty: 10, unitPrice: 780, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 5, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 10, unitPrice: 240, isGift: false, source: 'sales_edit' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 20, unitPrice: 1120, isGift: false, source: 'sales_edit' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '48罐/兩箱', qty: 10, unitPrice: 780, isGift: false, source: 'customer' },
+      { productId: 'GIFT001', name: '品牌帆布袋', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
     ],
-    transferredOrderId: 'ERP-20260310-0051',
-    transferredTime: '2026-03-10 14:25:00'
+    transferredOrderId: 'ERP-20260402-0051',
+    transferredTime: '2026-04-02 14:25:00'
   },
   'SO-1006': {
-    deliveryDate: '2026-03-15',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-04-01',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 3, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 5, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 18, unitPrice: 440, isGift: false, source: 'customer' },
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '48包/兩箱', qty: 8, unitPrice: 700, isGift: false, source: 'customer' },
+      { productId: 'GIFT001', name: '品牌帆布袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1007': {
-    deliveryDate: '2026-03-12',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-30',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 4, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 5, unitPrice: 140, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 3, unitPrice: 240, isGift: false, source: 'sales_add' }
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '6瓶/箱', qty: 20, unitPrice: 480, isGift: false, source: 'customer' },
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 12, unitPrice: 520, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 3, unitPrice: 740, isGift: false, source: 'sales_add' }
     ],
     reviewedItems: [
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 4, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 5, unitPrice: 140, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 3, unitPrice: 240, isGift: false, source: 'sales_add' }
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '6瓶/箱', qty: 20, unitPrice: 480, isGift: false, source: 'customer' },
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 12, unitPrice: 520, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 3, unitPrice: 740, isGift: false, source: 'sales_add' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1008': {
-    deliveryDate: '2026-03-11',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-28',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 3, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 4, unitPrice: 260, isGift: false, source: 'customer' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 14, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 16, unitPrice: 420, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 3, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 4, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 6, unitPrice: 95, isGift: false, source: 'sales_add' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 14, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 16, unitPrice: 420, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1009': {
-    deliveryDate: '2026-03-10',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-25',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 10, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 5, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'GIFT002', name: '專業鞋墊組', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 22, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '48罐/兩箱', qty: 10, unitPrice: 860, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 10, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 5, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 3, unitPrice: 180, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT002', name: '專業鞋墊組', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 22, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '48罐/兩箱', qty: 10, unitPrice: 860, isGift: false, source: 'customer' }
     ],
-    transferredOrderId: 'ERP-20260302-0089',
-    transferredTime: '2026-03-02 09:40:00'
+    transferredOrderId: 'ERP-20260325-0089',
+    transferredTime: '2026-03-25 10:12:00'
   },
   'SO-1010': {
-    deliveryDate: '2026-03-07',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-23',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 6, unitPrice: 190, isGift: false, source: 'customer' },
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 4, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 2, unitPrice: 240, isGift: false, source: 'sales_add' }
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '48包/兩箱', qty: 16, unitPrice: 700, isGift: false, source: 'customer' },
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 8, unitPrice: 390, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 6, unitPrice: 190, isGift: false, source: 'customer' },
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 4, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 2, unitPrice: 240, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '48包/兩箱', qty: 16, unitPrice: 700, isGift: false, source: 'customer' },
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 8, unitPrice: 390, isGift: false, source: 'customer' }
     ],
-    transferredOrderId: 'ERP-20260228-0032',
-    transferredTime: '2026-02-28 11:10:00'
+    transferredOrderId: null,
+    transferredTime: null
   },
   'SO-1011': {
-    deliveryDate: '2026-02-27',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-20',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 4, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 5, unitPrice: 240, isGift: false, source: 'customer' }
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '24罐/箱', qty: 12, unitPrice: 400, isGift: false, source: 'customer' },
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 8, unitPrice: 520, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1012': {
-    deliveryDate: '2026-02-25',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-18',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 3, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 6, unitPrice: 140, isGift: false, source: 'customer' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 6, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '12瓶/箱', qty: 10, unitPrice: 380, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 3, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 6, unitPrice: 140, isGift: false, source: 'customer' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 6, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '12瓶/箱', qty: 10, unitPrice: 380, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1013': {
-    deliveryDate: '2026-02-23',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-16',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 8, unitPrice: 95, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 6, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 16, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '12瓶/兩箱', qty: 12, unitPrice: 940, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 8, unitPrice: 95, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 6, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 2, unitPrice: 180, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 16, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '12瓶/兩箱', qty: 12, unitPrice: 940, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1014': {
-    deliveryDate: '2026-02-21',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: null,
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 4, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 5, unitPrice: 260, isGift: false, source: 'customer' }
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 14, unitPrice: 420, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 10, unitPrice: 440, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
@@ -206,152 +195,144 @@ export const orderDetails = {
   },
   'SO-1015': {
     deliveryDate: null,
-    salesCompany: '環球流通有限公司',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 2, unitPrice: 240, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 3, unitPrice: 140, isGift: false, source: 'customer' }
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 8, unitPrice: 390, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '24罐/箱', qty: 6, unitPrice: 400, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1016': {
-    deliveryDate: '2026-02-16',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-14',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 6, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 3, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 20, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 12, unitPrice: 460, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 6, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 3, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 4, unitPrice: 330, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 20, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 12, unitPrice: 460, isGift: false, source: 'customer' }
     ],
-    transferredOrderId: 'ERP-20260215-0024',
-    transferredTime: '2026-02-15 10:30:00'
+    transferredOrderId: 'ERP-20260314-0098',
+    transferredTime: '2026-03-14 09:30:00'
   },
   'SO-1017': {
-    deliveryDate: '2026-02-14',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-12',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 5, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 4, unitPrice: 95, isGift: false, source: 'customer' }
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '24包/箱', qty: 18, unitPrice: 360, isGift: false, source: 'customer' },
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 14, unitPrice: 520, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 5, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 4, unitPrice: 95, isGift: false, source: 'customer' }
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '24包/箱', qty: 18, unitPrice: 360, isGift: false, source: 'customer' },
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 14, unitPrice: 520, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1018': {
-    deliveryDate: '2026-02-11',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: null,
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 10, unitPrice: 190, isGift: false, source: 'customer' },
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 6, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 4, unitPrice: 240, isGift: false, source: 'sales_add' }
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '6瓶/箱', qty: 24, unitPrice: 480, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 14, unitPrice: 440, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1019': {
-    deliveryDate: '2026-02-09',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-08',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 5, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 2, unitPrice: 380, isGift: false, source: 'customer' }
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 6, unitPrice: 740, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 8, unitPrice: 420, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 5, unitPrice: 330, isGift: false, source: 'customer' },
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 2, unitPrice: 380, isGift: false, source: 'customer' }
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 6, unitPrice: 740, isGift: false, source: 'customer' },
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 8, unitPrice: 420, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1020': {
-    deliveryDate: '2026-02-06',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-07',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 8, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 5, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'GIFT002', name: '專業鞋墊組', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 25, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '48罐/兩箱', qty: 15, unitPrice: 780, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 8, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P002', name: '企業款保冷背包', package: '單件', qty: 5, unitPrice: 520, isGift: false, source: 'customer' },
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 3, unitPrice: 180, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT002', name: '專業鞋墊組', package: '單件', qty: 2, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 25, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '48罐/兩箱', qty: 15, unitPrice: 780, isGift: false, source: 'customer' }
     ],
-    transferredOrderId: 'ERP-20260205-0018',
-    transferredTime: '2026-02-05 15:20:00'
+    transferredOrderId: 'ERP-20260307-0122',
+    transferredTime: '2026-03-07 16:48:00'
   },
   'SO-1021': {
-    deliveryDate: '2026-02-04',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-05',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 5, unitPrice: 140, isGift: false, source: 'customer' },
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 4, unitPrice: 95, isGift: false, source: 'customer' }
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 10, unitPrice: 440, isGift: false, source: 'customer' },
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 12, unitPrice: 390, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 5, unitPrice: 140, isGift: false, source: 'customer' },
-      { productId: 'P005', name: '環保無痕膠帶', package: '卷裝', qty: 4, unitPrice: 95, isGift: false, source: 'customer' }
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 10, unitPrice: 440, isGift: false, source: 'customer' },
+      { productId: 'P010', name: '百事可樂（寶特瓶）', package: '12瓶/箱', qty: 12, unitPrice: 390, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1022': {
     deliveryDate: null,
-    salesCompany: '環球流通有限公司',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 8, unitPrice: 240, isGift: false, source: 'customer' },
-      { productId: 'P009', name: '辦公室桌上收納盒', package: '組合包', qty: 7, unitPrice: 190, isGift: false, source: 'customer' }
+      { productId: 'P007', name: '御茶園每朝健康綠茶', package: '24瓶/箱', qty: 24, unitPrice: 520, isGift: false, source: 'customer' },
+      { productId: 'P002', name: '麥香紅茶（利樂包）', package: '24包/箱', qty: 12, unitPrice: 360, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1023': {
-    deliveryDate: '2026-01-29',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: null,
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P004', name: '專業工業手套', package: '雙入包', qty: 6, unitPrice: 260, isGift: false, source: 'customer' },
-      { productId: 'P008', name: '高效能保溫杯', package: '單件', qty: 3, unitPrice: 330, isGift: false, source: 'customer' }
+      { productId: 'P005', name: '舒跑運動飲料（瓶裝）', package: '24瓶/箱', qty: 16, unitPrice: 460, isGift: false, source: 'customer' },
+      { productId: 'P008', name: '光泉鮮乳（瓶裝）', package: '6瓶/箱', qty: 8, unitPrice: 480, isGift: false, source: 'customer' }
     ],
     reviewedItems: null,
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1024': {
-    deliveryDate: '2026-01-26',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-03-02',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 5, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 5, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 18, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 10, unitPrice: 740, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P001', name: '輕量防水工作鞋', package: '雙入包', qty: 5, unitPrice: 380, isGift: false, source: 'customer' },
-      { productId: 'P006', name: '快速充電行動電源', package: '單件', qty: 5, unitPrice: 620, isGift: false, source: 'customer' },
-      { productId: 'P007', name: '企業款筆記本', package: '本裝', qty: 3, unitPrice: 240, isGift: false, source: 'sales_add' },
-      { productId: 'GIFT001', name: '環保提袋', package: '單件', qty: 1, unitPrice: 0, isGift: true, source: 'system_gift' }
+      { productId: 'P001', name: '台灣啤酒（罐裝）', package: '48罐/兩箱', qty: 18, unitPrice: 1120, isGift: false, source: 'customer' },
+      { productId: 'P004', name: '統一奶茶（寶特瓶）', package: '24瓶/兩箱', qty: 10, unitPrice: 740, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null
   },
   'SO-1025': {
-    deliveryDate: '2026-01-23',
-    salesCompany: '環球流通有限公司',
+    deliveryDate: '2026-02-28',
+    salesCompany: '台飲流通股份有限公司',
     items: [
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 4, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 8, unitPrice: 140, isGift: false, source: 'customer' }
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 10, unitPrice: 420, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '24罐/箱', qty: 8, unitPrice: 400, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 6, unitPrice: 440, isGift: false, source: 'customer' }
     ],
     reviewedItems: [
-      { productId: 'P003', name: '商務抗菌口罩', package: '盒裝', qty: 4, unitPrice: 180, isGift: false, source: 'customer' },
-      { productId: 'P010', name: '專業導電筆', package: '單件', qty: 8, unitPrice: 140, isGift: false, source: 'customer' }
+      { productId: 'P003', name: '維他露 O 鋁罐', package: '24罐/箱', qty: 10, unitPrice: 420, isGift: false, source: 'customer' },
+      { productId: 'P006', name: '黑松沙士（罐裝）', package: '24罐/箱', qty: 8, unitPrice: 400, isGift: false, source: 'customer' },
+      { productId: 'P009', name: '可口可樂（罐裝）', package: '24罐/箱', qty: 6, unitPrice: 440, isGift: false, source: 'customer' }
     ],
     transferredOrderId: null,
     transferredTime: null

@@ -34,6 +34,8 @@
 
     <main class="layout-main">
       <router-view />
+      <!-- 展示聲明 Footer（桌機） -->
+      <div class="demo-footer">MSM 2.0 展示版本 — 所有資料均為模擬資料</div>
     </main>
 
     <footer class="mobile-nav">
@@ -110,7 +112,7 @@ export default {
   justify-content: space-between;
   padding: 0 32px;
   height: 60px;
-  background: var(--c-primary);
+  background: #1a2540;
   border-bottom: none;
   position: sticky;
   top: 0;
@@ -259,6 +261,19 @@ export default {
   flex: 1;
   padding: 32px;
   background: var(--c-bg);
+}
+
+/* \u5c55\u793a\u8072\u660e Footer */
+.demo-footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 0.5px solid var(--c-divider);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 400;
+  color: #B8C4D0;
+  letter-spacing: 0.04em;
 }
 
 /* ── 手機底部 Nav ─────────────────────── */

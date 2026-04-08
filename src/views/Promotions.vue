@@ -338,7 +338,7 @@ export default {
   margin: 0;
   font-family: var(--font-serif);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
   color: #0F172A;
   letter-spacing: 0.02em;
 }
@@ -369,7 +369,7 @@ export default {
 
 .tab-active {
   color: var(--c-primary);
-  font-weight: 600;
+  font-weight: 500;
   border-bottom-color: var(--c-primary);
 }
 
@@ -512,7 +512,7 @@ export default {
 .detail-title {
   font-family: var(--font-serif);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 500;
   color: #0F172A;
   margin: 0 0 4px;
   line-height: 1.3;
@@ -549,7 +549,7 @@ export default {
 
 .section-label {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #334155;
   letter-spacing: 0.05em;
   text-transform: uppercase;

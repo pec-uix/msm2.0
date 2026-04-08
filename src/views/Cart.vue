@@ -422,7 +422,7 @@ export default {
 
 .thumb-watermark {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--c-border);
   letter-spacing: 0.06em;
   user-select: none;
@@ -496,17 +496,18 @@ export default {
 
 .confirm-dialog {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 10px;
+  border: 0.5px solid var(--c-border);
+  border-top: 2px solid var(--c-primary);
   padding: 24px 20px 20px;
   width: 100%;
   max-width: 320px;
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
 }
 
 .confirm-title {
   margin: 0 0 8px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #1E293B;
   text-align: center;
 }
@@ -599,7 +600,7 @@ export default {
   color: #7dd3fc;
   font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   padding: 0;
   letter-spacing: 0.02em;
@@ -667,7 +668,7 @@ export default {
 
 .subtotal-text {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 500;
   color: #1E293B;
   font-family: var(--font-mono);
   text-align: right;
@@ -768,6 +769,7 @@ export default {
   color: #334155;
   font-size: 15px;
   font-weight: 500;
+  font-family: var(--font-mono);
 }
 
 .checkout-btn {
@@ -815,7 +817,7 @@ export default {
 
 .mobile-total {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #334155;
   font-family: var(--font-mono);
 }

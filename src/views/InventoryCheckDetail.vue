@@ -494,7 +494,7 @@ export default {
 
 .proof-eyebrow {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   color: #94A3B8;
   letter-spacing: 0.12em;
 }
@@ -555,7 +555,7 @@ export default {
 
 .block-photo-label {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   color: #94A3B8;
   letter-spacing: 0.1em;
   flex-shrink: 0;

@@ -50,23 +50,27 @@
           <span class="quick-text">展示快速登入</span>
           <span class="quick-line"></span>
         </p>
-        <div class="quick-buttons">
-          <div class="quick-btn-wrap">
-            <button type="button" class="quick-button" @click="quickLogin('customer')">客戶</button>
-            <span class="quick-hint">可體驗下單流程</span>
-          </div>
-          <div class="quick-btn-wrap">
-            <button type="button" class="quick-button" @click="quickLogin('sales')">銷售人員</button>
-            <span class="quick-hint">可體驗審單、盤點、市場活動</span>
-          </div>
-          <div class="quick-btn-wrap">
-            <button type="button" class="quick-button" @click="quickLogin('company_admin')">公司管理員</button>
-            <span class="quick-hint">可查看訂單列表</span>
-          </div>
-          <div class="quick-btn-wrap">
-            <button type="button" class="quick-button" @click="quickLogin('group_admin')">群管理員</button>
-            <span class="quick-hint">可查看跨公司訂單</span>
-          </div>
+        <div class="role-grid">
+          <button type="button" class="role-card" @click="quickLogin('customer')">
+            <shopping-cart-icon :size="20" :stroke-width="1.5" class="role-icon" />
+            <span class="role-name">客戶</span>
+            <span class="role-hint">可體驗下單流程</span>
+          </button>
+          <button type="button" class="role-card" @click="quickLogin('sales')">
+            <briefcase-icon :size="20" :stroke-width="1.5" class="role-icon" />
+            <span class="role-name">銷售人員</span>
+            <span class="role-hint">審單・盤點・活動</span>
+          </button>
+          <button type="button" class="role-card" @click="quickLogin('company_admin')">
+            <building2-icon :size="20" :stroke-width="1.5" class="role-icon" />
+            <span class="role-name">公司管理員</span>
+            <span class="role-hint">可查看訂單列表</span>
+          </button>
+          <button type="button" class="role-card" @click="quickLogin('group_admin')">
+            <globe-icon :size="20" :stroke-width="1.5" class="role-icon" />
+            <span class="role-name">群管理員</span>
+            <span class="role-hint">可查看跨公司訂單</span>
+          </button>
         </div>
       </div>
       <p class="demo-note">展示版本 — 所有資料均為模擬資料</p>
@@ -80,7 +84,11 @@ import { getCurrentUser } from '../services/auth'
 import {
   User as UserIcon,
   Lock as LockIcon,
-  LogIn as LogInIcon
+  LogIn as LogInIcon,
+  ShoppingCart as ShoppingCartIcon,
+  Briefcase as BriefcaseIcon,
+  Building2 as Building2Icon,
+  Globe as GlobeIcon
 } from 'lucide-vue'
 
 const roleRedirectMap = {
@@ -92,7 +100,7 @@ const roleRedirectMap = {
 
 export default {
   name: 'LoginPage',
-  components: { UserIcon, LockIcon, LogInIcon },
+  components: { UserIcon, LockIcon, LogInIcon, ShoppingCartIcon, BriefcaseIcon, Building2Icon, GlobeIcon },
   data () {
     return {
       username: '',
@@ -143,7 +151,19 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--c-bg);
+  background-color: var(--c-bg);
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      transparent 80px,
+      rgba(26, 47, 94, 0.025) 80px,
+      rgba(26, 47, 94, 0.025) 82px
+    ),
+    radial-gradient(circle, rgba(26, 47, 94, 0.11) 1px, transparent 1px),
+    linear-gradient(rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px);
+  background-size: auto, 40px 40px, 40px 40px, 40px 40px;
   padding: 24px;
 }
 
@@ -242,79 +262,111 @@ export default {
 
 /* ── 快速登入 ───────────────────────── */
 .quick-login {
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: var(--border);
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 0.5px solid #E8ECF2;
 }
 
 .quick-label {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 0 0 14px;
+  gap: 8px;
+  margin: 0 0 12px;
 }
 
 .quick-text {
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--c-text-faint);
-  text-transform: uppercase;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: #B8C4D0;
   white-space: nowrap;
 }
 
 .quick-line {
   flex: 1;
   height: 0.5px;
-  background: var(--c-border);
+  background: #E8ECF2;
 }
 
-.quick-buttons {
-  display: flex;
-  flex-direction: column;
+/* ── 2x2 角色網格 ───────────────────── */
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.quick-btn-wrap {
+.role-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px 10px;
+  background: #F8FAFB;
+  border: 0.5px solid #E2E8F0;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  text-align: center;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  position: relative;
+  overflow: hidden;
 }
 
-.quick-hint {
-  font-size: 11px;
-  color: var(--c-text-muted);
-  font-family: var(--font-sans);
-  padding-left: 2px;
+.role-icon {
+  color: var(--c-primary);
+  flex-shrink: 0;
+  transition: color 0.18s;
+}
+
+.role-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  letter-spacing: 0.02em;
+  transition: color 0.18s;
+}
+
+.role-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: #94A3B8;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.18s, max-height 0.18s;
+  transition: color 0.18s, opacity 0.2s;
+}
+
+.role-card:hover {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+}
+
+.role-card:hover .role-icon {
+  color: #ffffff;
+}
+
+.role-card:hover .role-name {
+  color: #ffffff;
+}
+
+.role-card:hover .role-hint {
+  color: rgba(255, 255, 255, 0.65);
+  opacity: 1;
+  max-height: 20px;
 }
 
 .demo-note {
-  margin: 20px 0 0;
+  margin: 16px 0 0;
   text-align: center;
   font-size: 10px;
   font-weight: 400;
-  color: #94a3b8;
+  color: #B8C4D0;
   font-family: var(--font-sans);
   letter-spacing: 0.02em;
-}
-
-.quick-button {
-  height: 38px;
-  border: var(--border);
-  border-radius: var(--r-md);
-  background: transparent;
-  color: var(--c-primary);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.quick-button:hover {
-  background: var(--c-primary-light);
 }
 
 @media (max-width: 480px) {

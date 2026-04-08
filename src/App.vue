@@ -110,7 +110,7 @@ body {
 .page-title {
   font-family: var(--font-serif);
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--c-text-title);
   margin: 0;
   letter-spacing: 0.01em;
