@@ -63,7 +63,7 @@ export default {
 
 body {
   margin: 0;
-  background: #F1F5F9;
+  background: #0c1222;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -76,26 +76,49 @@ body {
   font-weight: 400;
   line-height: 1.6;
   color: var(--c-text-body);
-  background-color: var(--c-bg);
-  /* ── Tech Grid + Glow ─────────────────── */
+  background-color: #0c1222;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Neon Grid (偽元素底層) ────────────── */
+#app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image:
-    /* 左上漫射微光 */
-    radial-gradient(ellipse 60% 50% at 10% 10%, rgba(238, 242, 255, 0.7) 0%, transparent 70%),
-    /* 右下漫射微光 */
-    radial-gradient(ellipse 50% 60% at 90% 90%, rgba(245, 243, 255, 0.65) 0%, transparent 70%),
-    /* 交點圓點 */
-    radial-gradient(circle, #cbd5e1 1px, transparent 1px),
-    /* 水平網格線 */
-    linear-gradient(rgba(226, 232, 240, 0.5) 0.5px, transparent 0.5px),
-    /* 垂直網格線 */
-    linear-gradient(90deg, rgba(226, 232, 240, 0.5) 0.5px, transparent 0.5px);
+    /* 交點霓虹圓點 */
+    radial-gradient(circle 1.5px, rgba(0, 242, 254, 0.55) 1px, transparent 1.5px),
+    /* 水平霓虹網格線 */
+    linear-gradient(rgba(0, 242, 254, 0.12) 0.5px, transparent 0.5px),
+    /* 垂直霓虹網格線 */
+    linear-gradient(90deg, rgba(0, 242, 254, 0.12) 0.5px, transparent 0.5px);
   background-size:
-    100% 100%,
-    100% 100%,
     40px 40px,
     40px 40px,
     40px 40px;
-  background-attachment: fixed;
+}
+
+/* ── 動態霓虹微光 (呼吸漂移) ────────────── */
+#app::after {
+  content: '';
+  position: fixed;
+  inset: -40% -20%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 45% 40% at 20% 25%, rgba(0, 198, 255, 0.20) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 45% at 80% 75%, rgba(196, 113, 237, 0.15) 0%, transparent 70%);
+  animation: glow-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes glow-drift {
+  0%   { transform: translate(0, 0)   scale(1);    }
+  33%  { transform: translate(3%, -2%) scale(1.05); }
+  66%  { transform: translate(-2%, 3%) scale(0.97); }
+  100% { transform: translate(1%, -1%) scale(1.02); }
 }
 
 /* ── 訂單號 / 金額等寬字型 helper ──────── */
