@@ -178,12 +178,6 @@
           <h2 class="modal-title">{{ modal.notice.title }}</h2>
           <p class="modal-body">{{ modal.notice.body }}</p>
           <div class="modal-footer">
-            <router-link
-              v-if="modal.notice.link"
-              class="modal-link-btn"
-              :to="modal.notice.link.path"
-              @click.native="closeModal"
-            >{{ modal.notice.link.label }}</router-link>
             <button class="modal-confirm-btn" @click="closeModal">我已瞭解</button>
           </div>
         </div>
@@ -827,26 +821,6 @@ export default {
   gap: 10px;
   padding-top: 12px;
   border-top: 0.5px solid var(--c-divider);
-}
-
-.modal-link-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 16px;
-  background: var(--c-primary-light);
-  border: 0.5px solid #C5D5F0;
-  border-radius: var(--r-sm);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--c-primary);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: background 0.15s;
-}
-
-.modal-link-btn:hover {
-  background: #DDE9F8;
 }
 
 .modal-confirm-btn {
