@@ -3,7 +3,7 @@
     <header class="layout-header">
       <div class="brand">
         <span class="live-dot" aria-hidden="true"></span>
-        <span class="brand-logo">MSM 2.0</span>
+        <router-link to="/" class="brand-logo">MSM 2.0</router-link>
         <span class="brand-sep" aria-hidden="true"></span>
         <span class="brand-name">行動訂單管理系統</span>
       </div>
@@ -144,6 +144,13 @@ export default {
   color: #FFFFFF;
   letter-spacing: 0.06em;
   white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.brand-logo:hover {
+  color: #e0f0ff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
 .brand-sep {
