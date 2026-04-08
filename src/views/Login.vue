@@ -152,15 +152,86 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  position: relative;
+  overflow: hidden;
+  /* ── 藍色漸層底色 ─── */
+  background:
+    linear-gradient(160deg, #56CCF2 0%, #3B82F6 35%, #1E3A8A 100%);
+}
+
+/* ── 點線網格層 ─────────────────────── */
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    /* 連線交點白色圓點 */
+    radial-gradient(circle 2px, rgba(255,255,255,0.55) 1.5px, transparent 2px),
+    /* 水平細線 */
+    linear-gradient(rgba(255,255,255,0.10) 0.5px, transparent 0.5px),
+    /* 垂直細線 */
+    linear-gradient(90deg, rgba(255,255,255,0.10) 0.5px, transparent 0.5px),
+    /* 對角連線 45° */
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 67px,
+      rgba(255,255,255,0.06) 67px,
+      rgba(255,255,255,0.06) 68px
+    ),
+    /* 對角連線 -45° */
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0px,
+      transparent 67px,
+      rgba(255,255,255,0.06) 67px,
+      rgba(255,255,255,0.06) 68px
+    );
+  background-size:
+    48px 48px,
+    48px 48px,
+    48px 48px,
+    auto,
+    auto;
+}
+
+/* ── 幾何三角光影 + 漂浮微光 ─────────── */
+.login-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* 右上三角光影 */
+    linear-gradient(215deg, rgba(255,255,255,0.15) 0%, transparent 45%),
+    /* 左下三角光影 */
+    linear-gradient(35deg, rgba(255,255,255,0.08) 0%, transparent 40%),
+    /* 中央散射微光 */
+    radial-gradient(ellipse 60% 50% at 55% 45%, rgba(255,255,255,0.12) 0%, transparent 65%),
+    /* 右下角高光點 */
+    radial-gradient(circle 200px at 85% 80%, rgba(86,204,242,0.30) 0%, transparent 100%),
+    /* 左上角深邃暗角 */
+    radial-gradient(circle 300px at 10% 15%, rgba(30,58,138,0.25) 0%, transparent 100%);
+  animation: login-shimmer 25s ease-in-out infinite alternate;
+}
+
+@keyframes login-shimmer {
+  0%   { opacity: 1;    }
+  50%  { opacity: 0.8;  }
+  100% { opacity: 1;    }
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 420px;
-  background: var(--c-surface);
-  border: var(--border);
+  background: rgba(255, 255, 255, 0.95);
+  border: 0.5px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--r-lg);
   padding: var(--space-lg);
+  backdrop-filter: blur(8px);
 }
 
 /* ── 標題區塊 ───────────────────────── */
