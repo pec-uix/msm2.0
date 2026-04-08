@@ -97,7 +97,7 @@ const routes = [
         path: 'promotions',
         name: 'promotions',
         component: PromotionsView,
-        meta: { roles: ['sales'] }
+        meta: { roles: ['sales', 'customer'] }
       }
     ]
   },

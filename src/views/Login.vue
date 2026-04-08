@@ -151,19 +151,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--c-bg);
-  background-image:
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0px,
-      transparent 80px,
-      rgba(26, 47, 94, 0.025) 80px,
-      rgba(26, 47, 94, 0.025) 82px
-    ),
-    radial-gradient(circle, rgba(26, 47, 94, 0.11) 1px, transparent 1px),
-    linear-gradient(rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px);
-  background-size: auto, 40px 40px, 40px 40px, 40px 40px;
   padding: 24px;
 }
 

@@ -63,7 +63,7 @@ export default {
 
 body {
   margin: 0;
-  background: var(--c-bg);
+  background: #F1F5F9;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -76,7 +76,26 @@ body {
   font-weight: 400;
   line-height: 1.6;
   color: var(--c-text-body);
-  background: var(--c-bg);
+  background-color: var(--c-bg);
+  /* ── Tech Grid + Glow ─────────────────── */
+  background-image:
+    /* 左上漫射微光 */
+    radial-gradient(ellipse 60% 50% at 10% 10%, rgba(238, 242, 255, 0.7) 0%, transparent 70%),
+    /* 右下漫射微光 */
+    radial-gradient(ellipse 50% 60% at 90% 90%, rgba(245, 243, 255, 0.65) 0%, transparent 70%),
+    /* 交點圓點 */
+    radial-gradient(circle, #cbd5e1 1px, transparent 1px),
+    /* 水平網格線 */
+    linear-gradient(rgba(226, 232, 240, 0.5) 0.5px, transparent 0.5px),
+    /* 垂直網格線 */
+    linear-gradient(90deg, rgba(226, 232, 240, 0.5) 0.5px, transparent 0.5px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    40px 40px,
+    40px 40px,
+    40px 40px;
+  background-attachment: fixed;
 }
 
 /* ── 訂單號 / 金額等寬字型 helper ──────── */

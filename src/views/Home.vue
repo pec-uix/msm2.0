@@ -113,44 +113,6 @@
           </div>
         </router-link>
 
-        <!-- 新增訂單：選取客戶後跳轉審單 ── -->
-        <div class="sales-entry-wrap" ref="pickerWrap">
-          <button type="button" class="sales-entry-btn" @click.stop="togglePicker">
-            <div class="entry-icon-box">
-              <file-text-icon :size="20" :stroke-width="1.5" />
-            </div>
-            <div class="entry-body">
-              <span class="entry-label">新增訂單</span>
-              <span class="entry-desc">選客戶後建立訂單</span>
-            </div>
-            <chevron-down-icon
-              :size="14"
-              :stroke-width="1.5"
-              class="picker-chevron"
-              :class="{ 'is-open': showPicker }"
-            />
-          </button>
-          <div v-if="showPicker" class="customer-picker" @click.stop>
-            <input
-              v-model="pickerSearch"
-              class="picker-search"
-              placeholder="搜尋客戶名稱"
-              @keydown.esc="showPicker = false"
-            />
-            <ul class="picker-list">
-              <li
-                v-for="c in pickerCustomers"
-                :key="c.id"
-                class="picker-item"
-                @click="selectCustomer(c)"
-              >
-                <span class="picker-name">{{ c.name }}</span>
-                <span class="picker-contact">{{ c.contact }}</span>
-              </li>
-              <li v-if="pickerCustomers.length === 0" class="picker-empty">找不到客戶</li>
-            </ul>
-          </div>
-        </div>
         <router-link class="sales-entry-btn" to="/inventory-checks">
           <div class="entry-icon-box">
             <clipboard-check-icon :size="20" :stroke-width="1.5" />
@@ -235,7 +197,6 @@
 import { getCurrentUser } from '../services/auth'
 import { orders } from '../mock/orders'
 import { announcements } from '../mock/announcements'
-import { customers } from '../mock/customers'
 import {
   Package as PackageIcon,
   ShoppingCart as ShoppingCartIcon,
@@ -243,18 +204,15 @@ import {
   ClipboardCheck as ClipboardCheckIcon,
   Gift as GiftIcon,
   X as XIcon,
-  ChevronDown as ChevronDownIcon
 } from 'lucide-vue'
 
 export default {
   name: 'HomePage',
-  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, XIcon, ChevronDownIcon },
+  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, XIcon },
   data () {
     return {
       notices: announcements,
       modal: { visible: false, notice: null },
-      showPicker: false,
-      pickerSearch: '',
       schedule: [
         { time: '09:30', customer: '大洋貿易', address: '台北市中正區忠孝東路一段 1 號' },
         { time: '13:00', customer: '綠能物流', address: '新北市板橋區文化路二段 200 號' },
@@ -279,13 +237,6 @@ export default {
       const dd = String(now.getDate()).padStart(2, '0')
       return `${mm}/${dd}（週${days[now.getDay()]}）`
     },
-    pickerCustomers () {
-      const kw = this.pickerSearch.trim().toLowerCase()
-      if (!kw) return customers
-      return customers.filter(c =>
-        c.name.toLowerCase().includes(kw) || c.contact.toLowerCase().includes(kw)
-      )
-    }
   },
   mounted () {
     document.addEventListener('keydown', this.handleKeydown)
@@ -314,18 +265,7 @@ export default {
       }
       this.modal = { visible: false, notice: null }
     },
-    togglePicker () {
-      this.showPicker = !this.showPicker
-      if (this.showPicker) this.pickerSearch = ''
-    },
-    selectCustomer (customer) {
-      this.showPicker = false
-      this.$router.push('/orders/new/review?customerId=' + customer.id)
-    },
-    handleOutsideClick (e) {
-      if (this.showPicker && this.$refs.pickerWrap && !this.$refs.pickerWrap.contains(e.target)) {
-        this.showPicker = false
-      }
+    handleOutsideClick () {
     },
     handleKeydown (e) {
       if (e.key === 'Escape') {
@@ -342,28 +282,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  background-color: var(--c-bg);
-  /* ── Tech Grid + Glow Dots + Light Beams ─── */
-  background-image:
-    /* Light Beams：斜向半透明光束 */
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0px,
-      transparent 80px,
-      rgba(26, 47, 94, 0.025) 80px,
-      rgba(26, 47, 94, 0.025) 82px
-    ),
-    /* Glow Dots：交點幽微光點 */
-    radial-gradient(circle, rgba(26, 47, 94, 0.11) 1px, transparent 1px),
-    /* Horizontal Grid Lines */
-    linear-gradient(rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px),
-    /* Vertical Grid Lines */
-    linear-gradient(90deg, rgba(148, 163, 184, 0.14) 0.5px, transparent 0.5px);
-  background-size:
-    auto,
-    40px 40px,
-    40px 40px,
-    40px 40px;
 }
 
 /* ── 快速入口 ─────────────────────────────── */
@@ -616,100 +534,6 @@ export default {
   gap: 10px;
 }
 
-/* ── 新增訂單・客戶選擇器 ─────────────────── */
-.sales-entry-wrap {
-  position: relative;
-}
-
-.picker-chevron {
-  flex-shrink: 0;
-  color: #94A3B8;
-  margin-left: auto;
-  transition: transform 0.2s;
-}
-
-.picker-chevron.is-open {
-  transform: rotate(180deg);
-}
-
-.customer-picker {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border: 0.5px solid var(--c-border);
-  border-top: 2px solid var(--c-primary);
-  border-radius: var(--r-md);
-  z-index: 100;
-  overflow: hidden;
-}
-
-.picker-search {
-  width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border: none;
-  border-bottom: 0.5px solid var(--c-divider);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  color: var(--c-text-body);
-  background: #F8FAFB;
-  outline: none;
-}
-
-.picker-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.picker-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 14px;
-  cursor: pointer;
-  border-bottom: 0.5px solid var(--c-divider);
-  transition: background 0.12s;
-}
-
-.picker-item:last-child {
-  border-bottom: none;
-}
-
-.picker-item:hover {
-  background: var(--c-primary-light);
-}
-
-.picker-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #334155;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.picker-contact {
-  font-size: 11px;
-  font-weight: 400;
-  color: #94A3B8;
-  flex-shrink: 0;
-}
-
-.picker-empty {
-  padding: 16px;
-  text-align: center;
-  font-size: 13px;
-  color: #94A3B8;
-  font-family: var(--font-sans);
-}
-
 .section-head {
   display: flex;
   align-items: center;
@@ -728,11 +552,11 @@ export default {
   gap: 14px;
   padding: 14px 16px;
   background: #ffffff;
-  border: 1px solid var(--c-border);
-  border-top: 2px solid var(--c-primary);
+  border: 0.5px solid var(--c-border);
   border-radius: 8px;
   text-decoration: none;
   transition: background 0.15s;
+  color: inherit;
 }
 
 .sales-entry-btn:hover {
@@ -758,8 +582,8 @@ export default {
 }
 
 .sales-entry-btn .entry-label {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   color: #1E293B;
 }
 

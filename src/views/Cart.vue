@@ -65,12 +65,14 @@
                       <trash2-icon :size="14" :stroke-width="1.5" />
                       移除
                     </button>
-                    <div class="quantity-control">
-                      <button type="button" class="qty-btn" @click="changeQty(item, -1)">-</button>
-                      <span class="qty-value">{{ item.quantity }}</span>
-                      <button type="button" class="qty-btn" @click="changeQty(item, 1)">+</button>
+                    <div class="qty-total-wrap">
+                      <div class="quantity-control">
+                        <button type="button" class="qty-btn" @click="changeQty(item, -1)">-</button>
+                        <span class="qty-value">{{ item.quantity }}</span>
+                        <button type="button" class="qty-btn" @click="changeQty(item, 1)">+</button>
+                      </div>
+                      <span class="subtotal-text">NT$ {{ item.unitPrice * item.quantity }}</span>
                     </div>
-                    <span class="subtotal-text">NT$ {{ item.unitPrice * item.quantity }}</span>
                   </div>
                 </div>
               </div>
@@ -434,7 +436,7 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 8px;
+  gap: 20px;
 }
 
 .item-left-col {
@@ -443,16 +445,18 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: flex-start;
   justify-content: center;
 }
 
 .item-right-col {
   flex-shrink: 0;
-  width: 96px;
+  width: 124px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 10px;
   padding-right: 0;
 }
 
@@ -476,6 +480,7 @@ export default {
   gap: 3px;
   white-space: nowrap;
   transition: color 0.15s;
+  align-self: flex-end;
 }
 
 .remove-btn:hover {
@@ -622,14 +627,25 @@ export default {
 }
 
 .package-select {
-  border: 0.5px solid var(--c-border);
+  width: min(280px, 100%);
+  min-width: 240px;
+  border: 0.5px solid #e2e8f0;
   border-radius: 6px;
   background: #ffffff;
   color: #334155;
+  font-family: 'Noto Sans TC', var(--font-sans);
   font-size: 13px;
   font-weight: 400;
   padding: 5px 8px;
   outline: none;
+}
+
+.qty-total-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
 }
 
 .quantity-control {
@@ -847,6 +863,15 @@ export default {
   .item-thumb {
     width: 60px;
     height: 60px;
+  }
+
+  .item-body {
+    gap: 12px;
+  }
+
+  .package-select {
+    min-width: 0;
+    width: min(260px, 100%);
   }
 }
 </style>

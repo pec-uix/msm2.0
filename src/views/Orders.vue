@@ -15,7 +15,6 @@
       </select>
       <select v-model="filterStatus" class="filter-select">
         <option value="">全部狀態</option>
-        <option value="draft">草稿</option>
         <option value="pending">待審核</option>
         <option value="confirmed">已確認</option>
         <option value="processing">處理中</option>
@@ -55,7 +54,7 @@
             :class="['table-row', { 'is-pending': order.status === 'pending' }]"
             @click="goToOrder(order.orderId)"
           >
-            <td v-if="isGroupAdmin" class="col-company">{{ order.salesCompany }}</td>
+            <td v-if="isGroupAdmin" class="col-company">{{ order.companyName }}</td>
             <td class="col-order-id mono">{{ order.orderId }}</td>
             <td>{{ order.date }}</td>
             <td v-if="showCustomer">{{ customerMap[order.customerId] || order.customerId }}</td>
@@ -92,7 +91,7 @@
         <div class="mobile-kv">
           <div v-if="isGroupAdmin" class="kv-item">
             <span class="kv-label">銷售公司</span>
-            <span class="kv-value">{{ order.salesCompany }}</span>
+            <span class="kv-value">{{ order.companyName }}</span>
           </div>
           <div class="kv-item">
             <span class="kv-label">日期</span>
@@ -241,7 +240,7 @@ export default {
       return cols
     },
     companies () {
-      const all = this.$store.state.orders.map(o => o.salesCompany).filter(Boolean)
+      const all = this.$store.state.orders.map(o => o.companyName).filter(Boolean)
       return [...new Set(all)].sort()
     },
     filteredCustomers () {
@@ -251,7 +250,7 @@ export default {
     },
     filteredOrders () {
       return this.$store.state.orders.filter(order => {
-        if (this.filterCompany && order.salesCompany !== this.filterCompany) return false
+        if (this.filterCompany && order.companyName !== this.filterCompany) return false
         if (this.filterStatus && order.status !== this.filterStatus) return false
         if (this.dateFrom && order.date < this.dateFrom) return false
         if (this.dateTo && order.date > this.dateTo) return false

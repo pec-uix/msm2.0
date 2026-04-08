@@ -60,8 +60,9 @@ export default {
   display: inline-block;
   margin-top: 8px;
   padding: 10px 28px;
-  background: var(--c-primary);
-  color: #ffffff;
+  background: #ffffff;
+  color: #1a2f5e;
+  border: 0.5px solid var(--c-border);
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
