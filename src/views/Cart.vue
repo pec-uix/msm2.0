@@ -181,7 +181,7 @@ export default {
       thumbReadySet: {},
       thumbErrorSet: {},
       confirmItem: null,
-      undoBar: { show: false, item: null, timer: null }
+      undoBar: { show: false, item: null, timer: null },
     }
   },
   computed: {
@@ -410,7 +410,7 @@ export default {
   border: 0.5px solid var(--c-border);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--c-surface);
+  background: #fff;
 }
 
 .cart-item {
@@ -419,16 +419,17 @@ export default {
   flex-direction: column;
   gap: 8px;
   border-bottom: 0.5px solid var(--c-stripe);
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s;
 }
+
+/* 保持 hover 效果 */
+
 
 .cart-item:last-child {
   border-bottom: none;
 }
 
-.cart-item:hover {
-  background-color: var(--c-hover);
-}
+
 
 /* ── 縮圖列 ───────────────────────────────── */
 .item-top {
@@ -692,7 +693,9 @@ export default {
 .package-select {
   width: min(280px, 100%);
   min-width: 240px;
-  border: 0.5px solid var(--c-border);
+  border-width: 1.5px;
+  border-style: solid;
+  border-color: #e0e0e0;
   border-radius: 6px;
   background: var(--c-surface);
   color: var(--c-text-title);
@@ -701,6 +704,7 @@ export default {
   font-weight: 400;
   padding: 5px 8px;
   outline: none;
+  transition: border-color 0.18s;
 }
 
 .qty-total-wrap {
@@ -714,9 +718,10 @@ export default {
 .quantity-control {
   display: inline-flex;
   align-items: center;
-  border: 0.5px solid var(--c-border);
+  border: 1.5px solid var(--c-primary);
   border-radius: 6px;
   overflow: hidden;
+  transition: border-color 0.18s;
 }
 
 .qty-btn {

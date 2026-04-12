@@ -141,17 +141,14 @@ export default {
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 500;
-    color: var(--c-surface);
+    color: #fff;
   letter-spacing: 0.06em;
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s, text-shadow 0.2s;
 }
-.brand-logo:hover {
-    color: var(--c-primary-light);
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-}
+
 
 .brand-sep {
   width: 1px;
@@ -164,7 +161,7 @@ export default {
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
-    color: var(--c-primary-light);
+    color: #fff;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
@@ -256,7 +253,7 @@ export default {
   font-family: var(--font-sans);
   font-size: 13px;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.65);
+  color: #fff;
 }
 
 .logout-button {

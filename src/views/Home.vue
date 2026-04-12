@@ -929,7 +929,7 @@ export default {
 .modal-card {
   width: 100%;
   max-width: 480px;
-  background: #ffffff;
+  background: #fff;
   border: 0.5px solid var(--c-border);
   border-top: 2px solid var(--c-primary);
   border-radius: var(--r-lg);
@@ -937,6 +937,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: 0 6px 32px 0 rgba(30, 41, 59, 0.18), 0 1.5px 6px 0 rgba(30, 41, 59, 0.10);
 }
 
 .modal-header {
@@ -964,9 +965,9 @@ export default {
 .modal-category {
   font-size: 11px;
   font-weight: 500;
-  color: var(--c-primary);
-  background: var(--c-primary-light);
-  border: 0.5px solid #C5D5F0;
+  color: #fff;
+  background: #5a2a0c;
+  border: none;
   border-radius: 4px;
   padding: 2px 8px;
   letter-spacing: 0.04em;
@@ -1005,9 +1006,9 @@ export default {
 .modal-body {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
-  color: var(--c-text-body);
+  color: #1a2540;
   line-height: 1.85;
 }
 
