@@ -123,7 +123,10 @@ export default {
         Object.entries(themeVars).forEach(([k, v]) => {
           document.documentElement.style.setProperty(k, v)
         })
-      } catch (e) {}
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('主題變數套用失敗', e)
+      }
     }
   },
   methods: {
