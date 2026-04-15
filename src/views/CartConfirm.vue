@@ -8,6 +8,11 @@
 
       <!-- 訂單摘要卡片 -->
       <section class="summary-card">
+        <div class="company-row">
+          <span class="company-label">銷售公司</span>
+          <span class="company-value">{{ selectedSalesCompany }}</span>
+        </div>
+        <div class="divider" />
         <h3 class="card-title">訂單品項</h3>
 
         <ul class="item-list">
@@ -88,6 +93,10 @@ export default {
     cartItems () {
       return this.$store.state.cartItems
     },
+    selectedSalesCompany () {
+      const c = this.$store.state.selectedSalesCompany
+      return c ? (c.name || c) : '—'
+    },
     subtotal () {
       return this.cartItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
     },
@@ -145,6 +154,26 @@ export default {
 .page-title {
   margin: 0;
   font-size: 18px;
+  font-weight: 500;
+  color: #334155;
+}
+
+/* ── 銷售公司列 ──────────── */
+.company-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.company-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a8;
+}
+
+.company-value {
+  font-size: 14px;
   font-weight: 500;
   color: #334155;
 }

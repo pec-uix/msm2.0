@@ -93,6 +93,9 @@
               </div>
             </li>
           </ul>
+          <div class="card-footer">
+            <button class="view-all-link view-all-btn" @click="scheduleModal = true">查看更多班表</button>
+          </div>
         </section>
 
       </div>
@@ -192,6 +195,40 @@
       </div>
     </template>
 
+    <!-- 班表完整彈窗 -->
+    <transition name="modal-fade">
+      <div v-if="scheduleModal" class="modal-overlay" @click.self="scheduleModal = false">
+        <div class="modal-card schedule-modal-card" role="dialog" aria-modal="true">
+          <div class="modal-header">
+            <div class="modal-meta">
+              <span class="modal-date">{{ todayLabel }}</span>
+              <span class="modal-category">SCHEDULE</span>
+            </div>
+            <button class="modal-close-btn" @click="scheduleModal = false" aria-label="關閉">
+              <x-icon :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+          <h2 class="modal-title">完整班表</h2>
+          <ul class="schedule-list schedule-modal-list">
+            <li v-for="(appt, idx) in allSchedule" :key="idx" class="schedule-item">
+              <div class="timeline-track">
+                <span class="sched-dot"></span>
+                <span v-if="idx < allSchedule.length - 1" class="sched-line"></span>
+              </div>
+              <span class="appt-time">{{ appt.time }}</span>
+              <div class="appt-info">
+                <span class="appt-customer">{{ appt.customer }}</span>
+                <span class="appt-address">{{ appt.address }}</span>
+              </div>
+            </li>
+          </ul>
+          <div class="modal-footer">
+            <button class="modal-confirm-btn" @click="scheduleModal = false">關閉</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- 公告詳情彈窗 -->
     <transition name="modal-fade">
       <div v-if="modal.visible" class="modal-overlay" @click.self="closeModal">
@@ -220,6 +257,8 @@
 <script>
 import { getCurrentUser } from '../services/auth'
 import { announcements } from '../mock/announcements'
+import { customers } from '../mock/customers'
+import { todaySchedule } from '../mock/schedule'
 import {
   Package as PackageIcon,
   ShoppingCart as ShoppingCartIcon,
@@ -236,14 +275,20 @@ export default {
     return {
       notices: announcements,
       modal: { visible: false, notice: null },
-      schedule: [
-        { time: '09:30', customer: '大洋貿易', address: '台北市中正區忠孝東路一段 1 號' },
-        { time: '13:00', customer: '綠能物流', address: '新北市板橋區文化路二段 200 號' },
-        { time: '15:30', customer: '宏達國際', address: '台北市信義區松高路 11 號' }
-      ]
+      scheduleModal: false
     }
   },
   computed: {
+    allSchedule () {
+      const customerById = Object.fromEntries(customers.map(c => [c.id, c]))
+      return todaySchedule.map(s => {
+        const c = customerById[s.customerId] || {}
+        return { time: s.time, customer: c.name || '', address: c.address || '' }
+      })
+    },
+    schedule () {
+      return this.allSchedule.slice(0, 3)
+    },
     ordersData () {
       return this.$store.state.orders || []
     },
@@ -412,6 +457,7 @@ export default {
     handleKeydown (e) {
       if (e.key === 'Escape') {
         if (this.showPicker) this.showPicker = false
+        if (this.scheduleModal) this.scheduleModal = false
         if (this.modal.visible) this.closeModal()
       }
     }
@@ -610,6 +656,33 @@ export default {
   font-weight: 400;
   color: var(--c-primary);
   text-decoration: none;
+}
+
+.view-all-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
+.schedule-modal-card {
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-modal-card .modal-category {
+  background: var(--c-primary);
+}
+
+.schedule-modal-list {
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* ── 通用歡迎頁（非 customer） ────────────── */
@@ -966,7 +1039,7 @@ export default {
   font-size: 11px;
   font-weight: 500;
   color: #fff;
-  background: var(--c-primary);
+  background: #5a2a0c;
   border: none;
   border-radius: 4px;
   padding: 2px 8px;

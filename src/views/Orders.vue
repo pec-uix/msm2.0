@@ -22,7 +22,7 @@
         <span class="date-sep">~</span>
         <input v-model="dateTo" type="date" class="date-input" :min="dateFrom || undefined" />
       </div>
-      <button v-if="isSales" type="button" class="add-order-btn" @click="openModal">
+      <button v-if="isSales" type="button" class="add-order-btn" style="margin-left: auto;" @click="openModal">
         <plus-icon :size="15" :stroke-width="1.5" />
         新增訂單
       </button>
@@ -224,6 +224,7 @@
 <script>
 import { customers } from '../mock/customers'
 import { getCurrentUser } from '../services/auth'
+import { todayScheduleIds } from '../mock/schedule'
 import { Plus as PlusIcon } from 'lucide-vue'
 
 const customerMap = Object.fromEntries(customers.map(c => [c.id, c.name]))
@@ -289,9 +290,17 @@ export default {
       return [...new Set(all)].sort()
     },
     filteredCustomers () {
-      if (!this.modalSearch) return this.customers
       const kw = this.modalSearch.toLowerCase()
-      return this.customers.filter(c => c.name.toLowerCase().includes(kw))
+      const list = kw
+        ? this.customers.filter(c => c.name.toLowerCase().includes(kw))
+        : [...this.customers]
+      const scheduleIndex = Object.fromEntries(todayScheduleIds.map((id, i) => [id, i]))
+      return list.sort((a, b) => {
+        const ai = scheduleIndex[a.id] !== undefined ? scheduleIndex[a.id] : Infinity
+        const bi = scheduleIndex[b.id] !== undefined ? scheduleIndex[b.id] : Infinity
+        if (ai !== bi) return ai - bi
+        return a.name.localeCompare(b.name, 'zh-TW')
+      })
     },
     filteredOrders () {
       return this.$store.state.orders.filter(order => {

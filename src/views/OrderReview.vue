@@ -57,14 +57,14 @@
               <th class="col-num">剩餘<br/>庫存</th>
               <th class="col-num">單價</th>
               <th class="col-num">小計</th>
-              <th class="col-action">操作</th>
+              <th class="col-action">贈品調整</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="(row, idx) in editRows"
               :key="row._rowId"
-              :class="['review-row', rowBgClass(row.source), stockRowClass(row)]"
+              :class="['review-row', rowBgClass(row.source, row.isGift), stockRowClass(row)]"
             >
               <td>
                 <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
@@ -141,7 +141,7 @@
               <td class="col-num">
                 <span
                   class="cell-text readonly-text stock-mono"
-                >{{ row.currentStock }}</span>
+                >{{ getWarehouseStock(row.productId) }}</span>
               </td>
               <td class="col-num">
                 <span
@@ -165,18 +165,24 @@
                 <span class="cell-text readonly-text">{{ row.isGift ? '—' : rowSubtotal(row) }}</span>
               </td>
               <td class="col-action">
-                <button
-                  v-if="row.source === 'system_gift'"
-                  type="button"
-                  class="row-btn cancel-btn"
-                  @click="cancelGiftRow(idx)"
-                >取消</button>
-                <button
-                  v-else-if="row.source === 'sales_add'"
-                  type="button"
-                  class="row-btn delete-btn"
-                  @click="removeRow(idx)"
-                ><trash2-icon :size="13" :stroke-width="1.5" /></button>
+                <!-- 系統贈品：取消 -->
+                <template v-if="row.source === 'system_gift'">
+                  <button type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
+                </template>
+                <!-- 手動改為贈品後：還原 + (sales_add 才顯示刪除) -->
+                <template v-else-if="row.isGift">
+                  <button type="button" class="row-btn revert-gift-btn" @click="toggleGift(idx)">還原</button>
+                  <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                    <trash2-icon :size="13" :stroke-width="1.5" />
+                  </button>
+                </template>
+                <!-- 一般列：改贈品 + (sales_add 才顯示刪除) -->
+                <template v-else>
+                  <button type="button" class="row-btn to-gift-btn" @click="toggleGift(idx)">改贈品</button>
+                  <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                    <trash2-icon :size="13" :stroke-width="1.5" />
+                  </button>
+                </template>
               </td>
             </tr>
           </tbody>
@@ -196,23 +202,26 @@
       <li
         v-for="(row, idx) in editRows"
         :key="'m_' + row._rowId"
-        :class="['mobile-card', rowBgClass(row.source)]"
+        :class="['mobile-card', rowBgClass(row.source, row.isGift)]"
       >
         <div class="mc-header">
           <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
           <div class="mc-actions">
-            <button
-              v-if="row.source === 'system_gift'"
-              type="button"
-              class="row-btn cancel-btn"
-              @click="cancelGiftRow(idx)"
-            >取消</button>
-            <button
-              v-else-if="row.source === 'sales_add'"
-              type="button"
-              class="row-btn delete-btn"
-              @click="removeRow(idx)"
-            ><trash2-icon :size="13" :stroke-width="1.5" /></button>
+            <template v-if="row.source === 'system_gift'">
+              <button type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
+            </template>
+            <template v-else-if="row.isGift">
+              <button type="button" class="row-btn revert-gift-btn" @click="toggleGift(idx)">還原</button>
+              <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                <trash2-icon :size="13" :stroke-width="1.5" />
+              </button>
+            </template>
+            <template v-else>
+              <button type="button" class="row-btn to-gift-btn" @click="toggleGift(idx)">改贈品</button>
+              <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                <trash2-icon :size="13" :stroke-width="1.5" />
+              </button>
+            </template>
           </div>
         </div>
 
@@ -290,7 +299,7 @@
         </div>
         <div class="mc-row">
           <span class="mc-label">當前庫存</span>
-          <span class="mc-value stock-mono">{{ row.currentStock }}</span>
+          <span class="mc-value stock-mono">{{ getWarehouseStock(row.productId) }}</span>
         </div>
         <div class="mc-row">
           <span class="mc-label">剩餘庫存</span>
@@ -340,11 +349,17 @@ import { promotions } from '../mock/promotions'
 import { customers } from '../mock/customers'
 import { ChevronLeft as ChevronLeftIcon, Trash2 as Trash2Icon } from 'lucide-vue'
 
-// 各產品 mock 庫存
-const MOCK_STOCKS = {
-  P001: 45, P002: 28, P003: 120, P004: 60, P005: 200,
-  P006: 15, P007: 80, P008: 35, P009: 90, P010: 150
+// 各倉庫各產品 mock 庫存
+const MOCK_STOCKS_BY_WAREHOUSE = {
+  '台北倉': { P001: 45, P002: 28, P003: 120, P004: 60, P005: 200, P006: 15, P007: 80, P008: 35, P009: 90, P010: 150 },
+  '新北倉': { P001: 30, P002: 50, P003:  80, P004: 40, P005: 160, P006: 25, P007: 60, P008: 20, P009: 70, P010: 100 },
+  '桃園倉': { P001: 20, P002: 15, P003:  60, P004: 90, P005: 120, P006: 10, P007: 45, P008: 55, P009: 30, P010:  80 },
+  '台中倉': { P001: 60, P002: 35, P003:  90, P004: 25, P005: 180, P006: 40, P007: 70, P008: 40, P009: 110, P010: 130 },
+  '高雄倉': { P001: 15, P002: 45, P003:  70, P004: 80, P005: 100, P006: 30, P007: 55, P008: 65, P009: 50, P010:  90 }
 }
+
+// 預設庫存（供 buildRow 初始化用）
+const MOCK_STOCKS = MOCK_STOCKS_BY_WAREHOUSE['台北倉']
 
 let rowIdCounter = 1
 
@@ -364,6 +379,7 @@ function buildRow (item) {
   const currentStock = MOCK_STOCKS[productId] !== undefined ? MOCK_STOCKS[productId] : 0
   const packageName = item.package || (product && Array.isArray(product.packages) && product.packages[0] ? product.packages[0].name : '')
   const conversionRate = getConversionRateFromPackageName(packageName)
+  const unitPrice = item.unitPrice || 0
   return {
     _rowId: rowIdCounter++,
     _promoId: null,
@@ -375,7 +391,8 @@ function buildRow (item) {
     subQty: 0,
     currentStock,
     conversionRate,
-    unitPrice: item.unitPrice || 0,
+    unitPrice,
+    _originalPrice: unitPrice,
     isGift: !!item.isGift,
     noPrice: false
   }
@@ -394,6 +411,7 @@ function newSalesRow () {
     currentStock: 0,
     conversionRate: 1,
     unitPrice: 0,
+    _originalPrice: 0,
     isGift: false,
     noPrice: false
   }
@@ -487,7 +505,8 @@ export default {
       const map = { customer: '客戶送單', sales_add: '業務新增', system_gift: '系統贈品' }
       return map[source] || source
     },
-    rowBgClass (source) {
+    rowBgClass (source, isGift) {
+      if (isGift) return 'bg-gift'
       const map = { customer: 'bg-customer', sales_add: 'bg-sales', system_gift: 'bg-gift' }
       return map[source] || ''
     },
@@ -504,13 +523,19 @@ export default {
       if (rem <= 10) return 'is-tight'
       return ''
     },
+    getWarehouseStock (productId) {
+      if (!productId) return 0
+      const stocks = MOCK_STOCKS_BY_WAREHOUSE[this.orderDeliveryUnit] || {}
+      return stocks[productId] !== undefined ? stocks[productId] : 0
+    },
     remainingStock (row) {
-      if (!row.productId) return row.currentStock
+      if (!row.productId) return 0
+      const stock = this.getWarehouseStock(row.productId)
       const rate = row.conversionRate || 1
       const usedQty = this.editRows
         .filter(r => r.productId === row.productId)
         .reduce((sum, r) => sum + (r.mainQty || 0) * rate + (r.subQty || 0), 0)
-      return row.currentStock - usedQty
+      return stock - usedQty
     },
     rowSubtotal (row) {
       const val = (row.mainQty || 0) * (row.unitPrice || 0)
@@ -568,8 +593,19 @@ export default {
     onQtyChange () {
       this.recalcPromotions()
     },
+    toggleGift (idx) {
+      const row = this.editRows[idx]
+      if (row.isGift) {
+        this.$set(this.editRows[idx], 'isGift', false)
+        this.$set(this.editRows[idx], 'unitPrice', row._originalPrice || 0)
+      } else {
+        this.$set(this.editRows[idx], '_originalPrice', row.unitPrice)
+        this.$set(this.editRows[idx], 'isGift', true)
+        this.$set(this.editRows[idx], 'unitPrice', 0)
+      }
+    },
     cancelGiftRow (idx) {
-      this.$set(this.editRows[idx], 'mainQty', 0)
+      this.editRows.splice(idx, 1)
     },
     addRow () {
       this.editRows.push(newSalesRow())
@@ -596,12 +632,10 @@ export default {
           if (isMet) {
             if (existingIdx === -1) {
               this.editRows.push(newGiftRow(gift, promo.id))
-            } else if (this.editRows[existingIdx].mainQty === 0) {
-              this.$set(this.editRows[existingIdx], 'mainQty', gift.quantity)
             }
           } else {
             if (existingIdx !== -1) {
-              this.$set(this.editRows[existingIdx], 'mainQty', 0)
+              this.editRows.splice(existingIdx, 1)
             }
           }
         })
@@ -892,8 +926,13 @@ export default {
 }
 
 .col-action {
-  text-align: center;
-  width: 72px;
+  text-align: right;
+  width: 110px;
+  white-space: nowrap;
+}
+
+.review-table th.col-action {
+  text-align: right;
 }
 
 .review-table td {
@@ -1003,6 +1042,18 @@ export default {
 }
 
 .cancel-btn {
+  border: 0.5px solid #8b95a8;
+  background: transparent;
+  color: #4b5568;
+}
+
+.to-gift-btn {
+  border: 0.5px solid #7c3aed;
+  background: transparent;
+  color: #7c3aed;
+}
+
+.revert-gift-btn {
   border: 0.5px solid #8b95a8;
   background: transparent;
   color: #4b5568;
