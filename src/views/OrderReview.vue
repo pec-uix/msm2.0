@@ -612,9 +612,14 @@ export default {
       }
     },
     cancelGiftRow (idx) {
+      const row = this.editRows[idx]
+      this.$set(this.editRows[idx], '_cancelledQty', row.mainQty)
+      this.$set(this.editRows[idx], 'mainQty', 0)
       this.$set(this.editRows[idx], '_cancelled', true)
     },
     restoreGiftRow (idx) {
+      const row = this.editRows[idx]
+      this.$set(this.editRows[idx], 'mainQty', row._cancelledQty || row.mainQty)
       this.$set(this.editRows[idx], '_cancelled', false)
     },
     addRow () {
