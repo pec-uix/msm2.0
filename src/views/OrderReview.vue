@@ -64,7 +64,7 @@
             <tr
               v-for="(row, idx) in editRows"
               :key="row._rowId"
-              :class="['review-row', rowBgClass(row.source, row.isGift), stockRowClass(row)]"
+              :class="['review-row', row._cancelled ? 'row-cancelled' : rowBgClass(row.source, row.isGift), stockRowClass(row)]"
             >
               <td>
                 <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
@@ -165,9 +165,10 @@
                 <span class="cell-text readonly-text">{{ row.isGift ? '—' : rowSubtotal(row) }}</span>
               </td>
               <td class="col-action">
-                <!-- 系統贈品：取消 -->
+                <!-- 系統贈品：取消 / 還原 -->
                 <template v-if="row.source === 'system_gift'">
-                  <button type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
+                  <button v-if="row._cancelled" type="button" class="row-btn restore-btn" @click="restoreGiftRow(idx)">還原贈品</button>
+                  <button v-else type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
                 </template>
                 <!-- 手動改為贈品後：還原 + (sales_add 才顯示刪除) -->
                 <template v-else-if="row.isGift">
@@ -202,13 +203,14 @@
       <li
         v-for="(row, idx) in editRows"
         :key="'m_' + row._rowId"
-        :class="['mobile-card', rowBgClass(row.source, row.isGift)]"
+        :class="['mobile-card', row._cancelled ? 'bg-cancelled' : rowBgClass(row.source, row.isGift)]"
       >
         <div class="mc-header">
           <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
           <div class="mc-actions">
             <template v-if="row.source === 'system_gift'">
-              <button type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
+              <button v-if="row._cancelled" type="button" class="row-btn restore-btn" @click="restoreGiftRow(idx)">還原贈品</button>
+              <button v-else type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
             </template>
             <template v-else-if="row.isGift">
               <button type="button" class="row-btn revert-gift-btn" @click="toggleGift(idx)">還原</button>
@@ -380,9 +382,13 @@ function buildRow (item) {
   const packageName = item.package || (product && Array.isArray(product.packages) && product.packages[0] ? product.packages[0].name : '')
   const conversionRate = getConversionRateFromPackageName(packageName)
   const unitPrice = item.unitPrice || 0
+  const promoId = item.source === 'system_gift'
+    ? ((promotions.find(p => p.gifts.some(g => g.name === item.name)) || {}).id || null)
+    : null
   return {
     _rowId: rowIdCounter++,
-    _promoId: null,
+    _promoId: promoId,
+    _cancelled: false,
     source: item.source,
     productId,
     name: item.name,
@@ -421,6 +427,7 @@ function newGiftRow (gift, promoId) {
   return {
     _rowId: rowIdCounter++,
     _promoId: promoId,
+    _cancelled: false,
     source: 'system_gift',
     productId: '',
     name: gift.name,
@@ -605,7 +612,10 @@ export default {
       }
     },
     cancelGiftRow (idx) {
-      this.editRows.splice(idx, 1)
+      this.$set(this.editRows[idx], '_cancelled', true)
+    },
+    restoreGiftRow (idx) {
+      this.$set(this.editRows[idx], '_cancelled', false)
     },
     addRow () {
       this.editRows.push(newSalesRow())
@@ -630,10 +640,12 @@ export default {
             r => r.source === 'system_gift' && r._promoId === promo.id && r.name === gift.name
           )
           if (isMet) {
+            // 條件達成：沒有任何行（含已取消）才新增
             if (existingIdx === -1) {
               this.editRows.push(newGiftRow(gift, promo.id))
             }
           } else {
+            // 條件未達成：移除該贈品行（含已取消的）
             if (existingIdx !== -1) {
               this.editRows.splice(existingIdx, 1)
             }
@@ -1069,6 +1081,39 @@ export default {
   width: 28px;
   height: 28px;
   padding: 0;
+}
+
+/* ── 取消的系統贈品列 ─────────────── */
+.row-cancelled td {
+  background: #F1F5F9 !important;
+}
+.row-cancelled:hover td {
+  background: #F1F5F9 !important;
+}
+.row-cancelled td .cell-text,
+.row-cancelled td .source-badge,
+.row-cancelled td .readonly-text {
+  text-decoration: line-through;
+  color: #a0aec0;
+}
+.row-cancelled td .stock-mono {
+  color: #a0aec0 !important;
+}
+.row-cancelled td input,
+.row-cancelled td select {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.mobile-card.bg-cancelled {
+  background: #F1F5F9 !important;
+  opacity: 0.6;
+}
+
+.restore-btn {
+  border: 0.5px solid #059669;
+  background: transparent;
+  color: #059669;
 }
 
 /* ── 新增品項 ─────────────────────── */
