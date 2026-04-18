@@ -28,15 +28,17 @@ export default {
 <style scoped>
 .app-snackbar {
   position: fixed;
-  left: 50%;
-  bottom: 22px;
-  transform: translateX(-50%);
-  padding: 12px 18px;
-  border-radius: 20px;
+  top: 72px;
+  right: 20px;
+  transform: none;
+  padding: 10px 16px;
+  border-radius: 8px;
   background: rgba(26, 37, 64, 0.96);
   color: #f7f9ff;
   font-weight: 500;
+  font-size: 13px;
   z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 .message.success {
