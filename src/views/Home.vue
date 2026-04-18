@@ -68,10 +68,14 @@
 
         <!-- 待審核訂單卡片 -->
         <section class="pending-card">
-          <div class="pending-number">{{ pendingCount }}</div>
-          <div class="pending-approval-label">PENDING APPROVAL</div>
-          <div class="pending-sub">筆訂單待審核</div>
-          <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
+          <div class="pending-left">
+            <div class="pending-number">{{ pendingCount }}</div>
+            <div class="pending-approval-label">PENDING APPROVAL</div>
+          </div>
+          <div class="pending-right">
+            <div class="pending-sub">筆訂單待審核</div>
+            <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
+          </div>
         </section>
 
         <!-- 今日班表卡片 -->
@@ -512,7 +516,7 @@ export default {
   grid-auto-rows: 1fr;
 }
 .sales-top-grid {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   align-items: stretch;
 }
 /* ── 卡片通用 ─────────────────────────────── */
@@ -862,10 +866,18 @@ export default {
   border-top: 2px solid var(--c-primary);
   border-radius: 8px;
   background: #ffffff;
-  padding: 20px 18px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+
+.pending-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+  flex-shrink: 0;
 }
 
 .pending-number {
@@ -881,7 +893,14 @@ export default {
   font-weight: 600;
   color: #94A3B8;
   letter-spacing: 0.12em;
-  margin-bottom: 4px;
+  margin-top: 2px;
+}
+
+.pending-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
 }
 
 .pending-sub {
@@ -892,7 +911,6 @@ export default {
 
 .pending-btn {
   align-self: flex-start;
-  margin-top: 12px;
   padding: 8px 16px;
   background: #FDF8EE;
   color: #8A6A28;
@@ -1133,17 +1151,13 @@ export default {
     gap: 12px;
   }
 
-  /* 待審核 + 今日班表：維持兩欄並排 */
-  .sales-top-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .pending-card {
-    padding: 14px 12px;
+    padding: 14px 16px;
+    gap: 14px;
   }
 
   .pending-number {
-    font-size: 32px;
+    font-size: 36px;
   }
 
   .pending-approval-label {
@@ -1151,12 +1165,12 @@ export default {
   }
 
   .pending-sub {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .pending-btn {
     font-size: 12px;
-    padding: 6px 10px;
+    padding: 6px 12px;
   }
 }
 
