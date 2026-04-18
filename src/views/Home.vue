@@ -517,6 +517,7 @@ export default {
 }
 .sales-top-grid {
   grid-template-columns: 1fr;
+  grid-auto-rows: auto;
   align-items: stretch;
 }
 /* ── 卡片通用 ─────────────────────────────── */
