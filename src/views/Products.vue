@@ -21,20 +21,43 @@
           >{{ co.shortName }}</button>
         </div>
       </div>
-      <div class="search-wrapper">
-        <search-icon :size="16" :stroke-width="1.5" class="search-icon-el" />
-        <input
-          v-model.trim="keyword"
-          class="search-input"
-          type="text"
-          placeholder="搜尋產品名稱或產品代號"
-        />
+
+      <div class="search-view-row">
+        <div class="search-wrapper">
+          <search-icon :size="16" :stroke-width="1.5" class="search-icon-el" />
+          <input
+            v-model.trim="keyword"
+            class="search-input"
+            type="text"
+            placeholder="搜尋產品名稱或產品代號"
+          />
+        </div>
+        <!-- 切換按鈕 -->
+        <div class="view-toggle">
+          <button
+            type="button"
+            :class="['toggle-btn', { active: viewMode === 'list' }]"
+            title="直列式"
+            @click="viewMode = 'list'"
+          >
+            <align-justify-icon :size="16" :stroke-width="1.5" />
+          </button>
+          <button
+            type="button"
+            :class="['toggle-btn', { active: viewMode === 'grid' }]"
+            title="格狀"
+            @click="viewMode = 'grid'"
+          >
+            <layout-grid-icon :size="16" :stroke-width="1.5" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="products-grid">
+    <!-- 格狀 / 直列 -->
+    <div :class="['products-grid', 'view-' + viewMode]">
       <article v-for="product in filteredProducts" :key="product.id" class="product-card">
-        <!-- 圖片容器：骨架屏 + 錯誤佔位 -->
+        <!-- 圖片 -->
         <div
           class="product-img-wrap"
           :class="{ 'is-skeleton': !imgReadyMap[product.id] && !imgErrorMap[product.id] }"
@@ -52,53 +75,54 @@
             <span class="placeholder-watermark">MSM 2.0</span>
           </div>
         </div>
+
+        <!-- 內容 -->
         <div class="product-content">
-          <div class="name-row">
-            <h3 class="product-name">{{ product.name }}</h3>
-            <span
-              v-if="packageOptionsMap[product.id].length === 1"
-              class="single-pkg-badge"
-            >{{ packageOptionsMap[product.id][0].label }}</span>
-          </div>
-          <p class="product-id">{{ product.id }}</p>
-
-          <!-- 規格區塊：常態渲染以保持固定高度 -->
-          <div class="pkg-area">
-            <div v-if="packageOptionsMap[product.id].length > 1" class="package-tabs">
-              <button
-                v-for="option in packageOptionsMap[product.id]"
-                :key="option.label"
-                type="button"
-                :class="['package-tab', { active: selectedPackageMap[product.id] === option.label }]"
-                @click="setSelectedPackage(product.id, option.label)"
-              >
-                {{ option.label }}
-              </button>
+          <!-- 資訊區 -->
+          <div class="info-group">
+            <div class="name-row">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <span
+                v-if="packageOptionsMap[product.id].length === 1"
+                class="single-pkg-badge"
+              >{{ packageOptionsMap[product.id][0].label }}</span>
+            </div>
+            <p class="product-id">{{ product.id }}</p>
+            <div class="pkg-area">
+              <div v-if="packageOptionsMap[product.id].length > 1" class="package-tabs">
+                <button
+                  v-for="option in packageOptionsMap[product.id]"
+                  :key="option.label"
+                  type="button"
+                  :class="['package-tab', { active: selectedPackageMap[product.id] === option.label }]"
+                  @click="setSelectedPackage(product.id, option.label)"
+                >
+                  {{ option.label }}
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Flexbox Spacer：將金額與按鈕強制推向底部 -->
-          <div class="content-spacer"></div>
-
-          <div class="price-qty-row">
-            <span class="price-text">NT$ {{ selectedOption(product.id).price }}</span>
-            <div class="quantity-control">
-              <button type="button" class="quantity-btn" @click="decreaseQty(product.id)">-</button>
-              <span class="quantity-value">{{ quantityMap[product.id] }}</span>
-              <button type="button" class="quantity-btn" @click="increaseQty(product.id)">+</button>
+          <!-- 操作區 -->
+          <div class="action-group">
+            <div class="price-qty-row">
+              <span class="price-text">NT$ {{ selectedOption(product.id).price }}</span>
+              <div class="quantity-control">
+                <button type="button" class="quantity-btn" @click="decreaseQty(product.id)">-</button>
+                <span class="quantity-value">{{ quantityMap[product.id] }}</span>
+                <button type="button" class="quantity-btn" @click="increaseQty(product.id)">+</button>
+              </div>
             </div>
+            <p v-if="isNoPrice(product.id)" class="price-warning">無價格資料</p>
+            <button
+              type="button"
+              class="add-cart-btn"
+              :disabled="isNoPrice(product.id)"
+              @click="addToCart(product)"
+            >
+              加入購物車
+            </button>
           </div>
-
-          <p v-if="isNoPrice(product.id)" class="price-warning">無價格資料</p>
-
-          <button
-            type="button"
-            class="add-cart-btn"
-            :disabled="isNoPrice(product.id)"
-            @click="addToCart(product)"
-          >
-            加入購物車
-          </button>
         </div>
       </article>
     </div>
@@ -108,14 +132,19 @@
 <script>
 import { products } from '../mock/products'
 import { salesCompanies } from '../mock/salesCompanies'
-import { Search as SearchIcon } from 'lucide-vue'
+import {
+  Search as SearchIcon,
+  AlignJustify as AlignJustifyIcon,
+  LayoutGrid as LayoutGridIcon
+} from 'lucide-vue'
 
 export default {
   name: 'ProductsPage',
-  components: { SearchIcon },
+  components: { SearchIcon, AlignJustifyIcon, LayoutGridIcon },
   data () {
     return {
       keyword: '',
+      viewMode: 'grid',
       productList: products,
       salesCompanies,
       selectedPackageMap: {},
@@ -205,11 +234,7 @@ export default {
     addToCart (product) {
       const option = this.selectedOption(product.id)
       const quantity = this.quantityMap[product.id]
-
-      if (option.price === 0 && !option.isGift) {
-        return
-      }
-
+      if (option.price === 0 && !option.isGift) return
       this.$store.dispatch('addToCart', {
         productId: product.id,
         productName: product.name,
@@ -218,11 +243,7 @@ export default {
         unitPrice: option.price,
         quantity
       })
-
-      this.$store.dispatch('showSnackbar', {
-        message: '已加入購物車',
-        type: 'success'
-      })
+      this.$store.dispatch('showSnackbar', { message: '已加入購物車', type: 'success' })
     }
   }
 }
@@ -293,9 +314,16 @@ export default {
   font-weight: 500;
 }
 
+/* ── 搜尋列 + 切換 ─────────────────── */
+.search-view-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .search-wrapper {
   position: relative;
-  width: 100%;
+  flex: 1;
 }
 
 .search-icon-el {
@@ -326,33 +354,70 @@ export default {
   font-weight: 400;
 }
 
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+/* ── 切換按鈕 ──────────────────────── */
+.view-toggle {
+  display: flex;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 44px;
+  background: var(--c-surface);
+  border: none;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggle-btn + .toggle-btn {
+  border-left: 0.5px solid var(--c-border);
+}
+
+.toggle-btn.active {
+  background: var(--c-primary);
+  color: #fff;
+}
+
+/* ── 格狀 Grid ─────────────────────── */
+.products-grid {
+  display: grid;
+  gap: 12px;
+}
+
+/* 格狀模式：桌機 4 欄 */
+.view-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* 直列模式 */
+.view-list {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* ── 卡片通用 ──────────────────────── */
 .product-card {
   border: 0.5px solid var(--c-border);
   border-top: 2px solid var(--c-primary);
   border-radius: 8px;
   background: var(--c-surface);
   overflow: hidden;
-  transition: border-color 0.1s;
-  min-width: 0;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-.product-card:hover {
-  border-color: var(--c-border);
-  border-top-color: var(--c-primary);
-}
-
-/* ── 圖片容器 ─────────────────── */
+/* ── 圖片容器 ──────────────────────── */
 .product-img-wrap {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   background: var(--c-stripe);
   overflow: hidden;
   position: relative;
@@ -360,7 +425,6 @@ export default {
   border-bottom: 0.5px solid var(--c-divider);
 }
 
-/* 骨架屏閃爍 */
 .product-img-wrap.is-skeleton {
   background: var(--c-bg);
 }
@@ -392,7 +456,6 @@ export default {
   opacity: 1;
 }
 
-/* 錯誤佔位圖 */
 .img-placeholder {
   width: 100%;
   height: 100%;
@@ -410,17 +473,39 @@ export default {
   user-select: none;
 }
 
+/* ── 內容通用 ──────────────────────── */
 .product-content {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   flex: 1;
+  gap: 8px;
+}
+
+.info-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.name-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .product-name {
   margin: 0;
   color: var(--c-text-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -428,39 +513,34 @@ export default {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.4;
-  min-height: 3rem;
 }
 
 .product-id {
-  margin: 3px 0 8px;
+  margin: 0;
   color: #c0c8d4;
   font-size: 11px;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
 
-.package-tabs {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  align-content: flex-start;
-}
-
-/* 規格區塊容器：始終佔位 */
 .pkg-area {
-  min-height: 40px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+}
+
+.package-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .package-tab {
-  padding: 6px 10px;
+  padding: 4px 8px;
   border: 0.5px solid var(--c-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--c-surface);
   color: var(--c-primary);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   cursor: pointer;
 }
@@ -470,23 +550,14 @@ export default {
   font-weight: 500;
 }
 
-.name-row {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 0;
-}
-
 .single-pkg-badge {
   flex-shrink: 0;
-  margin-top: 2px;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border: 0.5px solid var(--c-border);
   border-radius: 4px;
   background: var(--c-stripe);
   color: var(--c-text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   white-space: nowrap;
 }
@@ -495,12 +566,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 8px 0 0;
+  gap: 6px;
 }
 
 .price-text {
   color: var(--c-text-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   font-family: var(--font-mono);
 }
@@ -509,49 +580,45 @@ export default {
   display: inline-flex;
   align-items: center;
   border: 0.5px solid var(--c-border);
-  border-radius: 6px;
+  border-radius: 5px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .quantity-btn {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: none;
   background: #ffffff;
   color: var(--c-primary);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
 }
 
 .quantity-value {
-  width: 34px;
+  width: 26px;
   text-align: center;
   color: #334155;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .price-warning {
-  margin: 10px 0 0;
+  margin: 0;
   color: #b3261e;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
-}
-
-.content-spacer {
-  flex: 1;
 }
 
 .add-cart-btn {
   width: 100%;
-  height: 44px;
-  margin-top: 8px;
+  height: 38px;
   border: none;
   border-radius: 6px;
   background: var(--c-primary);
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   flex-shrink: 0;
@@ -562,49 +629,115 @@ export default {
   cursor: not-allowed;
 }
 
+/* ── 直列模式覆蓋 ──────────────────── */
+.view-list .product-card {
+  flex-direction: row;
+  min-height: 110px;
+}
+
+.view-list .product-img-wrap {
+  width: 130px;
+  aspect-ratio: unset;
+  flex-shrink: 0;
+  border-bottom: none;
+  border-right: 0.5px solid var(--c-divider);
+}
+
+.view-list .product-content {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+}
+
+.view-list .info-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.view-list .product-name {
+  font-size: 14px;
+  -webkit-line-clamp: 1;
+}
+
+.view-list .action-group {
+  flex-shrink: 0;
+  align-items: flex-end;
+  min-width: 160px;
+}
+
+.view-list .add-cart-btn {
+  width: auto;
+  padding: 0 20px;
+  height: 36px;
+}
+
+/* ── RWD 768px ─────────────────────── */
 @media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 0;
+  /* 格狀：手機 3 欄 */
+  .view-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
-  .product-card {
-    min-width: 0;
+  .view-grid .product-content {
+    padding: 8px;
   }
 
-  .product-content {
-    padding: 10px;
-  }
-
-  .product-name {
-    font-size: 13px;
-  }
-
-  .package-tab {
+  .view-grid .product-name {
     font-size: 11px;
-    padding: 4px 8px;
   }
 
-  .price-text {
+  .view-grid .product-id {
+    display: none;
+  }
+
+  .view-grid .price-text {
+    font-size: 11px;
+  }
+
+  .view-grid .quantity-btn {
+    width: 22px;
+    height: 22px;
     font-size: 13px;
   }
 
-  .quantity-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 14px;
+  .view-grid .quantity-value {
+    width: 20px;
+    font-size: 11px;
   }
 
-  .quantity-value {
-    width: 28px;
+  .view-grid .add-cart-btn {
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .view-grid .package-tab {
+    font-size: 10px;
+    padding: 3px 5px;
+  }
+
+  /* 直列：手機圖片縮小 */
+  .view-list .product-img-wrap {
+    width: 88px;
+  }
+
+  .view-list .product-content {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .view-list .action-group {
+    min-width: 100px;
+  }
+
+  .view-list .add-cart-btn {
+    padding: 0 10px;
     font-size: 12px;
   }
 
-  .add-cart-btn {
-    height: 38px;
+  .view-list .product-name {
     font-size: 13px;
-    margin-top: 8px;
   }
 }
 </style>
