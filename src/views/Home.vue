@@ -1132,6 +1132,32 @@ export default {
     grid-template-columns: 1fr;
     gap: 12px;
   }
+
+  /* 待審核 + 今日班表：維持兩欄並排 */
+  .sales-top-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pending-card {
+    padding: 14px 12px;
+  }
+
+  .pending-number {
+    font-size: 32px;
+  }
+
+  .pending-approval-label {
+    font-size: 9px;
+  }
+
+  .pending-sub {
+    font-size: 12px;
+  }
+
+  .pending-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
 }
 
 @media (max-width: 480px) {
