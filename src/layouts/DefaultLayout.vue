@@ -8,7 +8,7 @@
         <span class="brand-name">行動訂單管理系統</span>
       </div>
       <nav class="layout-tabs">
-          <router-link
+        <router-link
           v-for="tab in visibleTabs"
           :key="tab.path"
           :to="tab.path"
@@ -30,41 +30,69 @@
           登出
         </button>
       </div>
+      <!-- 漢堡按鈕（手機） -->
+      <button class="hamburger-btn" @click="menuOpen = true" aria-label="開啟選單">
+        <menu-icon :size="22" :stroke-width="1.5" />
+      </button>
     </header>
 
     <main class="layout-main">
       <router-view />
-      <!-- 展示聲明 Footer（桌機） -->
       <div class="demo-footer">MSM 2.0 展示版本 — 所有資料均為模擬資料</div>
     </main>
 
-    <footer class="mobile-nav">
-      <router-link
-        v-for="tab in visibleTabs"
-        :key="tab.path"
-        :to="tab.path"
-        class="mobile-tab"
-        exact
-        active-class="is-active"
-      >
-        <component :is="tab.icon" :size="20" :stroke-width="1.5" class="mobile-tab-icon" />
-        <span class="mobile-tab-label">{{ tab.label }}</span>
-      </router-link>
-    </footer>
+    <!-- 手機抽屜選單 -->
+    <transition name="drawer-fade">
+      <div v-if="menuOpen" class="drawer-overlay" @click="menuOpen = false" />
+    </transition>
+    <transition name="drawer-slide">
+      <div v-if="menuOpen" class="drawer-panel">
+        <div class="drawer-header">
+          <div class="drawer-user">
+            <div class="drawer-user-name">{{ currentUser.name }}</div>
+            <div class="drawer-user-company">{{ currentUser.company }}</div>
+          </div>
+          <button class="drawer-close-btn" @click="menuOpen = false" aria-label="關閉選單">
+            <x-icon :size="18" :stroke-width="1.5" />
+          </button>
+        </div>
+        <nav class="drawer-nav">
+          <router-link
+            v-for="tab in visibleTabs"
+            :key="tab.path"
+            :to="tab.path"
+            class="drawer-item"
+            exact
+            active-class="is-active"
+            @click.native="menuOpen = false"
+          >
+            <component :is="tab.icon" :size="18" :stroke-width="1.5" class="drawer-item-icon" />
+            {{ tab.label }}
+          </router-link>
+        </nav>
+        <div class="drawer-footer">
+          <button class="drawer-logout-btn" @click="logoutUser">
+            <log-out :size="15" :stroke-width="1.5" />
+            登出
+          </button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { getCurrentUser } from '../services/auth'
 import {
-  Home, Package, ShoppingCart, FileText, ClipboardCheck, Tag, LogOut
+  Home, Package, ShoppingCart, FileText, ClipboardCheck, Tag, LogOut, Menu, X
 } from 'lucide-vue'
 
 export default {
   name: 'DefaultLayout',
-  components: { LogOut },
+  components: { LogOut, MenuIcon: Menu, XIcon: X },
   data () {
     return {
+      menuOpen: false,
       tabs: [
         { label: '首頁', path: '/', roles: ['customer', 'sales'], icon: Home },
         { label: '產品', path: '/products', roles: ['customer'], icon: Package },
@@ -81,15 +109,19 @@ export default {
     },
     visibleTabs () {
       return this.tabs.filter(tab => {
-        if (!tab.roles) {
-          return true
-        }
+        if (!tab.roles) return true
         return tab.roles.includes(this.currentUser.role)
       })
     }
   },
+  watch: {
+    $route () {
+      this.menuOpen = false
+    }
+  },
   methods: {
     logoutUser () {
+      this.menuOpen = false
       this.$store.dispatch('logout')
       this.$router.push('/login')
     }
@@ -112,7 +144,7 @@ export default {
   justify-content: space-between;
   padding: 0 32px;
   height: 60px;
-    background: var(--c-primary);
+  background: var(--c-primary);
   border-bottom: none;
   position: sticky;
   top: 0;
@@ -132,7 +164,7 @@ export default {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-    background: var(--c-primary-light);
+  background: var(--c-primary-light);
   flex-shrink: 0;
   animation: pulse-live 2.4s ease-in-out infinite;
 }
@@ -141,7 +173,7 @@ export default {
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 500;
-    color: #fff;
+  color: #fff;
   letter-spacing: 0.06em;
   white-space: nowrap;
   text-decoration: none;
@@ -149,11 +181,10 @@ export default {
   transition: color 0.2s, text-shadow 0.2s;
 }
 
-
 .brand-sep {
   width: 1px;
   height: 16px;
-    background: var(--c-border);
+  background: var(--c-border);
   flex-shrink: 0;
 }
 
@@ -161,7 +192,7 @@ export default {
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 400;
-    color: #fff;
+  color: #fff;
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
@@ -215,25 +246,12 @@ export default {
 
 .tab-item.is-active::after {
   content: '';
-  display: block;
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 0;
-  height: 5px;
-  background: linear-gradient(90deg, var(--c-primary) 80%, var(--c-primary-dark, #003366) 100%);
-  border-radius: 3px 3px 0 0;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-}
-
-.tab-item.is-active::after {
-  content: '';
   position: absolute;
   bottom: 0;
   left: 18px;
   right: 18px;
   height: 2px;
-    background: var(--c-surface);
+  background: var(--c-surface);
   border-radius: 2px 2px 0 0;
 }
 
@@ -279,6 +297,26 @@ export default {
   color: #FFFFFF;
 }
 
+/* ── 漢堡按鈕（手機才顯示） ──────────── */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
 /* ── Main ────────────────────────────── */
 .layout-main {
   flex: 1;
@@ -286,7 +324,7 @@ export default {
   background: var(--c-bg);
 }
 
-/* \u5c55\u793a\u8072\u660e Footer */
+/* 展示聲明 Footer */
 .demo-footer {
   margin-top: 32px;
   padding-top: 16px;
@@ -299,42 +337,167 @@ export default {
   letter-spacing: 0.04em;
 }
 
-/* ── 手機底部 Nav ─────────────────────── */
-.mobile-nav {
-  display: none;
-  border-top: 0.5px solid var(--c-border);
-  background: var(--c-surface);
-  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+/* ── 抽屜 Overlay ─────────────────────── */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(10, 20, 48, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
-.mobile-tab {
-  display: inline-flex;
+/* ── 抽屜面板 ─────────────────────────── */
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 310;
+  width: 272px;
+  background: var(--c-surface);
+  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 20%;
-  color: var(--c-text-muted);
-  text-decoration: none;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  padding: 4px 0;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.18);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 16px 16px;
+  background: var(--c-primary);
+  gap: 12px;
+}
+
+.drawer-user {
+  display: flex;
+  flex-direction: column;
   gap: 3px;
 }
 
-.mobile-tab-icon {
+.drawer-user-name {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.drawer-user-company {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+}
+
+.drawer-close-btn {
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
-  color: currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.mobile-tab-label {
-  line-height: 1;
+.drawer-close-btn:hover {
+  background: rgba(255,255,255,0.22);
 }
 
-.mobile-tab.is-active {
+/* ── 抽屜導覽項目 ──────────────────────── */
+.drawer-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--c-text-body);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  border-left: 3px solid transparent;
+}
+
+.drawer-item-icon {
+  flex-shrink: 0;
+  color: var(--c-text-muted);
+  transition: color 0.12s;
+}
+
+.drawer-item:hover {
+  background: var(--c-stripe);
+}
+
+.drawer-item.is-active {
+  background: var(--c-primary-light, #EEF3FB);
   color: var(--c-primary);
   font-weight: 500;
+  border-left-color: var(--c-primary);
+}
+
+.drawer-item.is-active .drawer-item-icon {
+  color: var(--c-primary);
+}
+
+/* ── 抽屜底部 ──────────────────────────── */
+.drawer-footer {
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--c-divider);
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.drawer-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--c-text-body);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.drawer-logout-btn:hover {
+  background: var(--c-stripe);
+}
+
+/* ── 抽屜動畫 ──────────────────────────── */
+.drawer-fade-enter-active,
+.drawer-fade-leave-active {
+  transition: opacity 0.22s ease;
+}
+.drawer-fade-enter,
+.drawer-fade-leave-to {
+  opacity: 0;
+}
+
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.25s ease;
+}
+.drawer-slide-enter,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
 }
 
 /* ── RWD 820px (中等螢幕) ─────────────── */
@@ -388,37 +551,16 @@ export default {
   }
 
   .logout-button {
-    min-height: 36px;
-    padding: 0 12px;
-    font-size: 12px;
+    display: none;
+  }
+
+  .hamburger-btn {
+    display: flex;
   }
 
   .layout-main {
     padding: 16px;
-    padding-bottom: calc(56px + max(8px, env(safe-area-inset-bottom)) + 16px);
-  }
-
-  .mobile-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 200;
-    justify-content: stretch;
-    height: calc(56px + max(0px, env(safe-area-inset-bottom)));
-    padding: 0 0 max(0px, env(safe-area-inset-bottom));
-    border-top: 0.5px solid var(--c-border);
-    background: var(--c-surface);
-  }
-
-  .mobile-tab {
-    flex: 1;
-    width: auto;
-    height: 56px;
-    font-size: 10px;
-    letter-spacing: 0.03em;
-    padding: 0 4px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
 </style>

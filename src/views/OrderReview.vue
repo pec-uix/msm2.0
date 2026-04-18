@@ -1293,14 +1293,14 @@ export default {
   }
 
   .order-review-page {
-    padding-bottom: calc(80px + 56px + max(0px, env(safe-area-inset-bottom)));
+    padding-bottom: calc(80px + max(0px, env(safe-area-inset-bottom)));
   }
 
   .bottom-bar {
     padding: 10px 16px;
     flex-wrap: wrap;
     gap: 10px;
-    bottom: calc(56px + max(0px, env(safe-area-inset-bottom)));
+    bottom: max(0px, env(safe-area-inset-bottom));
   }
 
   .bottom-actions {
