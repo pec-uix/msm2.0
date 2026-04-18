@@ -146,7 +146,7 @@ export default {
   data () {
     return {
       keyword: '',
-      viewMode: 'grid',
+      viewMode: 'list',
       productList: products,
       salesCompanies,
       selectedPackageMap: {},
