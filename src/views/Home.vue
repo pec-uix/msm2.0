@@ -877,7 +877,7 @@ export default {
 .pending-left {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   flex-shrink: 0;
 }
 
