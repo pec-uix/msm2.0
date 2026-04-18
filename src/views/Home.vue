@@ -1178,11 +1178,9 @@ export default {
 @media (max-width: 480px) {
   .modal-overlay {
     padding: 16px;
-    align-items: flex-end;
   }
   .modal-card {
     max-width: 100%;
-    border-radius: var(--r-md) var(--r-md) var(--r-sm) var(--r-sm);
   }
 }
 </style>
