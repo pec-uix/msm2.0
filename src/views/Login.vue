@@ -61,16 +61,6 @@
             <span class="role-name">銷售人員</span>
             <span class="role-hint">審單・盤點・活動</span>
           </button>
-          <button type="button" class="role-card" @click="quickLogin('company_admin')">
-            <building2-icon :size="20" :stroke-width="1.5" class="role-icon" />
-            <span class="role-name">公司管理員</span>
-            <span class="role-hint">可查看訂單列表</span>
-          </button>
-          <button type="button" class="role-card" @click="quickLogin('group_admin')">
-            <globe-icon :size="20" :stroke-width="1.5" class="role-icon" />
-            <span class="role-name">群管理員</span>
-            <span class="role-hint">可查看跨公司訂單</span>
-          </button>
         </div>
       </div>
       <p class="demo-note">展示版本 — 所有資料均為模擬資料</p>
