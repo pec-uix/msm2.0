@@ -205,6 +205,10 @@ import { salesCompanies } from '../mock/salesCompanies'
 import { promotions } from '../mock/promotions'
 import ProductPromotionBadge from '../components/ProductPromotionBadge.vue'
 import PromotionNotice from '../components/PromotionNotice.vue'
+import banner1Desktop from '../assets/banner1-desktop.png'
+import banner1Mobile from '../assets/banner1-mobile.png'
+import banner2Desktop from '../assets/banner2-desktop.png'
+import banner2Mobile from '../assets/banner2-mobile.png'
 import {
   Search as SearchIcon,
   AlignJustify as AlignJustifyIcon,
@@ -233,14 +237,14 @@ export default {
         {
           id: 'catalog-banner-1',
           title: 'Drs F 洗髮系列新品上架',
-          imageDesktop: '/images/電腦banner1.png',
-          imageMobile: '/images/手機banner1.png'
+          imageDesktop: banner1Desktop,
+          imageMobile: banner1Mobile
         },
         {
           id: 'catalog-banner-2',
           title: '春季檔期促銷預告',
-          imageDesktop: '/images/電腦banner2.png',
-          imageMobile: '/images/手機banner2.png'
+          imageDesktop: banner2Desktop,
+          imageMobile: banner2Mobile
         }
       ],
       activeCatalogBannerIndex: 0,

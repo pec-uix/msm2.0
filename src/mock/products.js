@@ -1,3 +1,5 @@
+import drsFShampooImage from '../assets/drs-f-shampoo.webp'
+
 export const products = [
   {
     id: 'P001',
@@ -139,7 +141,7 @@ export const products = [
       { name: '打/12瓶', price: 1520 },
       { name: '箱/24瓶', price: 2980 }
     ],
-    image: '/images/溫潤舒活洗髮精.webp'
+    image: drsFShampooImage
   },
   {
     id: 'P012',
@@ -151,7 +153,7 @@ export const products = [
       { name: '打/12瓶', price: 1480 },
       { name: '箱/24瓶', price: 2900 }
     ],
-    image: '/images/溫潤舒活洗髮精.webp'
+    image: drsFShampooImage
   },
   {
     id: 'P013',
@@ -163,6 +165,6 @@ export const products = [
       { name: '打/12瓶', price: 1480 },
       { name: '箱/24瓶', price: 2900 }
     ],
-    image: '/images/溫潤舒活洗髮精.webp'
+    image: drsFShampooImage
   }
 ]
