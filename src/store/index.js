@@ -12,6 +12,7 @@ const APP_VERSION = '1.2'
 const CART_KEY = 'b2b_cartItems'
 const ORDERS_KEY = 'b2b_orders'
 const INVENTORY_KEY = 'b2b_inventory_records'
+const FAVORITES_KEY = 'b2b_favorite_product_ids'
 
 // ── 簡易 debounce ────────────────────────────────────────────
 function debounce (fn, delay) {
@@ -33,6 +34,40 @@ function isValidOrders (data) {
     data.length > 0 &&
     data.every(o => typeof o.orderId === 'string' && typeof o.status === 'string')
   )
+}
+
+function isValidFavoriteProductIds (data) {
+  return Array.isArray(data) && data.every(id => typeof id === 'string' && id.length > 0)
+}
+
+function normalizeOrder (order) {
+  return {
+    ...order,
+    source: order.source || 'customer'
+  }
+}
+
+function mergeSeedOrders (persistedOrders = [], seedOrders = []) {
+  const persistedById = new Set(persistedOrders.map(order => order.orderId))
+  const merged = [...persistedOrders]
+  seedOrders.forEach(order => {
+    if (!persistedById.has(order.orderId)) {
+      merged.push(order)
+    }
+  })
+  return merged
+}
+
+function normalizeInventoryRecord (record) {
+  return {
+    ...record,
+    checkBlocks: Array.isArray(record.checkBlocks)
+      ? record.checkBlocks.map(block => ({
+          ...block,
+          bestBeforeDate: block.bestBeforeDate || ''
+        }))
+      : []
+  }
 }
 
 // ── 讀取：版本校驗 + 結構校驗 + Error Boundary ───────────────
@@ -86,21 +121,47 @@ function createDebouncedSave (key, delay = 500) {
 const debouncedSaveCart = createDebouncedSave(CART_KEY)
 const debouncedSaveOrders = createDebouncedSave(ORDERS_KEY)
 const debouncedSaveInventory = createDebouncedSave(INVENTORY_KEY)
+const debouncedSaveFavorites = createDebouncedSave(FAVORITES_KEY)
 
 // ── 初始化：持久化資料優先，校驗失敗則使用 mock 原始資料 ─────
 const persistedCart = loadPersisted(CART_KEY, isValidCart)
 const persistedOrders = loadPersisted(ORDERS_KEY, isValidOrders)
 const persistedInventory = loadPersisted(INVENTORY_KEY, d => Array.isArray(d))
-const initialOrdersState = persistedOrders || initialOrders.map(o => ({ ...o }))
-const initialInventoryState = persistedInventory || initialInventoryRecords.map(r => ({ ...r }))
+const persistedFavorites = loadPersisted(FAVORITES_KEY, isValidFavoriteProductIds)
+const defaultSalesCompanyId = salesCompanies[0] ? salesCompanies[0].id : ''
+
+function normalizeCartItem (item) {
+  return {
+    ...item,
+    companyId: item.companyId || defaultSalesCompanyId
+  }
+}
+
+function findCartItemIndex (cartItems, payload) {
+  const companyId = payload.companyId || defaultSalesCompanyId
+  return cartItems.findIndex(
+    item =>
+      item.productId === payload.productId &&
+      item.packageName === payload.packageName &&
+      item.companyId === companyId
+  )
+}
+
+const initialCartState = (persistedCart || []).map(normalizeCartItem)
+const initialOrdersState = mergeSeedOrders(
+  (persistedOrders || []).map(normalizeOrder),
+  initialOrders.map(normalizeOrder)
+)
+const initialInventoryState = (persistedInventory || initialInventoryRecords).map(normalizeInventoryRecord)
 
 export default new Vuex.Store({
   state: {
     currentUser: getCurrentUser(),
-    cartItems: persistedCart || [],
+    cartItems: initialCartState,
     orders: initialOrdersState,
     selectedSalesCompany: salesCompanies[0],
     inventoryRecords: initialInventoryState,
+    favoriteProductIds: persistedFavorites || [],
     snackbar: {
       message: '',
       type: 'success'
@@ -114,13 +175,17 @@ export default new Vuex.Store({
       state.selectedSalesCompany = company
     },
     ADD_TO_CART (state, item) {
+      const cartItem = normalizeCartItem(item)
       const existingItem = state.cartItems.find(
-        cartItem => cartItem.productId === item.productId && cartItem.packageName === item.packageName
+        existingItem =>
+          existingItem.productId === cartItem.productId &&
+          existingItem.packageName === cartItem.packageName &&
+          existingItem.companyId === cartItem.companyId
       )
       if (existingItem) {
-        existingItem.quantity += item.quantity
+        existingItem.quantity += cartItem.quantity
       } else {
-        state.cartItems.push(item)
+        state.cartItems.push(cartItem)
       }
       debouncedSaveCart(state.cartItems)
     },
@@ -136,31 +201,33 @@ export default new Vuex.Store({
         type: 'success'
       }
     },
-    UPDATE_CART_QTY (state, { productId, packageName, delta }) {
-      const item = state.cartItems.find(
-        i => i.productId === productId && i.packageName === packageName
-      )
+    UPDATE_CART_QTY (state, { productId, packageName, delta, companyId }) {
+      const index = findCartItemIndex(state.cartItems, { productId, packageName, companyId })
+      const item = index !== -1 ? state.cartItems[index] : null
       if (item) {
         item.quantity = Math.max(1, item.quantity + delta)
         debouncedSaveCart(state.cartItems)
       }
     },
-    REMOVE_FROM_CART (state, { productId, packageName }) {
-      const index = state.cartItems.findIndex(
-        i => i.productId === productId && i.packageName === packageName
-      )
+    REMOVE_FROM_CART (state, { productId, packageName, companyId }) {
+      const index = findCartItemIndex(state.cartItems, { productId, packageName, companyId })
       if (index !== -1) {
         state.cartItems.splice(index, 1)
         debouncedSaveCart(state.cartItems)
       }
     },
-    UPDATE_CART_PACKAGE (state, { productId, oldPackageName, newPackageName, newUnitPrice }) {
-      const itemIndex = state.cartItems.findIndex(
-        i => i.productId === productId && i.packageName === oldPackageName
-      )
+    UPDATE_CART_PACKAGE (state, { productId, oldPackageName, newPackageName, newUnitPrice, companyId }) {
+      const itemIndex = findCartItemIndex(state.cartItems, {
+        productId,
+        packageName: oldPackageName,
+        companyId
+      })
       if (itemIndex === -1) return
       const collidingIndex = state.cartItems.findIndex(
-        i => i.productId === productId && i.packageName === newPackageName
+        i =>
+          i.productId === productId &&
+          i.packageName === newPackageName &&
+          i.companyId === (companyId || defaultSalesCompanyId)
       )
       if (collidingIndex !== -1 && collidingIndex !== itemIndex) {
         state.cartItems[collidingIndex].quantity += state.cartItems[itemIndex].quantity
@@ -192,11 +259,48 @@ export default new Vuex.Store({
       state.inventoryRecords.unshift(record)
       debouncedSaveInventory(state.inventoryRecords)
     },
+    TOGGLE_FAVORITE_PRODUCT (state, productId) {
+      const index = state.favoriteProductIds.indexOf(productId)
+      if (index === -1) {
+        state.favoriteProductIds.unshift(productId)
+      } else {
+        state.favoriteProductIds.splice(index, 1)
+      }
+      debouncedSaveFavorites(state.favoriteProductIds)
+    },
+    REMOVE_FAVORITE_PRODUCT (state, productId) {
+      const index = state.favoriteProductIds.indexOf(productId)
+      if (index !== -1) {
+        state.favoriteProductIds.splice(index, 1)
+        debouncedSaveFavorites(state.favoriteProductIds)
+      }
+    },
+    CLEAR_FAVORITES (state) {
+      state.favoriteProductIds = []
+      debouncedSaveFavorites(state.favoriteProductIds)
+    },
     RESTORE_FROM_STORAGE (state) {
       const cart = loadPersisted(CART_KEY, isValidCart)
       const orders = loadPersisted(ORDERS_KEY, isValidOrders)
-      if (cart) state.cartItems = cart
+      const favorites = loadPersisted(FAVORITES_KEY, isValidFavoriteProductIds)
+      if (cart) state.cartItems = cart.map(normalizeCartItem)
       if (orders) state.orders = orders
+      if (favorites) state.favoriteProductIds = favorites
+    }
+  },
+  getters: {
+    cartQuantityByCompanyId: state => companyId => {
+      return state.cartItems
+        .filter(item => item.companyId === companyId)
+        .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)
+    },
+    cartLineCountByCompanyId: state => companyId => {
+      const seen = new Set()
+      state.cartItems.forEach(item => {
+        if (item.companyId !== companyId) return
+        seen.add(`${item.productId}__${item.packageName}`)
+      })
+      return seen.size
     }
   },
   actions: {
@@ -240,6 +344,15 @@ export default new Vuex.Store({
     },
     addInventoryRecord ({ commit }, record) {
       commit('ADD_INVENTORY_RECORD', record)
+    },
+    toggleFavoriteProduct ({ commit }, productId) {
+      commit('TOGGLE_FAVORITE_PRODUCT', productId)
+    },
+    removeFavoriteProduct ({ commit }, productId) {
+      commit('REMOVE_FAVORITE_PRODUCT', productId)
+    },
+    clearFavorites ({ commit }) {
+      commit('CLEAR_FAVORITES')
     }
   }
 })

@@ -26,6 +26,10 @@
             <span class="info-label">盤點日期</span>
             <span class="info-value">{{ record.checkDate }}</span>
           </div>
+          <div v-if="recordBestBeforeDates.length" class="info-item">
+            <span class="info-label">有效日期（最差日期）</span>
+            <span class="info-value">{{ recordBestBeforeDates.join(' / ') }}</span>
+          </div>
           <div class="info-item">
             <span class="info-label">盤點人員</span>
             <span class="info-value">{{ record.checker }}</span>
@@ -39,14 +43,19 @@
 
       <!-- 產品盤點區塊 -->
       <div class="blocks-list">
-        <div
-          v-for="(block, bIdx) in record.checkBlocks"
-          :key="block._id || bIdx"
-          class="check-block"
-        >
+          <div
+            v-for="(block, bIdx) in record.checkBlocks"
+            :key="block._id || bIdx"
+            class="check-block"
+          >
           <div class="block-header">
             <span class="block-product">{{ productName(block.productId) }}</span>
             <span class="block-package">{{ block.package }}</span>
+          </div>
+
+          <div v-if="block.bestBeforeDate" class="block-best-before">
+            <span class="block-best-before-label">有效日期（最差日期）</span>
+            <span class="block-best-before-value">{{ block.bestBeforeDate }}</span>
           </div>
 
           <div class="location-grid">
@@ -134,6 +143,12 @@ export default {
   computed: {
     record () {
       return this.$store.state.inventoryRecords.find(r => r.id === this.recordId) || null
+    },
+    recordBestBeforeDates () {
+      if (!this.record || !Array.isArray(this.record.checkBlocks)) return []
+      return this.record.checkBlocks
+        .map(block => block.bestBeforeDate)
+        .filter(Boolean)
     }
   },
   methods: {
@@ -255,6 +270,24 @@ export default {
   background: var(--c-stripe);
   border-radius: 4px;
   padding: 2px 8px;
+}
+
+.block-best-before {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.block-best-before-label {
+  font-size: 12px;
+  color: var(--c-text-faint);
+}
+
+.block-best-before-value {
+  font-size: 13px;
+  color: var(--c-text-title);
+  font-weight: 500;
 }
 
 /* ── 位置 Grid ────────────────────── */

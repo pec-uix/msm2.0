@@ -29,9 +29,9 @@ export default {
     },
     label () {
       const labels = {
-        pending: '待審核',
+        pending: '業務確認中',
         shipped: '已出貨',
-        transferred: '已拋轉',
+        transferred: '訂單處理中',
         error: '拋轉失敗'
       }
       return labels[this.normalizedStatus] || this.normalizedStatus
@@ -66,7 +66,7 @@ export default {
 }
 
 
-/* 待審核 */
+/* 業務確認中 */
 .status--pending {
   background: var(--badge-pending-bg);
   color: var(--badge-pending-color);
@@ -82,7 +82,7 @@ export default {
 }
 .status--shipped .status-dot { background: var(--badge-shipped-dot); }
 
-/* 已拋轉 */
+/* 訂單處理中 */
 .status--transferred {
   background: var(--badge-transferred-bg);
   color: var(--badge-transferred-color);

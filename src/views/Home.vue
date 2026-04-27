@@ -26,44 +26,90 @@
         </router-link>
       </section>
 
-      <!-- 2 欄主體：公告 + 最近訂單 -->
-      <div class="dashboard-grid">
+      <!-- 公告 / 促銷雙欄 -->
+      <div class="dashboard-grid customer-board-grid">
 
         <!-- 公告區塊 -->
-        <section class="dashboard-card">
-          <h3 class="card-title">最新公告</h3>
+        <section class="dashboard-card compact-card">
+          <div class="card-title-row">
+            <span class="card-title-dot"></span>
+            <h3 class="card-title">公告欄</h3>
+            <span class="card-eyebrow">NOTICE</span>
+          </div>
           <ul class="notice-list">
-            <li v-for="notice in notices" :key="notice.id" class="notice-item notice-clickable" @click="openNotice(notice)">
+            <li
+              v-for="notice in announcementItems"
+              :key="notice.id"
+              class="notice-item notice-clickable"
+              @click="openNotice(notice)"
+            >
               <span class="notice-date">{{ notice.date }}</span>
               <span class="notice-title">{{ notice.title }}</span>
             </li>
           </ul>
         </section>
 
-        <!-- 最近訂單區塊 -->
-        <section class="dashboard-card">
-          <h3 class="card-title">最近訂單</h3>
-          <ul class="order-list">
-            <li v-for="order in recentOrders" :key="order.orderId" class="order-item">
-              <div class="order-left">
-                <span class="order-id">{{ order.orderId }}</span>
-                <status-badge :status="order.status" :viewer-role="currentUser.role" />
+        <!-- 促銷商品區塊 -->
+        <section class="dashboard-card compact-card promo-card">
+          <div class="card-title-row">
+            <span class="card-title-dot"></span>
+            <h3 class="card-title">促銷商品</h3>
+            <gift-icon :size="13" :stroke-width="1.5" class="card-title-icon" />
+            <span class="promo-badge promo-badge--home">PROMO</span>
+          </div>
+          <ul class="promo-list">
+            <li v-for="promo in promotionPreviewItems" :key="promo.id" class="promo-item">
+              <div class="promo-item-head">
+                <span class="promo-name">{{ promo.name }}</span>
+                <button
+                  type="button"
+                  class="promo-view-btn"
+                  @click="openPromoModal(promo)"
+                >
+                  <span>查看詳情</span>
+                  <span class="promo-view-arrow">›</span>
+                </button>
               </div>
-              <span class="order-amount">$ {{ order.amount.toLocaleString() }}</span>
             </li>
           </ul>
-          <div class="card-footer">
-            <router-link class="view-all-link" to="/orders">查看全部訂單</router-link>
-          </div>
+          <button
+            v-if="promotionOverflowCount > 0"
+            type="button"
+            class="promo-all-btn"
+            @click="openPromoListModal"
+          >
+            查看全部 {{ promotionItems.length }} 個活動
+          </button>
         </section>
 
       </div>
+
+      <!-- 最近訂單 -->
+      <section class="dashboard-card compact-card recent-orders-card">
+        <div class="card-title-row">
+          <span class="card-title-dot"></span>
+          <h3 class="card-title">最近訂單</h3>
+          <span class="card-eyebrow">LATEST</span>
+        </div>
+        <ul class="order-list">
+          <li v-for="order in recentOrders" :key="order.orderId" class="order-item">
+            <div class="order-left">
+              <span class="order-id">{{ order.orderId }}</span>
+              <status-badge :status="order.status" :viewer-role="currentUser.role" />
+            </div>
+            <span class="order-amount">$ {{ order.amount.toLocaleString() }}</span>
+          </li>
+        </ul>
+        <div class="card-footer">
+          <router-link class="view-all-link" to="/orders">查看全部訂單</router-link>
+        </div>
+      </section>
     </template>
 
     <!-- Sales 儀表板 -->
     <template v-else-if="currentUser.role === 'sales'">
 
-      <!-- 上排：待審核 + 今日班表 -->
+      <!-- 上排：待審核 + 公佈欄 -->
       <div class="dashboard-grid sales-top-grid">
 
         <!-- 待審核訂單卡片 -->
@@ -78,31 +124,96 @@
           </div>
         </section>
 
-        <!-- 今日班表卡片 -->
-        <section class="dashboard-card">
+        <!-- 業務公佈欄 -->
+        <section class="dashboard-card compact-card bulletin-card">
           <div class="card-title-row">
             <span class="card-title-dot"></span>
-            <h3 class="card-title card-title--serif">今日班表・{{ todayLabel }}</h3>
-            <span class="card-eyebrow">SCHEDULE</span>
+            <h3 class="card-title">公佈欄</h3>
+            <bell-icon :size="13" :stroke-width="1.5" class="card-title-icon" />
+            <span class="card-eyebrow">BULLETIN</span>
           </div>
-          <ul class="schedule-list">
-            <li v-for="(appt, idx) in schedule" :key="idx" class="schedule-item">
-              <div class="timeline-track">
-                <span class="sched-dot"></span>
-                <span v-if="idx < schedule.length - 1" class="sched-line"></span>
-              </div>
-              <div class="appt-info">
-                <span class="appt-customer">{{ appt.customer }}</span>
-                <span class="appt-address">{{ appt.address }}</span>
-              </div>
+          <ul class="bulletin-list">
+            <li
+              v-for="notice in salesBulletins"
+              :key="notice.id"
+              class="bulletin-item notice-clickable"
+              @click="openNotice(notice)"
+            >
+              <span class="bulletin-date">{{ notice.date }}</span>
+              <span class="bulletin-title">{{ notice.title }}</span>
             </li>
           </ul>
-          <div class="card-footer">
-            <button class="view-all-link view-all-btn" @click="scheduleModal = true">查看更多班表</button>
-          </div>
         </section>
 
       </div>
+
+      <!-- 今日班表卡片 -->
+      <section class="dashboard-card compact-card schedule-card">
+        <div class="card-title-row">
+          <span class="card-title-dot"></span>
+          <h3 class="card-title card-title--serif">今日班表</h3>
+          <span class="card-eyebrow">SCHEDULE</span>
+        </div>
+        <ul class="schedule-list">
+          <li
+            v-for="(appt, idx) in schedule"
+            :key="idx"
+            :class="['schedule-item', 'schedule-item--clickable', { selected: selectedScheduleIndex === idx }]"
+            tabindex="0"
+            @mouseenter="setSelectedScheduleIndex(idx)"
+            @mouseleave="clearSelectedScheduleIndex(idx)"
+            @focus="setSelectedScheduleIndex(idx)"
+            @blur="clearSelectedScheduleIndex(idx)"
+            @click="goToOrderWork(appt.customerId)"
+          >
+            <div class="timeline-track">
+              <span class="sched-dot"></span>
+              <span v-if="idx < schedule.length - 1" class="sched-line"></span>
+            </div>
+            <customer-list-item
+              class="appt-info"
+              :name="appt.customer || appt.name"
+              :address="appt.address"
+              :distance="appt.distance"
+              :has-order="appt.hasOrder"
+              :selected="selectedScheduleIndex === idx"
+            />
+            <span class="appt-arrow">›</span>
+          </li>
+        </ul>
+        <div class="card-footer">
+          <button class="view-all-link view-all-btn" @click="scheduleModal = true">查看更多班表</button>
+        </div>
+      </section>
+
+      <!-- 當日業績統計 -->
+      <section class="dashboard-card compact-card sales-summary-card">
+        <div class="card-title-row">
+          <span class="card-title-dot"></span>
+          <h3 class="card-title">當日業績統計</h3>
+          <span class="card-eyebrow">TODAY {{ referenceDateLabel }}</span>
+        </div>
+        <div class="sales-summary-grid">
+          <div class="summary-metric">
+            <span class="summary-label">當日成交客戶數</span>
+            <span class="summary-value">{{ dailyUniqueCustomers }}</span>
+          </div>
+          <div class="summary-metric">
+            <span class="summary-label">當日業績</span>
+            <span class="summary-value">$ {{ dailyTotalAmount.toLocaleString() }}</span>
+          </div>
+        </div>
+        <div class="sales-breakdown">
+          <div class="breakdown-row">
+            <span class="breakdown-label">業務下單</span>
+            <span class="breakdown-value">$ {{ dailySalesAmount.toLocaleString() }}</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-label">客戶下單</span>
+            <span class="breakdown-value">$ {{ dailyCustomerAmount.toLocaleString() }}</span>
+          </div>
+        </div>
+      </section>
 
       <!-- 個人業績圖（by 業務員） -->
       <div class="sales-chart-grid">
@@ -170,6 +281,16 @@
         </router-link>
       </section>
 
+      <!-- 背景色設定 -->
+      <section class="dashboard-card compact-card bg-theme-card">
+        <div class="card-title-row">
+          <span class="card-title-dot"></span>
+          <h3 class="card-title">背景色設定</h3>
+          <span class="card-eyebrow">BACKGROUND</span>
+        </div>
+        <ThemeSwitcher mode="panel" />
+      </section>
+
     </template>
 
     <!-- 其他角色：通用歡迎頁 -->
@@ -214,15 +335,30 @@
           </div>
           <h2 class="modal-title">完整班表</h2>
           <ul class="schedule-list schedule-modal-list">
-            <li v-for="(appt, idx) in allSchedule" :key="idx" class="schedule-item">
-              <div class="timeline-track">
-                <span class="sched-dot"></span>
-                <span v-if="idx < allSchedule.length - 1" class="sched-line"></span>
-              </div>
-              <div class="appt-info">
-                <span class="appt-customer">{{ appt.customer }}</span>
-                <span class="appt-address">{{ appt.address }}</span>
-              </div>
+            <li
+              v-for="(appt, idx) in allSchedule"
+              :key="idx"
+              :class="['schedule-item', 'schedule-item--clickable', { selected: selectedScheduleIndex === idx }]"
+              tabindex="0"
+              @mouseenter="setSelectedScheduleIndex(idx)"
+              @mouseleave="clearSelectedScheduleIndex(idx)"
+              @focus="setSelectedScheduleIndex(idx)"
+              @blur="clearSelectedScheduleIndex(idx)"
+              @click="goToOrderWork(appt.customerId)"
+            >
+            <div class="timeline-track">
+              <span class="sched-dot"></span>
+              <span v-if="idx < allSchedule.length - 1" class="sched-line"></span>
+            </div>
+            <customer-list-item
+              class="appt-info"
+              :name="appt.customer || appt.name"
+              :address="appt.address"
+              :distance="appt.distance"
+              :has-order="appt.hasOrder"
+              :selected="selectedScheduleIndex === idx"
+            />
+              <span class="appt-arrow">›</span>
             </li>
           </ul>
           <div class="modal-footer">
@@ -254,39 +390,156 @@
       </div>
     </transition>
 
+    <!-- 促銷彈窗 -->
+    <transition name="modal-fade">
+      <div v-if="promoModal.visible" class="modal-overlay" @click.self="closePromoModal">
+        <div class="modal-card promo-modal-card" role="dialog" aria-modal="true">
+          <div class="modal-header">
+            <div class="modal-meta">
+              <span class="modal-date">{{ promoModal.mode === 'detail' && promoModalItem ? promoModalItem.dateText : 'PROMO' }}</span>
+              <span class="modal-category promo-modal-category">
+                {{ promoModal.mode === 'detail' ? 'PROMOTION' : 'ALL PROMO' }}
+              </span>
+            </div>
+            <button class="modal-close-btn" @click="closePromoModal" aria-label="關閉">
+              <x-icon :size="16" :stroke-width="1.5" />
+            </button>
+          </div>
+
+          <template v-if="promoModal.mode === 'detail'">
+            <h2 class="modal-title">{{ promoModalItem ? promoModalItem.name : '促銷活動' }}</h2>
+            <p class="promo-modal-period" v-if="promoModalItem">
+              促銷期間：{{ promoModalItem.startDate || '—' }} ～ {{ promoModalItem.endDate || '—' }}
+            </p>
+            <p class="promo-modal-desc" v-if="promoModalItem">{{ promoModalItem.description }}</p>
+            <div v-if="promoModalItem" class="promo-modal-condition">
+              <span class="promo-modal-label">條件</span>
+              <span class="promo-modal-text">{{ promoConditionText(promoModalItem) }}</span>
+            </div>
+            <div v-if="promoModalItem && promoModalItem.gifts.length" class="promo-modal-gifts">
+              <span class="promo-modal-label">贈品</span>
+              <ul>
+                <li v-for="gift in promoModalItem.gifts" :key="gift.name">
+                  {{ gift.name }} × {{ gift.quantity }}
+                </li>
+              </ul>
+            </div>
+            <div class="modal-footer">
+              <button class="modal-confirm-btn" @click="closePromoModal">關閉</button>
+            </div>
+          </template>
+
+          <template v-else>
+            <h2 class="modal-title">全部促銷活動</h2>
+            <ul class="promo-modal-list">
+              <li v-for="promo in promotionItems" :key="promo.id" class="promo-modal-list-item">
+                <div class="promo-modal-list-main">
+                  <span class="promo-modal-list-name">{{ promo.name }}</span>
+                  <span class="promo-modal-list-date">{{ promo.dateText }}</span>
+                </div>
+                <button type="button" class="promo-modal-list-btn" @click="openPromoModal(promo)">
+                  查看詳情
+                </button>
+              </li>
+            </ul>
+            <div class="modal-footer">
+              <button class="modal-confirm-btn" @click="closePromoModal">關閉</button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
 <script>
 import { getCurrentUser } from '../services/auth'
 import { announcements } from '../mock/announcements'
-import { customers } from '../mock/customers'
-import { todaySchedule } from '../mock/schedule'
+import { promotions } from '../mock/promotions'
+import { buildTodayStoreList } from '../mock/schedule'
 import {
   Package as PackageIcon,
   ShoppingCart as ShoppingCartIcon,
   FileText as FileTextIcon,
   ClipboardCheck as ClipboardCheckIcon,
   Gift as GiftIcon,
+  Bell as BellIcon,
   X as XIcon,
 } from 'lucide-vue'
+import CustomerListItem from '../components/CustomerListItem.vue'
+import ThemeSwitcher from '../components/ThemeSwitcher.vue'
 
 export default {
   name: 'HomePage',
-  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, XIcon },
+  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, BellIcon, XIcon, CustomerListItem, ThemeSwitcher },
   data () {
     return {
       notices: announcements,
+      promotions,
       modal: { visible: false, notice: null },
-      scheduleModal: false
+      promoModal: { visible: false, mode: 'list', promoId: null },
+      scheduleModal: false,
+      scheduleCurrentLocation: null,
+      selectedScheduleIndex: null
     }
   },
   computed: {
+    announcementItems () {
+      return this.notices.filter(notice => notice.category !== '促銷活動')
+    },
+    promotionItems () {
+      const today = new Date()
+      const toDate = value => {
+        if (!value) return null
+        const date = new Date(value)
+        return Number.isNaN(date.getTime()) ? null : date
+      }
+      return this.promotions
+        .filter(promo => {
+          const start = toDate(promo.startDate)
+          const end = toDate(promo.endDate)
+          if (!start || !end) return true
+          return end >= today
+        })
+        .map(promo => {
+          const start = toDate(promo.startDate)
+          const end = toDate(promo.endDate)
+          const isCurrent = start && end ? start <= today && end >= today : true
+          return {
+            ...promo,
+            isCurrent,
+            statusLabel: isCurrent ? '目前' : '未來',
+            statusClass: isCurrent ? 'is-current' : 'is-future',
+            dateText: `${promo.startDate || '—'} ～ ${promo.endDate || '—'}`,
+            gifts: Array.isArray(promo.gifts) ? promo.gifts : []
+          }
+        })
+        .sort((a, b) => {
+          if (a.isCurrent !== b.isCurrent) return a.isCurrent ? -1 : 1
+          if (a.isCurrent) return (a.id || '').localeCompare(b.id || '', 'zh-TW')
+          return (a.startDate || '').localeCompare(b.startDate || '', 'zh-TW')
+        })
+    },
+    promotionPreviewItems () {
+      return this.promotionItems.slice(0, 3)
+    },
+    promotionOverflowCount () {
+      return Math.max(0, this.promotionItems.length - 3)
+    },
+    promoModalItem () {
+      return this.promotionItems.find(promo => promo.id === this.promoModal.promoId) || null
+    },
+    salesBulletins () {
+      return this.announcementItems.slice(0, 3)
+    },
+    todayOrderedCustomerIds () {
+      return new Set(this.dailyOrders.map(order => order.customerId).filter(Boolean))
+    },
     allSchedule () {
-      const customerById = Object.fromEntries(customers.map(c => [c.id, c]))
-      return todaySchedule.map(s => {
-        const c = customerById[s.customerId] || {}
-        return { time: s.time, customer: c.name || '', address: c.address || '' }
+      return buildTodayStoreList(this.scheduleCurrentLocation, {
+        orderCustomerIds: this.todayOrderedCustomerIds,
+        radiusKm: 30
       })
     },
     schedule () {
@@ -297,6 +550,39 @@ export default {
     },
     currentUser () {
       return getCurrentUser() || { role: '', company: '', name: '' }
+    },
+    referenceDate () {
+      const dates = this.ordersData
+        .map(order => order.date)
+        .filter(Boolean)
+        .sort()
+      return dates[dates.length - 1] || new Date().toISOString().slice(0, 10)
+    },
+    referenceDateLabel () {
+      const parts = this.referenceDate.split('-')
+      if (parts.length !== 3) return this.referenceDate
+      return `${parts[1]}/${parts[2]}`
+    },
+    dailyOrders () {
+      return this.ordersData.filter(order => order.date === this.referenceDate)
+    },
+    dailyCustomerOrders () {
+      return this.dailyOrders.filter(order => order.source === 'customer')
+    },
+    dailySalesOrders () {
+      return this.dailyOrders.filter(order => order.source === 'sales')
+    },
+    dailyCustomerAmount () {
+      return this.dailyCustomerOrders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0)
+    },
+    dailySalesAmount () {
+      return this.dailySalesOrders.reduce((sum, order) => sum + (Number(order.amount) || 0), 0)
+    },
+    dailyTotalAmount () {
+      return this.dailyCustomerAmount + this.dailySalesAmount
+    },
+    dailyUniqueCustomers () {
+      return new Set(this.dailyOrders.map(order => order.customerId)).size
     },
     recentOrders () {
       return this.ordersData.slice(0, 3)
@@ -357,6 +643,7 @@ export default {
   mounted () {
     document.addEventListener('keydown', this.handleKeydown)
     document.addEventListener('click', this.handleOutsideClick)
+    this.loadCurrentLocationForSchedule()
     if (this.currentUser.role === 'customer') {
       const dismissed = JSON.parse(sessionStorage.getItem('dismissedNotices') || '[]')
       const urgent = this.notices.find(n => n.isUrgent && !dismissed.includes(n.id))
@@ -442,8 +729,55 @@ export default {
       </svg>`
       return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
     },
+    loadCurrentLocationForSchedule () {
+      if (!navigator.geolocation) return
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          this.scheduleCurrentLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          }
+        },
+        () => {
+          this.scheduleCurrentLocation = null
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      )
+    },
     openNotice (notice) {
       this.modal = { visible: true, notice }
+    },
+    openPromoModal (promo) {
+      if (!promo) return
+      this.promoModal = { visible: true, mode: 'detail', promoId: promo.id }
+    },
+    openPromoListModal () {
+      this.promoModal = { visible: true, mode: 'list', promoId: null }
+    },
+    closePromoModal () {
+      this.promoModal = { visible: false, mode: 'list', promoId: null }
+    },
+    setSelectedScheduleIndex (idx) {
+      this.selectedScheduleIndex = idx
+    },
+    clearSelectedScheduleIndex (idx) {
+      if (this.selectedScheduleIndex === idx) {
+        this.selectedScheduleIndex = null
+      }
+    },
+    promoConditionText (promo) {
+      if (!promo) return '—'
+      if (promo.minTotalQty !== undefined) {
+        return `單次購買任意商品累計滿 ${promo.minTotalQty} 箱`
+      }
+      if (promo.targetProductId && promo.minQty !== undefined) {
+        return `購買指定商品累計滿 ${promo.minQty} 箱`
+      }
+      return promo.description || '—'
+    },
+    goToOrderWork (customerId) {
+      if (!customerId) return
+      this.$router.push({ path: '/orders/new/review', query: { customerId } })
     },
     closeModal () {
       if (this.modal.notice && this.modal.notice.isUrgent) {
@@ -473,6 +807,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  background: var(--color-background-page);
 }
 
 /* ── 快速入口 ─────────────────────────────── */
@@ -516,9 +851,13 @@ export default {
   grid-auto-rows: 1fr;
 }
 .sales-top-grid {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-auto-rows: auto;
   align-items: stretch;
+}
+.customer-board-grid {
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: auto;
 }
 /* ── 卡片通用 ─────────────────────────────── */
 .dashboard-card {
@@ -526,10 +865,14 @@ export default {
   border-top: 2px solid var(--c-primary);
   border-radius: 8px;
   background: var(--c-surface);
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+}
+
+.compact-card {
+  padding: 14px;
 }
 
 .card-title {
@@ -559,6 +902,11 @@ export default {
   color: #94A3B8;
   letter-spacing: 0.12em;
   margin-left: auto;
+}
+
+.card-title-icon {
+  color: var(--c-primary);
+  flex-shrink: 0;
 }
 
 .card-title--serif {
@@ -600,6 +948,182 @@ export default {
   font-weight: 400;
   color: #334155;
   line-height: 1.5;
+}
+
+/* ── 促銷商品 ─────────────────────────────── */
+.promo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.promo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--c-divider);
+}
+
+.promo-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.promo-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.promo-name {
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1E293B;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.promo-view-btn,
+.promo-all-btn,
+.promo-modal-list-btn {
+  border: none;
+  background: transparent;
+  color: var(--c-primary);
+  cursor: pointer;
+  font: inherit;
+}
+
+.promo-badge--home {
+  margin-left: auto;
+}
+
+.promo-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.promo-view-arrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.promo-all-btn {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 0;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.promo-modal-category {
+  background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);
+}
+
+.promo-modal-card {
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.promo-modal-period,
+.promo-modal-desc,
+.promo-modal-condition,
+.promo-modal-gifts {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.promo-modal-period {
+  margin: 0;
+  color: #64748B;
+}
+
+.promo-modal-desc {
+  margin: 0;
+}
+
+.promo-modal-condition,
+.promo-modal-gifts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.promo-modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.promo-modal-text {
+  color: #334155;
+}
+
+.promo-modal-gifts ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.promo-modal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  min-height: 0;
+  max-height: 48vh;
+}
+
+.promo-modal-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-surface);
+}
+
+.promo-modal-list-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.promo-modal-list-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.promo-modal-list-date {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.promo-modal-list-btn {
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #c2410c;
 }
 
 /* ── 最近訂單 ─────────────────────────────── */
@@ -671,6 +1195,10 @@ export default {
   font-size: inherit;
   font-weight: inherit;
   color: inherit;
+}
+
+.recent-orders-card {
+  gap: 12px;
 }
 
 .schedule-modal-card {
@@ -747,11 +1275,80 @@ export default {
   gap: 10px;
 }
 
+.bg-theme-card {
+  padding-bottom: 18px;
+}
+
+.bg-theme-card :deep(.theme-switcher--panel) {
+  margin-top: 4px;
+}
+
 /* ── Sales 業績圖區 ─────────────────────── */
 .sales-chart-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.sales-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sales-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.summary-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  background: var(--c-stripe);
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.summary-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.sales-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 0.5px solid var(--c-divider);
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.breakdown-label {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.breakdown-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
 }
 
 .chart-card {
@@ -818,7 +1415,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: #ffffff;
   border: 0.5px solid var(--c-border);
   border-radius: 8px;
@@ -832,8 +1429,8 @@ export default {
 }
 
 .entry-icon-box {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -939,6 +1536,47 @@ export default {
   padding: 8px 0;
 }
 
+.schedule-item--clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding-left: 6px;
+  padding-right: 16px;
+  margin-left: -6px;
+  margin-right: -16px;
+}
+
+.schedule-item--clickable:hover {
+  background: var(--c-hover);
+}
+
+.schedule-item--clickable:focus-visible,
+.schedule-item--clickable.selected {
+  background: var(--c-primary);
+}
+
+.schedule-item.selected :deep(.item-name) {
+  color: #ffffff !important;
+}
+
+.schedule-item.selected :deep(.item-address) {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.schedule-item.selected :deep(.item-badge) {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.schedule-item.selected :deep(.item-distance),
+.schedule-item.selected :deep(.item-distance-icon) {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.schedule-item--clickable:focus-visible .appt-arrow,
+.schedule-item--clickable.selected .appt-arrow {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 .schedule-item:last-child {
   padding-bottom: 0;
 }
@@ -969,18 +1607,28 @@ export default {
   margin-top: 3px;
 }
 
-.appt-time {
-  font-size: 13px;
-  font-weight: 500;
+.appt-gps {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--c-primary);
-  flex-shrink: 0;
-  width: 42px;
+  letter-spacing: 0.04em;
 }
 
 .appt-info {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1;
+}
+
+.appt-customer-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .appt-customer {
@@ -989,17 +1637,76 @@ export default {
   color: #334155;
 }
 
+.appt-order-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
 .appt-address {
   font-size: 12px;
   font-weight: 400;
   color: #8b95a8;
 }
 
+.appt-arrow {
+  color: #c0c8d4;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ── 公佈欄 ─────────────────────────────── */
+.bulletin-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bulletin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--c-divider);
+}
+
+.bulletin-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bulletin-date {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8b95a8;
+}
+
+.bulletin-title {
+  font-size: 13px;
+  font-weight: 400;
+  color: #334155;
+  line-height: 1.5;
+}
+
 /* ── 公告點擊 ─────────────────────────────── */
 .notice-clickable {
   cursor: pointer;
 }
-.notice-clickable:hover .notice-title {
+.notice-clickable:hover .notice-title,
+.notice-clickable:hover .bulletin-title {
   color: var(--c-primary);
 }
 
@@ -1147,7 +1854,10 @@ export default {
   .quick-entry-section,
   .dashboard-grid,
   .overview-grid,
-  .sales-chart-grid {
+  .sales-chart-grid,
+  .customer-board-grid,
+  .sales-top-grid,
+  .sales-summary-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }

@@ -1,137 +1,165 @@
 <template>
   <div class="promotions-page">
-
-    <!-- ═══ 左側：活動列表 ═══════════════════════════ -->
-    <aside class="promo-list" :class="{ 'is-hidden-mobile': mobileShowDetail }">
-
-      <!-- 左側標題 -->
-      <div class="promo-list-header">
-        <span class="list-eyebrow">MARKET ACTIVITY</span>
-        <h2 class="list-title">市場活動</h2>
+    <aside class="company-panel" :class="{ 'is-hidden-mobile': mobileShowDetail }">
+      <div class="panel-header">
+        <span class="panel-eyebrow">MARKET ACTIVITY</span>
+        <h2 class="panel-title">市場活動</h2>
+        <p class="panel-desc">先選公司，再看公司底下的活動，最後查看該活動的項目。</p>
       </div>
 
-      <!-- 狀態篩選 Tab -->
-      <div class="filter-tabs">
+      <div class="panel-search">
+        <input
+          v-model.trim="companySearch"
+          type="text"
+          class="search-input"
+          placeholder="搜尋公司名稱或地址"
+        />
+      </div>
+
+      <div class="company-list">
         <button
-          v-for="tab in TABS"
-          :key="tab.value"
-          :class="['tab-btn', { 'tab-active': activeTab === tab.value }]"
-          @click="activeTab = tab.value"
-        >{{ tab.label }}</button>
-      </div>
-
-      <!-- 活動項目列表 -->
-      <div class="list-body">
-        <div
-          v-for="promo in filteredPromos"
-          :key="promo.id"
-          :class="['promo-item', { 'promo-item--selected': selectedId === promo.id }]"
-          @click="selectPromo(promo)"
+          v-for="company in filteredCompanies"
+          :key="company.customerId"
+          type="button"
+          :class="['company-card', { 'is-selected': selectedCompanyId === company.customerId }]"
+          @click="selectCompany(company.customerId)"
         >
-          <div class="promo-item-top">
-            <span class="promo-name">{{ promo.name }}</span>
-            <span :class="['status-badge', statusClass(promo.status)]">{{ statusLabel(promo.status) }}</span>
+          <div class="company-top">
+            <span class="company-name">{{ company.name }}</span>
+            <span class="company-count">{{ company.activityCount }} 活動</span>
           </div>
-          <div class="promo-period">{{ promo.startDate }} ～ {{ promo.endDate }}</div>
-          <div class="promo-store-count">
-            {{ promoProgressMap[promo.id].done }} / {{ promoProgressMap[promo.id].total }} 筆待辦
-            <span class="progress-pct">{{ promoProgressMap[promo.id].percent }}%</span>
+          <div class="company-address">{{ company.address }}</div>
+          <div class="company-progress-row">
+            <span class="company-progress-text">{{ company.doneTodos }} / {{ company.totalTodos }} 項完成</span>
+            <span class="company-progress-pct">{{ company.progress }}%</span>
           </div>
-          <div class="promo-progress-track">
-            <div
-              class="promo-progress-fill"
-              :class="{ 'promo-progress-fill--done': promoProgressMap[promo.id].percent >= 100 }"
-              :style="{ width: promoProgressMap[promo.id].percent + '%' }"
-            ></div>
+          <div class="progress-track">
+            <div class="progress-fill" :style="{ width: company.progress + '%' }"></div>
           </div>
-        </div>
-        <div v-if="filteredPromos.length === 0" class="list-empty">無符合條件的活動</div>
+        </button>
+        <div v-if="filteredCompanies.length === 0" class="empty-state">無符合條件的公司</div>
       </div>
     </aside>
 
-    <!-- ═══ 右側：活動詳情 ═══════════════════════════════════════ -->
-    <section class="promo-detail" :class="{ 'is-visible-mobile': mobileShowDetail }">
-
-      <!-- 手機版返回按鈕 -->
+    <section class="detail-panel" :class="{ 'is-visible-mobile': mobileShowDetail }">
       <button v-if="mobileShowDetail" class="mobile-back-btn" @click="mobileShowDetail = false">
-        ← 返回活動列表
+        ← 返回公司列表
       </button>
 
-      <template v-if="selectedPromo">
-
-        <!-- 詳情標頭 -->
+      <template v-if="selectedCompany">
         <div class="detail-scroll">
-          <div class="detail-header-row">
-            <div class="detail-header-left">
-              <h2 class="detail-title">{{ selectedPromo.name }}</h2>
-              <div class="detail-period">{{ selectedPromo.startDate }} ～ {{ selectedPromo.endDate }}</div>
+          <div class="detail-head">
+            <div>
+              <h2 class="detail-title">{{ selectedCompany.name }}</h2>
+              <div class="detail-subtitle">{{ selectedCompany.address }}</div>
             </div>
-            <span :class="['status-badge', statusClass(selectedPromo.status)]">{{ statusLabel(selectedPromo.status) }}</span>
+            <span class="summary-chip">{{ selectedCompany.activityCount }} 個活動</span>
           </div>
-          <p class="detail-desc">{{ selectedPromo.description }}</p>
 
           <div class="section-divider"></div>
 
-          <!-- 店家標頭 + 搜尋 -->
-          <div class="stores-header">
-            <span class="section-label">適用店家</span>
-            <input
-              v-model="storeSearch"
-              type="text"
-              class="store-search"
-              placeholder="搜尋店家名稱…"
-            />
+          <div class="filter-tabs">
+            <button
+              v-for="tab in TABS"
+              :key="tab.value"
+              type="button"
+              :class="['tab-btn', { active: activeTab === tab.value }]"
+              @click="activeTab = tab.value"
+            >{{ tab.label }}</button>
           </div>
 
-          <!-- 店家列表 -->
-          <div class="store-list">
-            <div v-for="store in filteredStores" :key="store.customerId" class="store-card">
+          <div class="activity-list">
+            <button
+              v-for="activity in filteredCompanyActivities"
+              :key="activity.id"
+              type="button"
+              :class="['activity-card', { 'is-selected': selectedActivityId === activity.id }]"
+              @click="selectActivity(activity.id)"
+            >
+              <div class="activity-top">
+                <span class="activity-name">{{ activity.name }}</span>
+                <span :class="['status-badge', statusClass(activity.status)]">{{ statusLabel(activity.status) }}</span>
+              </div>
+              <div class="activity-period">{{ activity.startDate }} ～ {{ activity.endDate }}</div>
+              <div class="activity-progress-row">
+                <span>{{ activity.progress.done }} / {{ activity.progress.total }} 項目</span>
+                <span class="company-progress-pct">{{ activity.progress.percent }}%</span>
+              </div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  :class="{ done: activity.progress.percent >= 100 }"
+                  :style="{ width: activity.progress.percent + '%' }"
+                ></div>
+              </div>
+            </button>
+            <div v-if="filteredCompanyActivities.length === 0" class="empty-state">無符合條件的活動</div>
+          </div>
 
-              <!-- 店家列標頭（可點擊展開） -->
-              <div class="store-row" @click="toggleStore(store.customerId)">
-                <div class="store-left">
-                  <span class="store-name">{{ store.name }}</span>
-                  <span class="store-address">{{ store.address }}</span>
-                </div>
-                <div class="store-right">
-                  <div class="store-progress-wrap">
-                    <span class="store-progress">{{ doneTodosCount(store) }} / {{ store.todos.length }} 筆待辦</span>
-                    <div class="store-progress-track">
-                      <div
-                        class="store-progress-fill"
-                        :class="{ 'store-progress-fill--done': selectedStoreProgressMap[store.customerId] >= 100 }"
-                        :style="{ width: selectedStoreProgressMap[store.customerId] + '%' }"
-                      ></div>
-                    </div>
-                  </div>
-                  <span class="chevron-icon">{{ expandedStores.includes(store.customerId) ? '▲' : '▼' }}</span>
-                </div>
+          <template v-if="selectedActivity">
+            <div class="section-divider"></div>
+            <div class="detail-head">
+              <div>
+                <h2 class="detail-title">{{ selectedActivity.name }}</h2>
+                <div class="detail-subtitle">{{ selectedActivity.startDate }} ～ {{ selectedActivity.endDate }}</div>
+              </div>
+              <span :class="['status-badge', statusClass(selectedActivity.status)]">{{ statusLabel(selectedActivity.status) }}</span>
+            </div>
+            <p class="detail-desc">{{ selectedActivity.description }}</p>
+
+            <div class="store-head">
+              <div>
+                <div class="section-label">項目</div>
+                <div class="store-meta">{{ selectedActivityItemCount }} 項項目</div>
+              </div>
+              <input
+                v-model.trim="todoSearch"
+                type="text"
+                class="search-input search-input--small"
+                placeholder="搜尋項目"
+              />
+            </div>
+
+            <div class="store-card">
+              <div class="store-progress-row store-progress-row--single">
+                <span class="progress-summary">
+                  <span class="progress-summary-done">{{ selectedActivityProgressText }}</span>
+                  <span class="progress-summary-rest">{{ selectedActivityRemainingText }}</span>
+                </span>
+                <span class="company-progress-pct">{{ selectedActivityProgress }}%</span>
+              </div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  :class="{ done: selectedActivityProgress >= 100 }"
+                  :style="{ width: selectedActivityProgress + '%' }"
+                ></div>
               </div>
 
-              <!-- 待辦事項列表 -->
-              <div v-if="expandedStores.includes(store.customerId)" class="todo-list">
+              <div class="todo-list">
                 <div
-                  v-for="(todo, tIdx) in store.todos"
-                  :key="todo.id"
+                  v-for="item in filteredActivityItems"
+                  :key="item.id"
                   class="todo-item"
                 >
                   <input
-                    :id="'chk-' + todo.id"
-                    v-model="todo.completed"
+                    :id="'todo-' + item.id"
+                    v-model="item.todo.completed"
                     type="checkbox"
                     class="todo-check"
                   />
                   <div class="todo-body">
                     <label
-                      :for="'chk-' + todo.id"
-                      :class="['todo-text', { 'todo-done': todo.completed }]"
-                    >{{ todo.text }}</label>
+                      :for="'todo-' + item.id"
+                      :class="['todo-text', { done: item.todo.completed }]"
+                    >{{ item.todo.text }}</label>
 
-                    <!-- 照片區域 -->
-                    <div v-if="todo.requiresPhoto" class="photo-area">
-                      <div v-if="todo.photos && todo.photos.length" class="photo-thumbs">
+                    <div class="todo-meta">{{ item.storeName }} / {{ item.storeAddress }}</div>
+
+                    <div v-if="item.todo.requiresPhoto" class="photo-area">
+                      <div v-if="item.todo.photos && item.todo.photos.length" class="photo-thumbs">
                         <img
-                          v-for="(url, pi) in todo.photos"
+                          v-for="(url, pi) in item.todo.photos"
                           :key="pi"
                           :src="url"
                           class="photo-thumb"
@@ -141,39 +169,39 @@
                       </div>
                       <label class="upload-label">
                         <camera-icon :size="13" :stroke-width="1.5" />
-                        {{ todo.photos && todo.photos.length ? '繼續上傳' : '上傳回傳照片' }}
+                        {{ item.todo.photos && item.todo.photos.length ? '繼續上傳' : '上傳回傳照片' }}
                         <input
                           type="file"
                           accept="image/*"
                           class="file-input"
-                          @change="e => onPhotoUpload(e, store, tIdx)"
+                          @change="e => onPhotoUpload(e, selectedActivity, item)"
                         />
                       </label>
                     </div>
                   </div>
                 </div>
+                <div v-if="filteredActivityItems.length === 0" class="empty-state">無符合搜尋條件的項目</div>
               </div>
-
             </div>
-            <div v-if="filteredStores.length === 0" class="store-empty">無符合搜尋條件的店家</div>
+          </template>
+
+          <div v-else class="no-selection">
+            <image-icon :size="32" :stroke-width="1.5" class="no-icon" />
+            <p class="no-text">請先選擇一個活動</p>
           </div>
         </div>
       </template>
 
-      <!-- 未選取時的提示 -->
       <div v-else class="no-selection">
-        <image-icon :size="32" :stroke-width="1.5" class="no-sel-icon" />
-        <p class="no-sel-text">請從左側選擇一個活動</p>
+        <image-icon :size="32" :stroke-width="1.5" class="no-icon" />
+        <p class="no-text">請先選擇一個公司</p>
       </div>
-
     </section>
 
-    <!-- 照片放大預覽 -->
     <div v-if="previewUrl" class="preview-overlay" @click="previewUrl = null">
       <img :src="previewUrl" class="preview-img" alt="照片預覽" />
       <span class="preview-close">點擊任意處關閉</span>
     </div>
-
   </div>
 </template>
 
@@ -203,120 +231,204 @@ export default {
       TABS,
       activeTab: 'all',
       activities: deepClone(rawData),
-      selectedId: null,
-      expandedStores: [],
-      storeSearch: '',
+      selectedCompanyId: null,
+      selectedActivityId: null,
+      companySearch: '',
+      todoSearch: '',
       mobileShowDetail: false,
       previewUrl: null
     }
   },
   computed: {
-    filteredPromos () {
-      if (this.activeTab === 'all') return this.activities
-      return this.activities.filter(a => a.status === this.activeTab)
-    },
-    selectedPromo () {
-      return this.activities.find(a => a.id === this.selectedId) || null
-    },
-    filteredStores () {
-      if (!this.selectedPromo) return []
-      const kw = this.storeSearch.trim().toLowerCase()
-      if (!kw) return this.selectedPromo.stores
-      return this.selectedPromo.stores.filter(s => s.name.toLowerCase().includes(kw))
-    },
-    // 每個活動的整體待辦進度（以所有店家的 todos 加總計算）
-    promoProgressMap () {
-      const map = {}
-      this.activities.forEach(promo => {
-        let total = 0
-        let done = 0
-        promo.stores.forEach(store => {
-          total += store.todos.length
-          done += store.todos.filter(t => t.completed).length
+    companyList () {
+      const map = new Map()
+      this.activities.forEach(activity => {
+        activity.stores.forEach(store => {
+          if (!map.has(store.customerId)) {
+            map.set(store.customerId, {
+              customerId: store.customerId,
+              name: store.name,
+              address: store.address,
+              activityCount: 0,
+              totalTodos: 0,
+              doneTodos: 0
+            })
+          }
+          const entry = map.get(store.customerId)
+          entry.activityCount += 1
+          entry.totalTodos += store.todos.length
+          entry.doneTodos += store.todos.filter(t => t.completed).length
         })
-        map[promo.id] = {
-          done,
-          total,
-          percent: total === 0 ? 0 : Math.round((done / total) * 100)
-        }
       })
-      return map
+      return [...map.values()]
+        .map(entry => ({
+          ...entry,
+          progress: entry.totalTodos === 0 ? 0 : Math.round((entry.doneTodos / entry.totalTodos) * 100)
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
     },
-    // 當前選中活動內，每個店家的待辦進度
-    selectedStoreProgressMap () {
-      const map = {}
-      if (!this.selectedPromo) return map
-      this.selectedPromo.stores.forEach(store => {
-        const total = store.todos.length
-        const done = store.todos.filter(t => t.completed).length
-        map[store.customerId] = total === 0 ? 0 : Math.round((done / total) * 100)
+    filteredCompanies () {
+      const kw = this.companySearch.trim().toLowerCase()
+      if (!kw) return this.companyList
+      return this.companyList.filter(company =>
+        company.name.toLowerCase().includes(kw) || company.address.toLowerCase().includes(kw)
+      )
+    },
+    selectedCompany () {
+      return this.companyList.find(company => company.customerId === this.selectedCompanyId) || this.filteredCompanies[0] || null
+    },
+    companyActivities () {
+      if (!this.selectedCompanyId) return []
+      const list = this.activities
+        .filter(activity => activity.stores.some(store => store.customerId === this.selectedCompanyId))
+        .map(activity => {
+          const store = activity.stores.find(s => s.customerId === this.selectedCompanyId)
+          const done = store ? store.todos.filter(t => t.completed).length : 0
+          const total = store ? store.todos.length : 0
+          return {
+            ...activity,
+            progress: {
+              done,
+              total,
+              percent: total === 0 ? 0 : Math.round((done / total) * 100)
+            }
+          }
+        })
+      if (this.activeTab === 'all') return list
+      return list.filter(activity => activity.status === this.activeTab)
+    },
+    filteredCompanyActivities () {
+      return this.companyActivities
+    },
+    selectedActivity () {
+      return this.companyActivities.find(activity => activity.id === this.selectedActivityId) || this.companyActivities[0] || null
+    },
+    selectedActivityItems () {
+      if (!this.selectedActivity) return []
+      if (Array.isArray(this.selectedActivity.items)) return this.selectedActivity.items
+      return (Array.isArray(this.selectedActivity.stores) ? this.selectedActivity.stores : []).flatMap((store, storeIndex) => {
+        const todos = Array.isArray(store.todos) ? store.todos : []
+        return todos.map((todo, todoIndex) => ({
+          id: todo.id || `${this.selectedActivity.id}-${store.customerId}-${todoIndex}`,
+          storeCustomerId: store.customerId,
+          storeName: store.name,
+          storeAddress: store.address,
+          storeIndex,
+          todoIndex,
+          todo
+        }))
       })
-      return map
+    },
+    selectedActivityItemCount () {
+      return this.selectedActivityItems.length
+    },
+    selectedActivityDoneCount () {
+      return this.selectedActivityItems.filter(item => item.todo && item.todo.completed).length
+    },
+    selectedActivityRemainingCount () {
+      return Math.max(0, this.selectedActivityItemCount - this.selectedActivityDoneCount)
+    },
+    selectedActivityProgress () {
+      if (!this.selectedActivityItemCount) return 0
+      return Math.round((this.selectedActivityDoneCount / this.selectedActivityItemCount) * 100)
+    },
+    selectedActivityProgressText () {
+      return `已完成 ${this.selectedActivityDoneCount} 項`
+    },
+    selectedActivityRemainingText () {
+      if (this.selectedActivityRemainingCount === 0) {
+        return '，全部處理完畢'
+      }
+      return `，剩餘 ${this.selectedActivityRemainingCount} 項待處理`
+    },
+    filteredActivityItems () {
+      const kw = this.todoSearch.trim().toLowerCase()
+      if (!kw) return this.selectedActivityItems
+      return this.selectedActivityItems.filter(item => {
+        const text = item.todo && item.todo.text ? item.todo.text.toLowerCase() : ''
+        return text.includes(kw) || (item.storeName && item.storeName.toLowerCase().includes(kw))
+      })
     }
   },
   watch: {
-    filteredPromos (list) {
-      // 篩選結果變動時自動選第一個
-      if (list.length > 0) {
-        this.selectedId = list[0].id
-      } else {
-        this.selectedId = null
+    filteredCompanies: {
+      immediate: true,
+      handler (list) {
+        if (!list.length) {
+          this.selectedCompanyId = null
+          this.selectedActivityId = null
+          return
+        }
+        if (!list.some(company => company.customerId === this.selectedCompanyId)) {
+          this.selectedCompanyId = list[0].customerId
+        }
       }
     },
-    // 切換 tab 也觸發
+    companyActivities: {
+      immediate: true,
+      handler () {
+        const list = this.companyActivities
+        if (!list.length) {
+          this.selectedActivityId = null
+          return
+        }
+        if (!list.some(activity => activity.id === this.selectedActivityId)) {
+          this.selectedActivityId = list[0].id
+        }
+      }
+    },
     activeTab () {
-      if (this.filteredPromos.length > 0) {
-        this.selectedId = this.filteredPromos[0].id
-      } else {
-        this.selectedId = null
+      const list = this.companyActivities
+      if (!list.length) {
+        this.selectedActivityId = null
+        return
+      }
+      if (!list.some(activity => activity.id === this.selectedActivityId)) {
+        this.selectedActivityId = list[0].id
       }
     }
   },
   mounted () {
-    // 初次進入自動選第一個
-    if (this.filteredPromos.length > 0) {
-      this.selectedId = this.filteredPromos[0].id
+    if (this.filteredCompanies.length > 0) {
+      this.selectedCompanyId = this.filteredCompanies[0].customerId
     }
   },
   methods: {
-    progressPercent (promo) {
-      if (!promo.stores.length) return 0
-      return Math.round((this.doneStoresCount(promo) / promo.stores.length) * 100)
-    },
     statusLabel (status) {
       return STATUS_LABELS[status] || status
     },
     statusClass (status) {
       return STATUS_CLASSES[status] || ''
     },
-    doneStoresCount (promo) {
-      return promo.stores.filter(s => s.todos.every(t => t.completed)).length
-    },
     doneTodosCount (store) {
       return store.todos.filter(t => t.completed).length
     },
-    selectPromo (promo) {
-      this.selectedId = promo.id
-      this.expandedStores = []
-      this.storeSearch = ''
+    selectCompany (customerId) {
+      this.selectedCompanyId = customerId
+      this.todoSearch = ''
+      const firstActivity = this.filteredCompanyActivities[0]
+      this.selectedActivityId = firstActivity ? firstActivity.id : null
       this.mobileShowDetail = true
     },
-    toggleStore (customerId) {
-      const idx = this.expandedStores.indexOf(customerId)
-      if (idx === -1) {
-        this.expandedStores.push(customerId)
-      } else {
-        this.expandedStores.splice(idx, 1)
-      }
+    selectActivity (activityId) {
+      this.selectedActivityId = activityId
+      this.todoSearch = ''
+      this.mobileShowDetail = true
     },
-    onPhotoUpload (e, store, tIdx) {
+    onPhotoUpload (e, activity, item) {
       const file = e.target.files[0]
       if (!file) return
       const url = URL.createObjectURL(file)
-      if (!Array.isArray(store.todos[tIdx].photos)) {
-        this.$set(store.todos[tIdx], 'photos', [])
+      const targetActivity = activity || this.selectedActivity
+      if (!targetActivity || !Array.isArray(targetActivity.stores)) return
+      const store = targetActivity.stores.find(s => s.customerId === item.storeCustomerId)
+      if (!store || !Array.isArray(store.todos)) return
+      const todo = store.todos[item.todoIndex]
+      if (!todo) return
+      if (!Array.isArray(todo.photos)) {
+        this.$set(todo, 'photos', [])
       }
-      store.todos[tIdx].photos.push(url)
+      todo.photos.push(url)
       e.target.value = ''
     }
   }
@@ -324,11 +436,6 @@ export default {
 </script>
 
 <style scoped>
-/* ─────────────────────────────────────────────
-   Master-Detail 佈局
-   margin: -32px 抵消 DefaultLayout padding
-   height: calc(100vh - 60px) 擐滿剩餘区域
-─────────────────────────────────────────── */
 .promotions-page {
   display: flex;
   height: calc(100vh - 60px);
@@ -337,9 +444,8 @@ export default {
   background: var(--c-bg);
 }
 
-/* ═══ 左側面板 ═══════════════════════════ */
-.promo-list {
-  width: 360px;
+.company-panel {
+  width: 340px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -348,164 +454,193 @@ export default {
   overflow: hidden;
 }
 
-/* 左側標題區 */
-.promo-list-header {
-  padding: 20px 24px 14px;
-  border-bottom: 0.5px solid #E2E8F0;
-  flex-shrink: 0;
+.panel-header {
+  padding: 20px 20px 14px;
+  border-bottom: 0.5px solid var(--c-border);
 }
 
-.list-eyebrow {
+.panel-eyebrow {
   display: block;
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.12em;
-  color: #94A3B8;
+  color: #94a3b8;
   margin-bottom: 4px;
 }
 
-.list-title {
+.panel-title,
+.detail-title {
   margin: 0;
   font-family: var(--font-serif);
   font-size: 18px;
   font-weight: 500;
-  color: #0F172A;
-  letter-spacing: 0.02em;
+  color: #0f172a;
 }
 
-/* 篩選 Tab 列：首個 Tab 左側與標題左對齊（padding-left: 24px） */
-.filter-tabs {
-  display: flex;
-  border-bottom: 0.5px solid var(--c-border);
-  padding: 0 24px 0 16px;
-  gap: 0;
-  flex-shrink: 0;
-  background: var(--c-surface);
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 10px 8px;
+.panel-desc,
+.detail-desc {
+  margin: 6px 0 0;
   font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-  cursor: pointer;
-  margin-bottom: -1px;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
+  color: #64748b;
+  line-height: 1.6;
 }
 
-.tab-active {
-  color: var(--c-primary);
-  font-weight: 500;
-  border-bottom-color: var(--c-primary);
+.panel-search {
+  padding: 12px 20px;
+  border-bottom: 0.5px solid var(--c-border);
 }
 
-/* 列表捲動區 */
-.list-body {
+.search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 6px;
+  background: #fff;
+  color: #334155;
+  font-size: 13px;
+  outline: none;
+}
+
+.company-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+
+.list-body,
+.detail-scroll {
   overflow-y: auto;
   flex: 1;
 }
 
-/* 活動項目（List Item 樣式）
-   使用 inset box-shadow 取代 border-left：
-   - 裝飾線不佔用 box model 空間，內文對齊不受影響
-   - 背景橫跨全寬（無左右 margin 縮排）
-   - 所有子文字 padding-left: 24px 嚴格對齊標題 */
-.promo-item {
-  position: relative;
-  padding: 12px 16px 12px 24px;
-  border-bottom: 0.5px solid #F1F5F9;
+.company-card,
+.activity-card,
+.store-card {
+  border: none;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+}
+
+.company-card {
+  padding: 12px 18px 12px 20px;
+  border-bottom: 0.5px solid #f1f5f9;
   box-shadow: inset 3px 0 0 0 transparent;
   cursor: pointer;
-  background: #ffffff;
-  transition: background 0.1s, box-shadow 0.1s;
 }
 
-.promo-item:hover {
-  background: #F8FAFC;
-}
-
-.promo-item--selected {
-  background: #EEF3FB;
+.company-card.is-selected {
+  background: #eef3fb;
   box-shadow: inset 3px 0 0 0 var(--c-primary);
 }
 
-.promo-item-top {
+.company-top,
+.activity-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 4px;
 }
 
-.promo-name {
+.company-name,
+.activity-name {
   font-size: 14px;
   font-weight: 500;
   color: #334155;
   line-height: 1.4;
-  flex: 1;
-  min-width: 0;
 }
 
-.promo-period {
-  font-size: 12px;
-  font-weight: 400;
-  color: #8b95a8;
-  margin-bottom: 4px;
-}
-
-.promo-store-count {
-  font-size: 12px;
-  font-weight: 400;
-  color: #64748B;
-  margin-bottom: 4px;
-}
-
-.list-empty {
-  padding: 32px 24px;
-  text-align: center;
-  font-size: 13px;
-  color: #8b95a8;
-}
-
-/* ═══ 狀態 Badge（莫蘭迪色系） ═════════════════════ */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
+.company-count {
+  font-size: 11px;
+  color: #64748b;
   white-space: nowrap;
 }
 
-/* 進行中 — 曧綠色 莫蘭迪 */
-.badge-active {
-  background: #E2EAE6;
-  color: #2D5A3D;
+.company-address,
+.activity-period,
+.detail-subtitle,
+.store-meta {
+  font-size: 12px;
+  color: #8b95a8;
+  line-height: 1.5;
 }
 
-/* 未開始 — 極淡藍 */
-.badge-upcoming {
-  background: #E0E7FF;
+.store-head .section-label {
+  margin-bottom: 12px;
+}
+
+.store-head .store-meta {
+  margin-top: 16px;
+}
+
+.company-progress-row,
+.activity-progress-row,
+.store-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.store-progress-row--single {
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding: 0 16px;
+}
+
+.progress-summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.progress-summary-done {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.progress-summary-rest {
   color: var(--c-primary);
+  font-weight: 700;
 }
 
-/* 已結束 — 消音灰 */
-.badge-ended {
-  background: #F1F5F9;
-  color: #94A3B8;
-  border: 0.5px solid var(--c-border);
+.company-progress-text {
+  font-size: 12px;
+  color: #64748b;
 }
 
-/* ═══ 右側面板 ═══════════════════════════ */
-.promo-detail {
+.company-progress-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--c-primary);
+}
+
+.progress-fill.done {
+  background: #1a5c38;
+}
+
+.detail-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -513,54 +648,32 @@ export default {
   background: var(--c-bg);
 }
 
-/* 手機返回按鈕（桌機隱藏） */
 .mobile-back-btn {
   display: none;
 }
 
-/* 捲動容器 */
 .detail-scroll {
-  flex: 1;
-  overflow-y: auto;
   padding: 24px;
-  background: var(--c-bg);
 }
 
-/* 詳情標頭 */
-.detail-header-row {
+.detail-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
 }
 
-.detail-header-left {
-  flex: 1;
-  min-width: 0;
-}
-
-.detail-title {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  font-weight: 500;
-  color: #0F172A;
-  margin: 0 0 4px;
-  line-height: 1.3;
-}
-
-.detail-period {
-  font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-.detail-desc {
-  font-size: 13px;
-  font-weight: 400;
-  color: #4b5568;
-  line-height: 1.7;
-  margin: 0;
+.summary-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--c-primary);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .section-divider {
@@ -569,125 +682,180 @@ export default {
   margin: 16px 0;
 }
 
-/* 店家標頭列 */
-.stores-header {
+.filter-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 0.5px solid var(--c-border);
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #8b95a8;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  color: var(--c-primary);
+  border-bottom-color: var(--c-primary);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-card {
+  padding: 12px 14px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.activity-card.is-selected {
+  border-color: var(--c-primary);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-active {
+  background: #e2eae6;
+  color: #2d5a3d;
+}
+
+.badge-upcoming {
+  background: #e0e7ff;
+  color: var(--c-primary);
+}
+
+.badge-ended {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.store-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin: 12px 0 0;
+  padding: 0 16px;
+}
+
+.store-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 8px;
+}
+
+.store-sort-note {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-bottom: 12px;
+}
+
+.store-list-item {
+  width: 100%;
+  border: 0.5px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.store-list-item.is-selected {
+  border-color: var(--c-primary);
+  background: #eef3fb;
+}
+
+.store-list-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.store-list-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.store-distance {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-primary);
+  white-space: nowrap;
+}
+
+.store-list-address {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8b95a8;
+  line-height: 1.5;
 }
 
 .section-label {
   font-size: 13px;
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
   letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.store-search {
-  height: 32px;
-  padding: 0 10px;
-  border: 0.5px solid var(--c-border);
-  border-radius: 6px;
-  background: var(--c-surface);
   color: #334155;
-  font-size: 13px;
-  font-weight: 400;
-  outline: none;
-  width: 180px;
 }
 
-/* 店家列表 */
-.store-list {
-  display: flex;
-  flex-direction: column;
-  border: 0.5px solid var(--c-border);
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--c-surface);
+.search-input--small {
+  max-width: 220px;
 }
 
-/* 店家卡片 */
 .store-card {
-  border-radius: 0;
-  background: var(--c-surface);
+  border: 0.5px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
   overflow: hidden;
-  border-bottom: 0.5px solid var(--c-divider);
+  margin-bottom: 16px;
+  padding: 0 16px;
 }
 
-.store-card:last-child {
-  border-bottom: none;
+.store-row--single {
+  padding: 14px;
 }
 
-.store-card:nth-child(even) {
-  background: var(--c-stripe);
-}
-
-.store-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  gap: 12px;
-  background: transparent;
-}
-
-.store-row:hover {
-  background: #EEF3FB;
-}
-
-.store-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.store-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-}
-
-.store-address {
-  font-size: 12px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-.store-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.store-progress {
-  font-size: 12px;
-  font-weight: 400;
-  color: #4b5568;
-}
-
-.chevron-icon {
-  font-size: 10px;
-  color: #8b95a8;
-}
-
-/* ═══ 待辦事項 ═══════════════════════════ */
 .todo-list {
   border-top: 0.5px solid var(--c-border);
-  background: var(--c-surface);
 }
 
 .todo-item {
   display: flex;
-  align-items: flex-start;
   gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 0.5px solid #F1F5F9;
+  padding: 10px 14px;
+  border-bottom: 0.5px solid #f1f5f9;
 }
 
 .todo-item:last-child {
@@ -695,12 +863,10 @@ export default {
 }
 
 .todo-check {
-  margin-top: 2px;
-  accent-color: var(--c-primary);
   width: 15px;
   height: 15px;
-  flex-shrink: 0;
-  cursor: pointer;
+  margin-top: 2px;
+  accent-color: var(--c-primary);
 }
 
 .todo-body {
@@ -713,18 +879,22 @@ export default {
 
 .todo-text {
   font-size: 13px;
-  font-weight: 400;
   color: #334155;
   line-height: 1.5;
   cursor: pointer;
 }
 
-.todo-done {
+.todo-text.done {
   text-decoration: line-through;
   color: #8b95a8;
 }
 
-/* ═══ 上傳照片 ═══════════════════════════ */
+.todo-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
 .photo-area {
   display: flex;
   flex-direction: column;
@@ -734,8 +904,17 @@ export default {
 
 .photo-thumbs {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.photo-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 0.5px solid #e2e8f0;
+  cursor: pointer;
 }
 
 .upload-label {
@@ -747,7 +926,6 @@ export default {
   border-radius: 4px;
   color: var(--c-primary);
   font-size: 12px;
-  font-weight: 400;
   cursor: pointer;
 }
 
@@ -755,101 +933,27 @@ export default {
   display: none;
 }
 
-.photo-thumb {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 0.5px solid #E2E8F0;
-  cursor: pointer;
-  display: block;
-}
-
-/* 進度條（左側列表內） */
-.promo-progress-track {
-  height: 4px;
-  background: #E2E8F0;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.promo-progress-fill {
-  height: 100%;
-  background: var(--c-primary);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.promo-progress-fill--done {
-  background: #1A5C38;
-}
-
-.progress-pct {
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748B;
-  margin-left: 4px;
-}
-
-/* 右側店家列迷你進度條 */
-.store-progress-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.store-progress-track {
-  width: 72px;
-  height: 3px;
-  background: #E2E8F0;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.store-progress-fill {
-  height: 100%;
-  background: var(--c-primary);
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.store-progress-fill--done {
-  background: #1A5C38;
-}
-
-/* ═══ 未選取時佔位 ════════════════════════ */
+.empty-state,
 .no-selection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  padding: 22px;
+  text-align: center;
+  color: #8b95a8;
+  font-size: 13px;
 }
 
-.no-sel-icon {
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 280px;
+}
+
+.no-icon {
   color: var(--c-border);
 }
 
-.no-sel-text {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 400;
-  color: #94A3B8;
-  letter-spacing: 0.02em;
-}
-
-.store-empty {
-  text-align: center;
-  padding: 24px;
-  font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-/* ═══ 照片預覽 Overlay ════════════════════ */
 .preview-overlay {
   position: fixed;
   inset: 0;
@@ -865,19 +969,16 @@ export default {
 .preview-img {
   max-width: 90vw;
   max-height: 80vh;
-  border-radius: 8px;
   object-fit: contain;
-  display: block;
+  border-radius: 8px;
 }
 
 .preview-close {
   margin-top: 14px;
   font-size: 12px;
-  font-weight: 400;
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ═══ RWD — 中小螢幕 820px ═══════════════ */
 @media (max-width: 820px) {
   .promotions-page {
     margin: -20px -16px;
@@ -885,7 +986,6 @@ export default {
   }
 }
 
-/* ═══ RWD — 手機版 768px ════════════════─ */
 @media (max-width: 768px) {
   .promotions-page {
     height: auto;
@@ -894,550 +994,54 @@ export default {
     margin: -16px;
   }
 
-  .promo-list {
+  .company-panel {
     width: 100%;
     border-right: none;
-    border-bottom: 0.5px solid #E2E8F0;
-    height: auto;
-    overflow: visible;
+    border-bottom: 0.5px solid var(--c-border);
   }
 
-  .promo-list.is-hidden-mobile {
+  .company-panel.is-hidden-mobile {
     display: none;
   }
 
-  .promo-detail {
+  .detail-panel {
     display: none;
-    overflow: visible;
     min-height: calc(100vh - 52px);
   }
 
-  .promo-detail.is-visible-mobile {
+  .detail-panel.is-visible-mobile {
     display: flex;
   }
 
   .mobile-back-btn {
     display: block;
-    background: #ffffff;
+    width: 100%;
+    padding: 12px 16px;
     border: none;
-    border-bottom: 0.5px solid #E2E8F0;
+    border-bottom: 0.5px solid var(--c-border);
+    background: #fff;
     color: var(--c-primary);
     font-size: 14px;
     font-weight: 500;
-    padding: 12px 16px;
     text-align: left;
-    width: 100%;
-    cursor: pointer;
-    flex-shrink: 0;
   }
 
   .detail-scroll {
     padding: 16px;
   }
 
-  .stores-header {
+  .store-head {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
   }
 
-  .store-search {
+  .search-input--small {
     width: 100%;
+    max-width: none;
   }
 
-  .detail-title {
-    font-size: 16px;
-  }
-
-  .filter-tabs {
-    overflow-x: auto;
-    padding: 0 4px;
-    scrollbar-width: none;
-  }
-
-  .filter-tabs::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-/* 篩選 Tabs */
-.filter-tabs {
-  display: flex;
-  border-bottom: 0.5px solid #d0ddf0;
-  padding: 0 8px;
-  gap: 0;
-  flex-shrink: 0;
-  background: #ffffff;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 12px 10px;
-  font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-  cursor: pointer;
-  margin-bottom: -1px;
-  white-space: nowrap;
-}
-
-.tab-active {
-  color: var(--c-primary);
-  font-weight: 500;
-  border-bottom-color: var(--c-primary);
-}
-
-/* 列表捲動區 */
-.list-body {
-  overflow-y: auto;
-  flex: 1;
-}
-
-/* 活動項目卡 */
-.promo-item {
-  position: relative;
-  padding: 12px 16px 12px 24px;
-  border-bottom: 0.5px solid #F1F5F9;
-  box-shadow: inset 3px 0 0 0 transparent;
-  cursor: pointer;
-  background: #ffffff;
-  transition: background 0.1s, box-shadow 0.1s;
-}
-
-.promo-item:hover {
-  background: #F8FAFC;
-}
-
-.promo-item--selected {
-  background: #EEF3FB;
-  box-shadow: inset 3px 0 0 0 var(--c-primary);
-}
-
-.promo-item-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.promo-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-  line-height: 1.4;
-}
-
-.promo-period {
-  font-size: 12px;
-  font-weight: 400;
-  color: #8b95a8;
-  margin-bottom: 4px;
-}
-
-.promo-store-count {
-  font-size: 12px;
-  font-weight: 400;
-  color: #4b5568;
-}
-
-.list-empty {
-  padding: 32px 24px;
-  text-align: center;
-  font-size: 13px;
-  color: #8b95a8;
-}
-
-/* ═══ 狀態 Badge ══════════════════════════════ */
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 400;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.badge-active {
-  background: #edf7f1;
-  color: #1a5c38;
-}
-
-.badge-upcoming {
-  background: #eef3fb;
-  color: var(--c-primary);
-}
-
-.badge-ended {
-  background: #f5f5f5;
-  color: #888888;
-}
-
-/* ═══ 右側面板 ════════════════════════════════ */
-.promo-detail {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: #f5f7fb;
-}
-
-/* 手機返回按鈕（桌機隱藏） */
-.mobile-back-btn {
-  display: none;
-}
-
-/* 捲動容器 */
-.detail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-/* 詳情標頭 */
-.detail-header-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.detail-header-left {
-  flex: 1;
-  min-width: 0;
-}
-
-.detail-title {
-  font-size: 18px;
-  font-weight: 500;
-  color: #334155;
-  margin: 0 0 4px;
-  line-height: 1.3;
-}
-
-.detail-period {
-  font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-.detail-desc {
-  font-size: 13px;
-  font-weight: 400;
-  color: #4b5568;
-  line-height: 1.7;
-  margin: 0 0 0;
-}
-
-.section-divider {
-  height: 0.5px;
-  background: #d0ddf0;
-  margin: 16px 0;
-}
-
-/* 店家標頭列 */
-.stores-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.section-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-}
-
-.store-search {
-  height: 32px;
-  padding: 0 10px;
-  border: 0.5px solid #E2E8F0;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #334155;
-  font-size: 13px;
-  font-weight: 400;
-  outline: none;
-  width: 180px;
-}
-
-/* 店家列表 */
-.store-list {
-  display: flex;
-  flex-direction: column;
-  border: 0.5px solid #E2E8F0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* 店家卡片 */
-.store-card {
-  border-radius: 0;
-  background: #ffffff;
-  overflow: hidden;
-  border-bottom: 0.5px solid #F1F5F9;
-}
-
-.store-card:last-child {
-  border-bottom: none;
-}
-
-/* 旗魚紋 — 偶數行 */
-.store-card:nth-child(even) {
-  background: #F9FBFE;
-}
-
-.store-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  gap: 12px;
-  background: transparent;
-}
-
-.store-row:hover {
-  background: #EEF3FB;
-}
-
-.store-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.store-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-}
-
-.store-address {
-  font-size: 12px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-.store-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.store-progress {
-  font-size: 12px;
-  font-weight: 400;
-  color: #4b5568;
-}
-
-.chevron-icon {
-  font-size: 10px;
-  color: #8b95a8;
-}
-
-/* ═══ 待辦事項 ════════════════════════════════ */
-.todo-list {
-  border-top: 0.5px solid #E2E8F0;
-  background: #ffffff;
-}
-
-.todo-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 0.5px solid #F1F5F9;
-}
-
-.todo-item:last-child {
-  border-bottom: none;
-}
-
-.todo-check {
-  margin-top: 2px;
-  accent-color: var(--c-primary);
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-  cursor: pointer;
-}
-
-.todo-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-}
-
-.todo-text {
-  font-size: 13px;
-  font-weight: 400;
-  color: #334155;
-  line-height: 1.5;
-  cursor: pointer;
-}
-
-.todo-done {
-  text-decoration: line-through;
-  color: #8b95a8;
-}
-
-/* ═══ 上傳照片 ════════════════════════════════ */
-.photo-area {
-  display: flex;
-  align-items: flex-start;
-}
-
-.upload-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 12px;
-  border: 0.5px solid var(--c-primary);
-  border-radius: 4px;
-  color: var(--c-primary);
-  font-size: 12px;
-  font-weight: 400;
-  cursor: pointer;
-}
-
-.file-input {
-  display: none;
-}
-
-.photo-thumb {
-  width: 48px;
-  height: 48px;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 0.5px solid #E2E8F0;
-  cursor: pointer;
-  display: block;
-}
-
-/* ═══ 未選取時提示 ═════════════════════════════ */
-.no-selection {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-.store-empty {
-  text-align: center;
-  padding: 24px;
-  font-size: 13px;
-  font-weight: 400;
-  color: #8b95a8;
-}
-
-/* ═══ 照片預覽 Overlay ════════════════════════ */
-.preview-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.72);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  cursor: pointer;
-}
-
-.preview-img {
-  max-width: 90vw;
-  max-height: 80vh;
-  border-radius: 8px;
-  object-fit: contain;
-  display: block;
-}
-
-.preview-close {
-  margin-top: 14px;
-  font-size: 12px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* ═══ RWD — 手機版 ════════════════════════════ */
-@media (max-width: 768px) {
-  .promotions-page {
-    height: auto;
-    overflow: visible;
+  .detail-head {
     flex-direction: column;
-    margin: -24px;
-  }
-
-  .promo-list {
-    width: 100%;
-    border-right: none;
-    border-bottom: 0.5px solid #d0ddf0;
-    height: auto;
-    overflow: visible;
-  }
-
-  .promo-list.is-hidden-mobile {
-    display: none;
-  }
-
-  .promo-detail {
-    display: none;
-    overflow: visible;
-  }
-
-  .promo-detail.is-visible-mobile {
-    display: flex;
-  }
-
-  .mobile-back-btn {
-    display: block;
-    background: #ffffff;
-    border: none;
-    border-bottom: 0.5px solid #d0ddf0;
-    color: var(--c-primary);
-    font-size: 14px;
-    font-weight: 500;
-    padding: 12px 16px;
-    text-align: left;
-    width: 100%;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .detail-scroll {
-    padding: 16px;
-  }
-
-  .stores-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .store-search {
-    width: 100%;
-  }
-
-  .detail-title {
-    font-size: 16px;
-  }
-
-  .filter-tabs {
-    overflow-x: auto;
-    padding: 0 4px;
   }
 }
 </style>

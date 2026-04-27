@@ -20,7 +20,9 @@
         <section class="cart-main">
           <!-- 銷售公司切換 -->
           <div class="company-switcher">
-            <span class="company-switcher-label">銷售公司</span>
+            <span class="company-switcher-label">
+              銷售公司
+            </span>
             <div class="company-tabs">
               <button
                 v-for="co in salesCompanies"
@@ -28,70 +30,80 @@
                 type="button"
                 :class="['company-tab', { active: selectedSalesCompany.id === co.id }]"
                 @click="selectCompany(co)"
-              >{{ co.shortName }}</button>
+              >
+                {{ co.shortName }}
+                <span v-if="companyLineCount(co.id) > 0" class="company-tab-badge">
+                  {{ formatCompanyQty(companyLineCount(co.id)) }}
+                </span>
+              </button>
             </div>
           </div>
 
           <h2 class="section-title">購物車品項</h2>
 
-          <ul class="item-list">
-            <li
-              v-for="item in cartItems"
-              :key="item.productId + '_' + item.packageName"
-              class="cart-item"
-            >
-              <div class="item-top">
-                <div
-                  class="item-thumb"
-                  :class="{ 'is-skeleton': !thumbReadySet[item.productId] && !thumbErrorSet[item.productId] }"
-                >
-                  <img
-                    v-show="!thumbErrorSet[item.productId]"
-                    class="thumb-img"
-                    :class="{ 'is-loaded': thumbReadySet[item.productId] }"
-                    :src="productImageUrl(item.productId)"
-                    :alt="item.productName"
-                    @load="onThumbLoad(item.productId)"
-                    @error="onThumbError(item.productId)"
-                  />
-                  <div v-if="thumbErrorSet[item.productId]" class="thumb-placeholder">
-                    <span class="thumb-watermark">MSM 2.0</span>
+          <template v-if="filteredCartItems.length > 0">
+            <ul class="item-list">
+              <li
+                v-for="item in filteredCartItems"
+                :key="item.productId + '_' + item.packageName + '_' + (item.companyId || 'default')"
+                class="cart-item"
+              >
+                <div class="item-top">
+                  <div
+                    class="item-thumb"
+                    :class="{ 'is-skeleton': !thumbReadySet[item.productId] && !thumbErrorSet[item.productId] }"
+                  >
+                    <img
+                      v-show="!thumbErrorSet[item.productId]"
+                      class="thumb-img"
+                      :class="{ 'is-loaded': thumbReadySet[item.productId] }"
+                      :src="productImageUrl(item.productId)"
+                      :alt="item.productName"
+                      @load="onThumbLoad(item.productId)"
+                      @error="onThumbError(item.productId)"
+                    />
+                    <div v-if="thumbErrorSet[item.productId]" class="thumb-placeholder">
+                      <span class="thumb-watermark">MSM 2</span>
+                    </div>
                   </div>
-                </div>
-                <div class="item-body">
-                  <div class="item-left-col">
-                    <p class="item-name">{{ item.productName }}</p>
-                    <select
-                      class="package-select"
-                      :value="item.packageName"
-                      @change="onPackageChange(item, $event.target.value)"
-                    >
-                      <option
-                        v-for="opt in packageOptions(item.productId)"
-                        :key="opt.label"
-                        :value="opt.label"
-                      >{{ opt.label }}</option>
-                    </select>
-                    <span class="unit-price">$ {{ item.unitPrice }}</span>
-                  </div>
-                  <div class="item-right-col">
-                    <button type="button" class="remove-btn" @click="askRemove(item)">
-                      <trash2-icon :size="14" :stroke-width="1.5" />
-                      移除
-                    </button>
-                    <div class="qty-total-wrap">
-                      <div class="quantity-control">
-                        <button type="button" class="qty-btn" @click="changeQty(item, -1)">-</button>
-                        <span class="qty-value">{{ item.quantity }}</span>
-                        <button type="button" class="qty-btn" @click="changeQty(item, 1)">+</button>
+                  <div class="item-body">
+                    <div class="item-left-col">
+                      <p class="item-name">{{ item.productName }}</p>
+                      <select
+                        class="package-select"
+                        :value="item.packageName"
+                        @change="onPackageChange(item, $event.target.value)"
+                      >
+                        <option
+                          v-for="opt in packageOptions(item.productId)"
+                          :key="opt.label"
+                          :value="opt.label"
+                        >{{ opt.label }}</option>
+                      </select>
+                      <span class="unit-price">$ {{ item.unitPrice }}</span>
+                    </div>
+                    <div class="item-right-col">
+                      <button type="button" class="remove-btn" @click="askRemove(item)">
+                        <trash2-icon :size="14" :stroke-width="1.5" />
+                        移除
+                      </button>
+                      <div class="qty-total-wrap">
+                        <div class="quantity-control">
+                          <button type="button" class="qty-btn" @click="changeQty(item, -1)">-</button>
+                          <span class="qty-value">{{ item.quantity }}</span>
+                          <button type="button" class="qty-btn" @click="changeQty(item, 1)">+</button>
+                        </div>
+                        <span class="subtotal-text">$ {{ item.unitPrice * item.quantity }}</span>
                       </div>
-                      <span class="subtotal-text">$ {{ item.unitPrice * item.quantity }}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </template>
+          <div v-else class="company-empty-state">
+            <p class="company-empty-text">此銷售公司目前沒有商品</p>
+          </div>
 
           <!-- 促銷區塊 -->
           <div v-if="promotionStatus.length > 0" class="promotions-section">
@@ -115,6 +127,8 @@
               </p>
             </div>
           </div>
+
+          <PromotionNotice :promotions="promotions" />
         </section>
 
         <!-- 右側側欄（桌機） -->
@@ -168,11 +182,12 @@
 import { products } from '../mock/products'
 import { promotions } from '../mock/promotions'
 import { salesCompanies } from '../mock/salesCompanies'
+import PromotionNotice from '../components/PromotionNotice.vue'
 import { Trash2 as Trash2Icon } from 'lucide-vue'
 
 export default {
   name: 'CartPage',
-  components: { Trash2Icon },
+  components: { Trash2Icon, PromotionNotice },
   data () {
     return {
       productList: products,
@@ -191,11 +206,15 @@ export default {
     selectedSalesCompany () {
       return this.$store.state.selectedSalesCompany
     },
+    filteredCartItems () {
+      const companyId = this.selectedSalesCompany ? this.selectedSalesCompany.id : ''
+      return this.cartItems.filter(item => item.companyId === companyId)
+    },
     subtotal () {
-      return this.cartItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+      return this.filteredCartItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
     },
     totalQty () {
-      return this.cartItems.reduce((sum, item) => sum + item.quantity, 0)
+      return this.filteredCartItems.reduce((sum, item) => sum + item.quantity, 0)
     },
     promotionStatus () {
       return this.promotions
@@ -212,7 +231,7 @@ export default {
             return { ...promo, met: remaining === 0, remaining }
           }
           if (promo.targetProductId) {
-            const matched = this.cartItems.find(i => i.productId === promo.targetProductId)
+            const matched = this.filteredCartItems.find(i => i.productId === promo.targetProductId)
             const qty = matched ? matched.quantity : 0
             const remaining = Math.max(0, promo.minQty - qty)
             return { ...promo, met: remaining === 0, remaining }
@@ -250,7 +269,8 @@ export default {
       this.$store.dispatch('updateCartQty', {
         productId: item.productId,
         packageName: item.packageName,
-        delta
+        delta,
+        companyId: item.companyId || this.selectedSalesCompany.id
       })
     },
     askRemove (item) {
@@ -264,7 +284,8 @@ export default {
       this.confirmItem = null
       this.$store.dispatch('removeFromCart', {
         productId: item.productId,
-        packageName: item.packageName
+        packageName: item.packageName,
+        companyId: item.companyId || this.selectedSalesCompany.id
       })
       // 儲存小計供撤酷使用
       const snapshot = { ...item }
@@ -286,7 +307,8 @@ export default {
     removeItem (item) {
       this.$store.dispatch('removeFromCart', {
         productId: item.productId,
-        packageName: item.packageName
+        packageName: item.packageName,
+        companyId: item.companyId || this.selectedSalesCompany.id
       })
     },
     productImageUrl (productId) {
@@ -310,8 +332,16 @@ export default {
         productId: item.productId,
         oldPackageName: item.packageName,
         newPackageName: newOption.label,
-        newUnitPrice: newOption.price
+        newUnitPrice: newOption.price,
+        companyId: item.companyId || this.selectedSalesCompany.id
       })
+    },
+    companyLineCount (companyId) {
+      return this.$store.getters.cartLineCountByCompanyId(companyId)
+    },
+    formatCompanyQty (qty) {
+      if (qty > 99) return '99+'
+      return String(qty)
     }
   }
 }
@@ -364,6 +394,20 @@ export default {
   color: var(--c-text-title);
 }
 
+.company-empty-state {
+  padding: 24px 16px;
+  border: 0.5px dashed var(--c-border);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.72);
+  text-align: center;
+}
+
+.company-empty-text {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 13px;
+}
+
 /* ── 銷售公司切換 ─────────────────────────── */
 .company-switcher {
   display: flex;
@@ -387,6 +431,8 @@ export default {
 }
 
 .company-tab {
+  position: relative;
+  overflow: visible;
   padding: 5px 14px;
   border-radius: 20px;
   border: 1px solid var(--c-border);
@@ -396,6 +442,24 @@ export default {
   color: #64748B;
   cursor: pointer;
   transition: all 0.15s;
+}
+
+.company-tab-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #E24B4A;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .company-tab.active {

@@ -52,6 +52,7 @@
             </th>
             <th v-if="isGroupAdmin" class="col-company">銷售公司</th>
             <th>訂單編號</th>
+            <th v-if="showOrderSource">訂單來源</th>
             <th>訂單日期</th>
             <th v-if="showCustomer">客戶名稱</th>
             <th>訂單狀態</th>
@@ -76,6 +77,7 @@
             </td>
             <td v-if="isGroupAdmin" class="col-company">{{ order.companyName }}</td>
             <td class="col-order-id mono">{{ order.orderId }}</td>
+            <td v-if="showOrderSource" class="col-order-source">{{ sourceLabel(order.source) }}</td>
             <td>{{ order.date }}</td>
             <td v-if="showCustomer">{{ customerMap[order.customerId] || order.customerId }}</td>
             <td><status-badge :status="order.status" :viewer-role="currentUser.role" /></td>
@@ -121,6 +123,10 @@
             <span class="kv-label">銷售公司</span>
             <span class="kv-value">{{ order.companyName }}</span>
           </div>
+          <div v-if="showOrderSource" class="kv-item">
+            <span class="kv-label">來源</span>
+            <span class="kv-value">{{ sourceLabel(order.source) }}</span>
+          </div>
           <div class="kv-item">
             <span class="kv-label">日期</span>
             <span class="kv-value">{{ order.date }}</span>
@@ -147,31 +153,54 @@
 
     <!-- 選擇客戶 Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-dialog">
-        <h3 class="modal-title">選擇客戶</h3>
+      <div class="customer-modal" role="dialog" aria-modal="true">
+        <div class="customer-modal-header">
+          <h3 class="customer-modal-title">選擇客戶</h3>
+          <button type="button" class="modal-close-btn" @click="closeModal" aria-label="關閉">×</button>
+        </div>
+
         <input
           v-model.trim="modalSearch"
           type="text"
-          class="modal-search"
+          class="customer-modal-search"
           placeholder="搜尋客戶名稱"
         />
-        <ul class="customer-list">
-          <li
-            v-for="customer in filteredCustomers"
-            :key="customer.id"
-            :class="['customer-item', { selected: selectedCustomerId === customer.id }]"
-            @click="selectedCustomerId = customer.id"
-          >
-            <span class="customer-name">{{ customer.name }}</span>
-            <span class="customer-address">{{ customer.address }}</span>
-          </li>
-          <li v-if="filteredCustomers.length === 0" class="customer-empty">沒有符合的客戶</li>
-        </ul>
-        <div class="modal-actions">
-          <button type="button" class="modal-cancel-btn" @click="closeModal">取消</button>
+
+        <div class="customer-modal-tabs">
           <button
             type="button"
-            class="modal-confirm-btn"
+            :class="['customer-modal-tab', { active: selectionMode === 'my' }]"
+            @click="switchSelectionMode('my')"
+          >我的客戶</button>
+          <button
+            type="button"
+            :class="['customer-modal-tab', { active: selectionMode === 'other' }]"
+            @click="switchSelectionMode('other')"
+          >不是我的客戶</button>
+        </div>
+
+        <div class="customer-modal-list">
+          <button
+            v-for="customer in modalCustomers"
+            :key="customer.id"
+            type="button"
+            :class="['customer-modal-item', { selected: selectedCustomerId === customer.id }]"
+            @click="selectCustomer(customer.id)"
+          >
+            <customer-list-item
+              :name="customer.name"
+              :address="customer.address"
+              :distance="customer.distance"
+            />
+          </button>
+          <div v-if="modalCustomers.length === 0" class="customer-modal-empty">沒有符合的客戶</div>
+        </div>
+
+        <div class="customer-modal-actions">
+          <button type="button" class="customer-modal-cancel" @click="closeModal">取消</button>
+          <button
+            type="button"
+            class="customer-modal-confirm"
             :disabled="!selectedCustomerId"
             @click="confirmCustomer"
           >確認</button>
@@ -224,8 +253,9 @@
 <script>
 import { customers } from '../mock/customers'
 import { getCurrentUser } from '../services/auth'
-import { todayScheduleIds } from '../mock/schedule'
+import { buildSelectableCustomers, getCustomerPoint } from '../utils/customerSelection'
 import { Plus as PlusIcon } from 'lucide-vue'
+import CustomerListItem from '../components/CustomerListItem.vue'
 
 const customerMap = Object.fromEntries(customers.map(c => [c.id, c.name]))
 
@@ -233,7 +263,7 @@ const PAGE_SIZE = 10
 
 export default {
   name: 'OrdersPage',
-  components: { PlusIcon },
+  components: { PlusIcon, CustomerListItem },
   data () {
     return {
       customerMap,
@@ -245,7 +275,9 @@ export default {
       customers,
       showModal: false,
       modalSearch: '',
+      selectionMode: 'my',
       selectedCustomerId: null,
+      selectionLocation: null,
       selectedOrderIds: []
     }
   },
@@ -256,6 +288,9 @@ export default {
     showCustomer () {
       return ['sales', 'company_admin', 'group_admin'].includes(this.currentUser.role)
     },
+    showOrderSource () {
+      return this.currentUser.role !== 'customer'
+    },
     isGroupAdmin () {
       return this.currentUser.role === 'group_admin'
     },
@@ -265,20 +300,21 @@ export default {
     availableStatusOptions () {
       if (this.currentUser.role === 'customer') {
         return [
-          { value: 'pending', label: '待審核' },
-          { value: 'transferred', label: '已拋轉' },
+          { value: 'pending', label: '業務確認中' },
+          { value: 'transferred', label: '訂單處理中' },
           { value: 'shipped', label: '已出貨' }
         ]
       }
       return [
-        { value: 'pending', label: '待審核' },
-        { value: 'transferred', label: '已拋轉' },
+        { value: 'pending', label: '業務確認中' },
+        { value: 'transferred', label: '訂單處理中' },
         { value: 'error', label: '拋轉失敗' },
         { value: 'shipped', label: '已出貨' }
       ]
     },
     colSpan () {
       let cols = 4
+      if (this.showOrderSource) cols++
       if (this.isSales) cols++
       if (this.isGroupAdmin) cols++
       if (this.showCustomer) cols++
@@ -289,18 +325,17 @@ export default {
       const all = this.$store.state.orders.map(o => o.companyName).filter(Boolean)
       return [...new Set(all)].sort()
     },
-    filteredCustomers () {
-      const kw = this.modalSearch.toLowerCase()
-      const list = kw
-        ? this.customers.filter(c => c.name.toLowerCase().includes(kw))
-        : [...this.customers]
-      const scheduleIndex = Object.fromEntries(todayScheduleIds.map((id, i) => [id, i]))
-      return list.sort((a, b) => {
-        const ai = scheduleIndex[a.id] !== undefined ? scheduleIndex[a.id] : Infinity
-        const bi = scheduleIndex[b.id] !== undefined ? scheduleIndex[b.id] : Infinity
-        if (ai !== bi) return ai - bi
-        return a.name.localeCompare(b.name, 'zh-TW')
+    modalCustomers () {
+      return buildSelectableCustomers({
+        customers: this.customers,
+        currentUserId: this.currentUser.id,
+        mode: this.selectionMode,
+        currentLocation: this.selectionLocation,
+        keyword: this.modalSearch
       })
+    },
+    filteredCustomers () {
+      return this.modalCustomers
     },
     filteredOrders () {
       return this.$store.state.orders.filter(order => {
@@ -358,6 +393,21 @@ export default {
     dateTo () { this.currentPage = 1 }
   },
   methods: {
+    loadSelectionLocation () {
+      if (!navigator.geolocation) return
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          this.selectionLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          }
+        },
+        () => {
+          this.selectionLocation = null
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      )
+    },
     canBatchTransfer (order) {
       if (!order) return false
       const s = order.status
@@ -409,18 +459,49 @@ export default {
     goToOrder (orderId) {
       this.$router.push(`/orders/${orderId}`)
     },
+    sourceLabel (source) {
+      const map = {
+        customer: '客戶送單',
+        sales: '業務下單',
+        transfer: '二階回傳'
+      }
+      return map[source] || source || '—'
+    },
     openModal () {
       this.modalSearch = ''
+      this.selectionMode = 'my'
+      this.selectionLocation = null
       this.selectedCustomerId = null
       this.showModal = true
+      this.loadSelectionLocation()
     },
     closeModal () {
       this.showModal = false
+      this.modalSearch = ''
+      this.selectionMode = 'my'
+      this.selectionLocation = null
+      this.selectedCustomerId = null
+    },
+    switchSelectionMode (mode) {
+      this.selectionMode = mode
+      this.selectedCustomerId = null
+    },
+    selectCustomer (customerId) {
+      this.selectedCustomerId = customerId
     },
     confirmCustomer () {
       if (!this.selectedCustomerId) return
+      const customer = this.customers.find(c => c.id === this.selectedCustomerId)
       this.closeModal()
-      this.$router.push({ path: '/orders/new/review', query: { customerId: this.selectedCustomerId } })
+      const query = {
+        customerId: this.selectedCustomerId
+      }
+      const point = getCustomerPoint(customer)
+      if (point) {
+        query.customerLat = String(point.lat)
+        query.customerLng = String(point.lng)
+      }
+      this.$router.push({ path: '/orders/new/review', query })
     }
   }
 }
@@ -573,6 +654,12 @@ export default {
 }
 
 .col-company {
+  color: var(--c-text-sub);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.col-order-source {
   color: var(--c-text-sub);
   font-size: 13px;
   white-space: nowrap;
@@ -799,112 +886,157 @@ tr.is-pending td:first-child {
   padding: 16px;
 }
 
-.modal-dialog {
+.customer-modal {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   background: #ffffff;
   border: 0.5px solid var(--c-border);
-  border-radius: 10px;
-  padding: 22px;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-height: 80vh;
+  gap: 14px;
+  max-height: min(80vh, 640px);
 }
 
-.modal-title {
+.customer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customer-modal-title {
   margin: 0;
   font-size: 16px;
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-.modal-search {
-  height: 38px;
-  padding: 0 12px;
-  border: 0.5px solid var(--c-border);
-  border-radius: 6px;
-  background: #ffffff;
-  color: #334155;
-  font-size: 14px;
-  font-weight: 400;
-  outline: none;
-}
-
-.customer-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
-  max-height: 280px;
-  border: 0.5px solid var(--c-border);
-  border-radius: 6px;
-}
-
-.customer-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 12px 14px;
-  border-bottom: 0.5px solid var(--c-divider);
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
   cursor: pointer;
 }
 
-.customer-item:last-child {
+.customer-modal-search {
+  height: 38px;
+  padding: 0 12px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  outline: none;
+}
+
+.customer-modal-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.customer-modal-tab {
+  flex: 1;
+  height: 36px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.customer-modal-tab.active {
+  background: var(--c-primary);
+  color: #ffffff;
+  border-color: var(--c-primary);
+}
+
+.customer-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 320px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.customer-modal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 0.5px solid var(--c-divider);
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.customer-modal-item:last-child {
   border-bottom: none;
 }
 
-.customer-item:hover {
+.customer-modal-item:hover {
   background: #f8fafc;
 }
 
-.customer-item.selected {
+.customer-modal-item.selected {
   background: #eef3fb;
 }
 
-.customer-name {
+.customer-modal-name {
   font-size: 14px;
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-.customer-address {
+.customer-modal-address {
   font-size: 12px;
   font-weight: 400;
-  color: #8b95a8;
+  color: #94a3b8;
 }
 
-.customer-empty {
+.customer-modal-empty {
   padding: 20px;
   text-align: center;
-  color: #8b95a8;
+  color: #94a3b8;
   font-size: 13px;
-  font-weight: 400;
 }
 
-.modal-actions {
+.customer-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
-.modal-cancel-btn {
-  height: 38px;
+.customer-modal-cancel {
+  height: 40px;
   padding: 0 16px;
   border: 0.5px solid var(--c-border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
-  color: #4b5568;
+  color: #475569;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 500;
   cursor: pointer;
 }
 
-.modal-confirm-btn {
-  height: 38px;
-  padding: 0 16px;
+.customer-modal-confirm {
+  height: 40px;
+  padding: 0 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--c-primary);
   color: #ffffff;
   font-size: 14px;
@@ -912,7 +1044,7 @@ tr.is-pending td:first-child {
   cursor: pointer;
 }
 
-.modal-confirm-btn:disabled {
+.customer-modal-confirm:disabled {
   background: #9ca7ba;
   cursor: not-allowed;
 }

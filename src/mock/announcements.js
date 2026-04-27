@@ -1,4 +1,4 @@
-export const announcements = [
+const rawAnnouncements = [
   {
     id: 1,
     date: '2026-04-01',
@@ -27,3 +27,10 @@ export const announcements = [
     link: { label: '前往產品目錄', path: '/products' }
   }
 ]
+
+export const announcements = rawAnnouncements.map(item => ({
+  ...item,
+  kind: 'announcement',
+  placement: ['home'],
+  audience: ['customer', 'sales']
+}))

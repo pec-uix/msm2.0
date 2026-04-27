@@ -51,25 +51,33 @@
             <span class="info-label">預計到貨日</span>
             <span class="info-value">{{ detail.deliveryDate || '—' }}</span>
           </div>
-          <div class="info-item">
+          <div v-if="showBusinessInfo" class="info-item">
             <span class="info-label">配送單位</span>
             <span class="info-value">{{ detail.deliveryUnit || '台北倉' }}</span>
           </div>
-          <div class="info-item">
+          <div v-if="showBusinessInfo" class="info-item">
             <span class="info-label">銷售公司</span>
             <span class="info-value">{{ detail.salesCompany || '—' }}</span>
+          </div>
+          <div v-if="showBusinessInfo" class="info-item">
+            <span class="info-label">訂單來源</span>
+            <span class="info-value">{{ orderSourceLabel(order.source) }}</span>
           </div>
           <div v-if="showCustomer" class="info-item">
             <span class="info-label">客戶名稱</span>
             <span class="info-value">{{ customerName }}</span>
           </div>
+          <div v-if="showBusinessInfo && isFailed" class="info-item info-item--full">
+            <span class="info-label">拋轉失敗原因</span>
+            <span class="info-value failure-text">{{ failureReasonText }}</span>
+          </div>
         </div>
       </section>
 
-      <!-- 客戶送單明細 -->
+      <!-- 訂單明細 -->
       <section class="detail-section">
-        <h3 class="section-title">客戶送單明細</h3>
-        <div v-if="detail.items && detail.items.length > 0" class="table-wrap">
+        <h3 class="section-title">訂單明細</h3>
+        <div v-if="displayItems.length > 0" class="table-wrap">
           <table class="detail-table">
             <thead>
               <tr>
@@ -79,25 +87,25 @@
                 <th class="col-num">單價</th>
                 <th class="col-num">小計</th>
                 <th>贈品</th>
-                <th>來源</th>
+                <th v-if="showBusinessInfo">來源</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, idx) in detail.items" :key="idx" class="detail-row">
+              <tr v-for="(item, idx) in displayItems" :key="idx" class="detail-row">
                 <td>{{ item.name }}</td>
                 <td>{{ item.package }}</td>
                 <td class="col-num">{{ item.qty }}</td>
                 <td class="col-num mono">{{ item.isGift ? '—' : ('$ ' + item.unitPrice.toLocaleString()) }}</td>
                 <td class="col-num mono">{{ item.isGift ? '—' : ('$ ' + (item.unitPrice * item.qty).toLocaleString()) }}</td>
                 <td><span v-if="item.isGift" class="gift-tag">贈品</span></td>
-                <td><span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item.source) }}</span></td>
+                <td v-if="showBusinessInfo"><span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item) }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
         <!-- 手機卡片 -->
-        <ul v-if="detail.items && detail.items.length > 0" class="mobile-items">
-          <li v-for="(item, idx) in detail.items" :key="idx" class="mobile-item-card">
+        <ul v-if="displayItems.length > 0" class="mobile-items">
+          <li v-for="(item, idx) in displayItems" :key="idx" class="mobile-item-card">
             <div class="mic-head">
               <span class="mic-name">{{ item.name }}</span>
               <span v-if="item.isGift" class="gift-tag">贈品</span>
@@ -120,8 +128,8 @@
                 <span class="mic-value mic-total">{{ item.isGift ? '—' : '$ ' + (item.unitPrice * item.qty) }}</span>
               </div>
             </div>
-            <div class="mic-foot">
-              <span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item.source) }}</span>
+            <div v-if="showBusinessInfo" class="mic-foot">
+              <span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item) }}</span>
             </div>
           </li>
         </ul>
@@ -131,67 +139,6 @@
         </div>
       </section>
 
-      <!-- 業務審核後明細 -->
-      <section v-if="hasReviewedItems" class="detail-section">
-        <h3 class="section-title">業務審核後明細</h3>
-        <div class="table-wrap">
-          <table class="detail-table">
-            <thead>
-              <tr>
-                <th>產品名稱</th>
-                <th>包裝別</th>
-                <th class="col-num">數量</th>
-                <th class="col-num">單價</th>
-                <th class="col-num">小計</th>
-                <th>贈品</th>
-                <th>來源</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, idx) in detail.reviewedItems" :key="idx" class="detail-row">
-                <td>{{ item.name }}</td>
-                <td>{{ item.package }}</td>
-                <td class="col-num">{{ item.qty }}</td>
-                <td class="col-num mono">{{ item.isGift ? '—' : ('$ ' + item.unitPrice.toLocaleString()) }}</td>
-                <td class="col-num mono">{{ item.isGift ? '—' : ('$ ' + (item.unitPrice * item.qty).toLocaleString()) }}</td>
-                <td><span v-if="item.isGift" class="gift-tag">贈品</span></td>
-                <td><span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item.source) }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- 手機卡片 -->
-        <ul class="mobile-items">
-          <li v-for="(item, idx) in detail.reviewedItems" :key="idx" class="mobile-item-card">
-            <div class="mic-head">
-              <span class="mic-name">{{ item.name }}</span>
-              <span v-if="item.isGift" class="gift-tag">贈品</span>
-            </div>
-            <div class="mic-grid">
-              <div class="mic-kv">
-                <span class="mic-label">包裝別</span>
-                <span class="mic-value">{{ item.package }}</span>
-              </div>
-              <div class="mic-kv">
-                <span class="mic-label">數量</span>
-                <span class="mic-value">{{ item.qty }}</span>
-              </div>
-              <div class="mic-kv">
-                <span class="mic-label">單價</span>
-                <span class="mic-value">{{ item.isGift ? '—' : '$ ' + item.unitPrice }}</span>
-              </div>
-              <div class="mic-kv">
-                <span class="mic-label">小計</span>
-                <span class="mic-value mic-total">{{ item.isGift ? '—' : '$ ' + (item.unitPrice * item.qty) }}</span>
-              </div>
-            </div>
-            <div class="mic-foot">
-              <span class="source-badge" :class="'source--' + item.source">{{ sourceLabel(item.source) }}</span>
-            </div>
-          </li>
-        </ul>
-      </section>
-
       <!-- 二階系統資訊 -->
       <section v-if="(order.status === 'transferred' || order.status === 'error') && detail.transferredOrderId" class="transfer-card">
         <h3 class="section-title">二階系統資訊</h3>
@@ -199,6 +146,10 @@
           <div class="info-item">
             <span class="info-label">二階訂單編號</span>
             <span class="info-value transfer-id">{{ detail.transferredOrderId }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">進出貨代號</span>
+            <span class="info-value transfer-id">{{ detail.inOutCode || '—' }}</span>
           </div>
           <div class="info-item">
             <span class="info-label">拋轉時間</span>
@@ -220,8 +171,6 @@ import {
   Package as PackageIcon
 } from 'lucide-vue'
 
-const REVIEWED_STATUSES = ['confirmed', 'processing', 'transferred', 'cancelled', 'error', 'shipped']
-
 export default {
   name: 'OrderDetailPage',
   components: { ChevronLeftIcon, PackageIcon },
@@ -238,6 +187,9 @@ export default {
     showCustomer () {
       return ['sales', 'company_admin', 'group_admin'].includes(this.currentUser.role)
     },
+    showBusinessInfo () {
+      return this.currentUser.role !== 'customer'
+    },
     order () {
       return this.$store.state.orders.find(o => o.orderId === this.orderId) || null
     },
@@ -249,13 +201,24 @@ export default {
     detail () {
       return orderDetails[this.orderId] || {}
     },
-    hasReviewedItems () {
-      return (
-        this.order &&
-        REVIEWED_STATUSES.includes(this.order.status) &&
-        Array.isArray(this.detail.reviewedItems) &&
-        this.detail.reviewedItems.length > 0
-      )
+    displayItems () {
+      if (!this.detail) return []
+      if (Array.isArray(this.detail.latestItems) && this.detail.latestItems.length > 0) {
+        return this.detail.latestItems
+      }
+      if (Array.isArray(this.detail.reviewedItems) && this.detail.reviewedItems.length > 0) {
+        return this.detail.reviewedItems
+      }
+      if (Array.isArray(this.detail.items)) {
+        return this.detail.items
+      }
+      return []
+    },
+    isFailed () {
+      return !!(this.order && this.order.status === 'error')
+    },
+    failureReasonText () {
+      return this.detail.failureReason || this.order.failureReason || '二階回傳失敗，請確認訂單資料與庫存狀態'
     },
     canReview () {
       return (
@@ -287,13 +250,25 @@ export default {
       this.$router.push({ path: '/orders', query })
     },
     sourceLabel (source) {
+      if (source && typeof source === 'object') {
+        if (source.sourceLabel) return source.sourceLabel
+        source = source.source
+      }
       const map = {
-        customer: '客戶送單',
-        sales_add: '業務新增',
-        sales_edit: '業務修改',
+        customer: '客戶訂單',
+        sales_add: '審單修改',
+        sales_edit: '審單修改',
         system_gift: '系統贈品'
       }
-      return map[source] || source
+      return map[source] || '客戶訂單'
+    },
+    orderSourceLabel (source) {
+      const map = {
+        customer: '客戶送單',
+        sales: '業務下單',
+        transfer: '二階回傳'
+      }
+      return map[source] || source || '—'
     }
   }
 }
@@ -398,6 +373,10 @@ export default {
   color: var(--c-text-title);
 }
 
+.failure-text {
+  color: #b42318;
+}
+
 .order-id-text {
   font-family: var(--font-mono);
   color: var(--c-primary);
@@ -498,25 +477,25 @@ export default {
   letter-spacing: 0.03em;
 }
 
-/* 客戶送單 — 極淡藍 */
+/* 原始明細 — 極淡藍 */
 .source--customer {
   background: #E0E7FF;
   color: var(--c-primary);
 }
 
-/* 業務新增 — 消色調綠 */
+/* 審單修改 — 消色調綠 */
 .source--sales_add {
   background: #E2EAE6;
   color: #2D5A3D;
 }
 
-/* 業務修改 — 淡米黃 */
+/* 審單修改（不同底色） — 淡米黃 */
 .source--sales_edit {
   background: #FEF3C7;
   color: #92400E;
 }
 
-/* 系統贈品 — 淡紫 */
+/* 二階修改 — 淡紫 */
 .source--system_gift {
   background: #EDE9FE;
   color: #4C1D95;

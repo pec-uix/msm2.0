@@ -1,4 +1,7 @@
-export const orders = [
+const rawOrders = [
+  { orderId: 'SO-1027', customerId: 'C001', status: 'pending',    amount: 11280, date: '2026-04-11', companyName: '台中物流中心' },
+  { orderId: 'SO-1028', customerId: 'C002', status: 'pending',    amount: 11800, date: '2026-04-10', companyName: '大台北經銷' },
+  { orderId: 'SO-1029', customerId: 'C003', status: 'pending',    amount: 12320, date: '2026-04-09', companyName: '環球流通' },
   { orderId: 'SO-1001', customerId: 'C001', status: 'pending',    amount: 17400, date: '2026-04-07', companyName: '台中物流中心' },
   { orderId: 'SO-1002', customerId: 'C002', status: 'error',      amount: 28600, date: '2026-04-06', companyName: '大台北經銷' },
   { orderId: 'SO-1003', customerId: 'C003', status: 'processing', amount: 15200, date: '2026-04-05', companyName: '環球流通'        },
@@ -26,3 +29,40 @@ export const orders = [
   { orderId: 'SO-1025', customerId: 'C005', status: 'processing', amount: 12960, date: '2026-03-04', companyName: '台中物流中心' },
   { orderId: 'SO-1026', customerId: 'C006', status: 'error',      amount: 21600, date: '2026-03-02', companyName: '大台北經銷' }
 ]
+
+const orderSourceMap = {
+  'SO-1001': 'customer',
+  'SO-1027': 'customer',
+  'SO-1028': 'customer',
+  'SO-1029': 'customer',
+  'SO-1002': 'sales',
+  'SO-1003': 'customer',
+  'SO-1004': 'transfer',
+  'SO-1005': 'sales',
+  'SO-1006': 'customer',
+  'SO-1007': 'transfer',
+  'SO-1008': 'customer',
+  'SO-1009': 'sales',
+  'SO-1010': 'customer',
+  'SO-1011': 'sales',
+  'SO-1012': 'customer',
+  'SO-1013': 'transfer',
+  'SO-1014': 'customer',
+  'SO-1015': 'sales',
+  'SO-1016': 'customer',
+  'SO-1017': 'transfer',
+  'SO-1018': 'customer',
+  'SO-1019': 'sales',
+  'SO-1020': 'transfer',
+  'SO-1021': 'customer',
+  'SO-1022': 'sales',
+  'SO-1023': 'customer',
+  'SO-1024': 'transfer',
+  'SO-1025': 'sales',
+  'SO-1026': 'customer'
+}
+
+export const orders = rawOrders.map(order => ({
+  ...order,
+  source: orderSourceMap[order.orderId] || 'customer'
+}))

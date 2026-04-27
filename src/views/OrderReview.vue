@@ -39,6 +39,10 @@
             <option v-for="du in deliveryUnitOptions" :key="du" :value="du">{{ du }}</option>
           </select>
         </div>
+        <div v-if="showBusinessInfo" class="info-item">
+          <span class="info-label">進出貨代號</span>
+          <span class="info-value order-id-text">{{ inOutCode || '—' }}</span>
+        </div>
       </div>
     </section>
 
@@ -57,7 +61,7 @@
               <th class="col-num">剩餘<br/>庫存</th>
               <th class="col-num">單價</th>
               <th class="col-num">小計</th>
-              <th class="col-action">贈品調整</th>
+              <th class="col-action">贈品註記</th>
             </tr>
           </thead>
           <tbody>
@@ -67,10 +71,10 @@
               :class="['review-row', row._cancelled ? 'row-cancelled' : rowBgClass(row.source, row.isGift), stockRowClass(row)]"
             >
               <td>
-                <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
+                <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row) }}</span>
               </td>
               <td>
-                <div v-if="row.source === 'sales_add'" class="search-wrap">
+                <div v-if="row.source === 'sales_add' && !isGiftCodeRow(row)" class="search-wrap">
                   <input
                     v-if="productSearchIdx === idx"
                     :ref="'psearch_' + idx"
@@ -100,7 +104,7 @@
               </td>
               <td>
                 <input
-                  v-if="row.source === 'sales_add'"
+                  v-if="row.source === 'sales_add' && !isGiftCodeRow(row)"
                   v-model="row.name"
                   class="edit-input name-input"
                   placeholder="產品名稱"
@@ -109,6 +113,7 @@
               </td>
               <td>
                 <select
+                  v-if="!isGiftCodeRow(row)"
                   v-model="row.package"
                   class="edit-input edit-select"
                   :disabled="row.source === 'system_gift'"
@@ -116,15 +121,15 @@
                 >
                   <option v-for="pkg in packageOptions" :key="pkg" :value="pkg">{{ pkg }}</option>
                 </select>
+                <span v-else class="cell-text readonly-text">{{ row.package || '—' }}</span>
               </td>
               <td class="col-num">
-                <div class="qty-pair">
+                <div v-if="!isGiftCodeRow(row) || isSoftDeleteGiftRow(row)" class="qty-pair">
                   <input
                     v-model.number="row.mainQty"
                     type="number"
                     min="0"
                     class="edit-input num-input"
-                     :disabled="row.source === 'system_gift'"
                     @change="onQtyChange()"
                   />
                   <span class="qty-sep">/</span>
@@ -133,10 +138,10 @@
                     type="number"
                     min="0"
                     class="edit-input num-input"
-                     :disabled="row.source === 'system_gift'"
-                     @input="onSubQtyInput(idx)"
+                    @input="onSubQtyInput(idx)"
                   />
                 </div>
+                <span v-else class="cell-text readonly-text">{{ row.mainQty || 0 }}</span>
               </td>
               <td class="col-num">
                 <span
@@ -152,12 +157,14 @@
               <td class="col-num">
                 <div class="price-cell">
                   <input
+                    v-if="!isGiftCodeRow(row)"
                     v-model.number="row.unitPrice"
                     type="number"
                     min="0"
                     class="edit-input num-input"
                     :disabled="row.isGift || row.source === 'customer'"
                   />
+                  <span v-else class="cell-text readonly-text">{{ row.unitPrice ? '$ ' + row.unitPrice.toLocaleString() : '—' }}</span>
                   <span v-if="row.noPrice" class="price-warn" title="無價格資料">⚠</span>
                 </div>
               </td>
@@ -165,21 +172,36 @@
                 <span class="cell-text readonly-text">{{ row.isGift ? '—' : rowSubtotal(row) }}</span>
               </td>
               <td class="col-action">
-                <!-- 系統贈品：取消 / 還原 -->
-                <template v-if="row.source === 'system_gift'">
-                  <button v-if="row._cancelled" type="button" class="row-btn restore-btn" @click="restoreGiftRow(idx)">還原贈品</button>
-                  <button v-else type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
-                </template>
-                <!-- 手動改為贈品後：還原 + (sales_add 才顯示刪除) -->
-                <template v-else-if="row.isGift">
-                  <button type="button" class="row-btn revert-gift-btn" @click="toggleGift(idx)">還原</button>
-                  <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                <!-- 系統贈品 / 僅核對庫存：改為可軟刪除 -->
+                <template v-if="isSoftDeleteGiftRow(row)">
+                  <button
+                    v-if="row._cancelled"
+                    type="button"
+                    class="row-btn restore-btn"
+                    @click="toggleGiftSoftDelete(idx)"
+                  >
+                    取消刪除
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="row-btn delete-btn"
+                    @click="toggleGiftSoftDelete(idx)"
+                  >
                     <trash2-icon :size="13" :stroke-width="1.5" />
                   </button>
                 </template>
-                <!-- 一般列：改贈品 + (sales_add 才顯示刪除) -->
+                <!-- 業務註記贈品：勾選框 + (sales_add 才顯示刪除) -->
                 <template v-else>
-                  <button type="button" class="row-btn to-gift-btn" @click="toggleGift(idx)">改贈品</button>
+                  <label class="gift-check">
+                    <input
+                      :checked="row.isGift"
+                      type="checkbox"
+                      class="gift-check-input"
+                      @change="setGiftChecked(idx, $event.target.checked)"
+                    />
+                    <span class="gift-check-text">贈品</span>
+                  </label>
                   <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
                     <trash2-icon :size="13" :stroke-width="1.5" />
                   </button>
@@ -206,20 +228,36 @@
         :class="['mobile-card', row._cancelled ? 'bg-cancelled' : rowBgClass(row.source, row.isGift)]"
       >
         <div class="mc-header">
-          <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row.source) }}</span>
+          <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row) }}</span>
           <div class="mc-actions">
-            <template v-if="row.source === 'system_gift'">
-              <button v-if="row._cancelled" type="button" class="row-btn restore-btn" @click="restoreGiftRow(idx)">還原贈品</button>
-              <button v-else type="button" class="row-btn cancel-btn" @click="cancelGiftRow(idx)">取消</button>
-            </template>
-            <template v-else-if="row.isGift">
-              <button type="button" class="row-btn revert-gift-btn" @click="toggleGift(idx)">還原</button>
-              <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+            <template v-if="isSoftDeleteGiftRow(row)">
+              <button
+                v-if="row._cancelled"
+                type="button"
+                class="row-btn restore-btn"
+                @click="toggleGiftSoftDelete(idx)"
+              >
+                取消刪除
+              </button>
+              <button
+                v-else
+                type="button"
+                class="row-btn delete-btn"
+                @click="toggleGiftSoftDelete(idx)"
+              >
                 <trash2-icon :size="13" :stroke-width="1.5" />
               </button>
             </template>
             <template v-else>
-              <button type="button" class="row-btn to-gift-btn" @click="toggleGift(idx)">改贈品</button>
+              <label class="gift-check gift-check--mobile">
+                <input
+                  :checked="row.isGift"
+                  type="checkbox"
+                  class="gift-check-input"
+                  @change="setGiftChecked(idx, $event.target.checked)"
+                />
+                <span class="gift-check-text">贈品</span>
+              </label>
               <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
                 <trash2-icon :size="13" :stroke-width="1.5" />
               </button>
@@ -229,7 +267,7 @@
 
         <div class="mc-row">
           <span class="mc-label">產品代號</span>
-          <div v-if="row.source === 'sales_add'" class="search-wrap">
+          <div v-if="row.source === 'sales_add' && !isGiftCodeRow(row)" class="search-wrap">
             <input
               v-if="productSearchIdx === idx"
               :ref="'psearch_m_' + idx"
@@ -259,7 +297,7 @@
         <div class="mc-row">
           <span class="mc-label">產品名稱</span>
           <input
-            v-if="row.source === 'sales_add'"
+            v-if="row.source === 'sales_add' && !isGiftCodeRow(row)"
             v-model="row.name"
             class="edit-input name-input"
             placeholder="產品名稱"
@@ -269,6 +307,7 @@
         <div class="mc-row">
           <span class="mc-label">包裝別</span>
           <select
+            v-if="!isGiftCodeRow(row)"
             v-model="row.package"
             class="edit-input edit-select"
             :disabled="row.source === 'system_gift'"
@@ -276,16 +315,16 @@
           >
             <option v-for="pkg in packageOptions" :key="pkg" :value="pkg">{{ pkg }}</option>
           </select>
+          <span v-else class="mc-value">{{ row.package || '—' }}</span>
         </div>
         <div class="mc-row">
           <span class="mc-label">單位數量</span>
-          <div class="qty-pair">
+          <div v-if="!isGiftCodeRow(row) || isSoftDeleteGiftRow(row)" class="qty-pair">
             <input
               v-model.number="row.mainQty"
               type="number"
               min="0"
               class="edit-input num-input"
-              :disabled="row.source === 'system_gift'"
               @change="onQtyChange()"
             />
             <span class="qty-sep">/</span>
@@ -294,10 +333,10 @@
               type="number"
               min="0"
               class="edit-input num-input"
-              :disabled="row.source === 'system_gift'"
               @input="onSubQtyInput(idx)"
             />
           </div>
+          <span v-else class="mc-value">{{ row.mainQty || 0 }}</span>
         </div>
         <div class="mc-row">
           <span class="mc-label">當前庫存</span>
@@ -311,12 +350,14 @@
           <span class="mc-label">單價</span>
           <div class="price-cell">
             <input
+              v-if="!isGiftCodeRow(row)"
               v-model.number="row.unitPrice"
               type="number"
               min="0"
               class="edit-input num-input"
               :disabled="row.isGift || row.source === 'customer'"
             />
+            <span v-else class="mc-value">{{ row.unitPrice ? '$ ' + row.unitPrice.toLocaleString() : '—' }}</span>
             <span v-if="row.noPrice" class="price-warn" title="無價格資料">⚠</span>
           </div>
         </div>
@@ -329,6 +370,29 @@
         <button type="button" class="add-row-btn" @click="addRow">+ 新增品項</button>
       </li>
     </ul>
+
+    <!-- 拋轉結果 -->
+    <section v-if="showTransferResult" class="transfer-card">
+      <h3 class="section-title">拋轉結果</h3>
+      <div class="transfer-grid">
+        <div class="info-item">
+          <span class="info-label">二階訂單編號</span>
+          <span class="info-value transfer-id">{{ detail.transferredOrderId || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">進出貨代號</span>
+          <span class="info-value transfer-id">{{ inOutCode || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">拋轉時間</span>
+          <span class="info-value">{{ detail.transferredTime || '—' }}</span>
+        </div>
+        <div v-if="isFailed" class="info-item info-item--full">
+          <span class="info-label">拋轉失敗原因</span>
+          <span class="info-value failure-text">{{ failureReasonText }}</span>
+        </div>
+      </div>
+    </section>
 
     <!-- 底部操作區 -->
     <div class="bottom-bar">
@@ -375,25 +439,39 @@ function getConversionRateFromPackageName (packageName) {
 
 const DEFAULT_WAREHOUSE = '台北倉'
 
+function normalizeItemSourceLabel (source) {
+  if (source === 'customer') return '客戶訂單'
+  if (source === 'sales_add' || source === 'sales_edit') return '審單修改'
+  if (source === 'system_gift') return '系統贈品'
+  return '客戶訂單'
+}
+
 function buildRow (item) {
   const product = products.find(p => p.name === item.name)
-  const productId = product ? product.id : ''
+  const productId = item.productId || (product ? product.id : '')
   const currentStock = MOCK_STOCKS[productId] !== undefined ? MOCK_STOCKS[productId] : 0
   const packageName = item.package || (product && Array.isArray(product.packages) && product.packages[0] ? product.packages[0].name : '')
   const conversionRate = getConversionRateFromPackageName(packageName)
   const unitPrice = item.unitPrice || 0
-  const promoId = item.source === 'system_gift'
+  const isGiftCode = item.isGiftCode !== undefined
+    ? !!item.isGiftCode
+    : (item.source === 'system_gift' || !!item.isGift || /^GIFT/i.test(productId || ''))
+  const source = item.source || (isGiftCode ? 'system_gift' : 'customer')
+  const promoId = isGiftCode
     ? ((promotions.find(p => p.gifts.some(g => g.name === item.name)) || {}).id || null)
     : null
   return {
     _rowId: rowIdCounter++,
     _promoId: promoId,
     _cancelled: false,
-    source: item.source,
+    source,
+    isGiftCode,
+    sourceLabel: item.sourceLabel || normalizeItemSourceLabel(source),
     productId,
     name: item.name,
     package: packageName,
     mainQty: item.qty || 0,
+    _originalMainQty: item.qty || 0,
     subQty: 0,
     currentStock,
     conversionRate,
@@ -409,10 +487,13 @@ function newSalesRow () {
     _rowId: rowIdCounter++,
     _promoId: null,
     source: 'sales_add',
+    isGiftCode: false,
+    sourceLabel: '審單修改',
     productId: '',
     name: '',
     package: '單罐',
     mainQty: 1,
+    _originalMainQty: 1,
     subQty: 0,
     currentStock: 0,
     conversionRate: 1,
@@ -429,10 +510,13 @@ function newGiftRow (gift, promoId) {
     _promoId: promoId,
     _cancelled: false,
     source: 'system_gift',
+    isGiftCode: true,
+    sourceLabel: normalizeItemSourceLabel('system_gift'),
     productId: '',
     name: gift.name,
     package: '單罐',
     mainQty: gift.quantity,
+    _originalMainQty: gift.quantity,
     subQty: 0,
     currentStock: 0,
     conversionRate: 1,
@@ -446,26 +530,40 @@ export default {
   name: 'OrderReviewPage',
   components: { ChevronLeftIcon, Trash2Icon },
   props: ['orderId'],
-  data () {
-    // isNew：網址為 /orders/new/review
+    data () {
+      // isNew：網址為 /orders/new/review
     const isNew = !this.orderId || this.orderId === 'new'
     const detail = isNew ? {} : (orderDetails[this.orderId] || {})
-    const sourceItems = detail.items || []
-    return {
-      isNew,
-      deliveryDate: detail.deliveryDate || '',
-      orderDeliveryUnit: detail.deliveryUnit || DEFAULT_WAREHOUSE,
-      editRows: isNew ? [newSalesRow()] : sourceItems.map(item => buildRow(item)),
-      promotions,
-      // 行內搜尋
-      productSearch: '',
-      productSearchIdx: null   // 哪一列正在搜尋
+    const sourceItems = detail.latestItems || detail.reviewedItems || detail.items || []
+      return {
+        isNew,
+        deliveryDate: detail.deliveryDate || '',
+        orderDeliveryUnit: detail.deliveryUnit || DEFAULT_WAREHOUSE,
+        inOutCode: detail.inOutCode || detail.transferredOrderId || '',
+        editRows: isNew ? [newSalesRow()] : sourceItems.map(item => buildRow(item)),
+        promotions,
+        // 行內搜尋
+        productSearch: '',
+        productSearchIdx: null   // 哪一列正在搜尋
     }
   },
   computed: {
+    detail () {
+      if (this.isNew) return {}
+      return orderDetails[this.orderId] || {}
+    },
     order () {
       if (this.isNew) return null
       return this.$store.state.orders.find(o => o.orderId === this.orderId) || null
+    },
+    isFailed () {
+      return !!(this.order && this.order.status === 'error')
+    },
+    failureReasonText () {
+      return this.detail.failureReason || (this.order && this.order.failureReason) || '二階回傳失敗，請確認訂單資料與庫存狀態'
+    },
+    showTransferResult () {
+      return !!(this.order && ['transferred', 'error'].includes(this.order.status))
     },
     customerName () {
       // 新增單：從 query 取 customerId
@@ -509,8 +607,26 @@ export default {
   },
   methods: {
     sourceLabel (source) {
-      const map = { customer: '客戶送單', sales_add: '業務新增', system_gift: '系統贈品' }
-      return map[source] || source
+      if (source && typeof source === 'object') {
+        if (source.sourceLabel) return source.sourceLabel
+        source = source.source
+      }
+      const map = {
+        customer: '客戶訂單',
+        sales_add: '審單修改',
+        sales_edit: '審單修改',
+        system_gift: '系統贈品'
+      }
+      return map[source] || '客戶訂單'
+    },
+    isGiftCodeRow (row) {
+      return !!(row && (row.isGiftCode || row.source === 'system_gift' || /^GIFT/i.test(row.productId || '')))
+    },
+    isSoftDeleteGiftRow (row) {
+      return !!(row && row.isGift && (row.source === 'system_gift' || row.sourceLabel === '系統贈品' || row.isGiftCode))
+    },
+    isSystemGiftRow (row) {
+      return !!(row && row.isGift && !this.isGiftCodeRow(row) && row.sourceLabel === '系統贈品')
     },
     rowBgClass (source, isGift) {
       if (isGift) return 'bg-gift'
@@ -568,6 +684,7 @@ export default {
     },
     onProductIdChange (idx) {
       const row = this.editRows[idx]
+      if (this.isGiftCodeRow(row)) return
       const product = products.find(p => p.id === row.productId)
       if (product) {
         const firstPkg = Array.isArray(product.packages) && product.packages[0] ? product.packages[0] : null
@@ -585,6 +702,7 @@ export default {
     },
     onPackageChange (idx) {
       const row = this.editRows[idx]
+      if (this.isGiftCodeRow(row)) return
       const product = products.find(p => p.id === row.productId)
       if (product && Array.isArray(product.packages)) {
         const pkg = product.packages.find(p => p.name === row.package)
@@ -602,6 +720,7 @@ export default {
     },
     toggleGift (idx) {
       const row = this.editRows[idx]
+      if (!row || this.isGiftCodeRow(row)) return
       if (row.isGift) {
         this.$set(this.editRows[idx], 'isGift', false)
         this.$set(this.editRows[idx], 'unitPrice', row._originalPrice || 0)
@@ -611,16 +730,28 @@ export default {
         this.$set(this.editRows[idx], 'unitPrice', 0)
       }
     },
-    cancelGiftRow (idx) {
+    setGiftChecked (idx, checked) {
       const row = this.editRows[idx]
-      this.$set(this.editRows[idx], '_cancelledQty', row.mainQty)
-      this.$set(this.editRows[idx], 'mainQty', 0)
-      this.$set(this.editRows[idx], '_cancelled', true)
+      if (!row || this.isGiftCodeRow(row)) return
+      if (!!row.isGift === checked) return
+      this.toggleGift(idx)
     },
-    restoreGiftRow (idx) {
+    toggleGiftSoftDelete (idx) {
       const row = this.editRows[idx]
-      this.$set(this.editRows[idx], 'mainQty', row._cancelledQty || row.mainQty)
-      this.$set(this.editRows[idx], '_cancelled', false)
+      if (!row || !this.isSoftDeleteGiftRow(row)) return
+      if (row._cancelled) {
+        const originalQty = row._originalMainQty !== undefined ? row._originalMainQty : (row.mainQty || 0)
+        const originalSubQty = row._originalSubQty !== undefined ? row._originalSubQty : (row.subQty || 0)
+        this.$set(this.editRows[idx], 'mainQty', originalQty)
+        this.$set(this.editRows[idx], 'subQty', originalSubQty)
+        this.$set(this.editRows[idx], '_cancelled', false)
+        return
+      }
+      this.$set(this.editRows[idx], '_originalMainQty', row.mainQty || 0)
+      this.$set(this.editRows[idx], '_originalSubQty', row.subQty || 0)
+      this.$set(this.editRows[idx], 'mainQty', 0)
+      this.$set(this.editRows[idx], 'subQty', 0)
+      this.$set(this.editRows[idx], '_cancelled', true)
     },
     addRow () {
       this.editRows.push(newSalesRow())
@@ -667,9 +798,12 @@ export default {
         const newOrder = {
           orderId: newId,
           customerId,
+    source: 'sales',
+    sourceLabel: '審單修改',
           status: 'transferred',
           amount,
-          date: new Date().toISOString().slice(0, 10)
+          date: new Date().toISOString().slice(0, 10),
+          inOutCode: this.inOutCode || `IO-${newId}`
         }
         this.$store.dispatch('addOrder', newOrder)
         this.$store.dispatch('showSnackbar', { message: '訂單已建立', type: 'success' })
@@ -944,7 +1078,7 @@ export default {
 
 .col-action {
   text-align: right;
-  width: 110px;
+  width: 132px;
   white-space: nowrap;
 }
 
@@ -1047,6 +1181,56 @@ export default {
   color: #4a2a8c;
 }
 
+.gift-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.gift-check--mobile {
+  margin-right: 0;
+}
+
+.gift-check-input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--c-primary);
+  cursor: pointer;
+}
+
+.gift-check-text {
+  white-space: nowrap;
+}
+
+.gift-stock-only {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.gift-stock-note {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mc-note {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 /* ── 操作按鈕 ─────────────────────── */
 .row-btn {
   display: inline-block;
@@ -1064,18 +1248,6 @@ export default {
   color: #4b5568;
 }
 
-.to-gift-btn {
-  border: 0.5px solid #7c3aed;
-  background: transparent;
-  color: #7c3aed;
-}
-
-.revert-gift-btn {
-  border: 0.5px solid #8b95a8;
-  background: transparent;
-  color: #4b5568;
-}
-
 .delete-btn {
   border: 0.5px solid #E2E8F0;
   background: transparent;
@@ -1088,7 +1260,7 @@ export default {
   padding: 0;
 }
 
-/* ── 取消的系統贈品列 ─────────────── */
+/* ── 系統贈品列（軟刪除） ─────────────── */
 .row-cancelled td {
   background: #F1F5F9 !important;
 }
@@ -1097,28 +1269,75 @@ export default {
 }
 .row-cancelled td .cell-text,
 .row-cancelled td .source-badge,
-.row-cancelled td .readonly-text {
+.row-cancelled td .readonly-text,
+.row-cancelled td .gift-stock-only,
+.row-cancelled td .gift-stock-note,
+.row-cancelled td .mc-note,
+.row-cancelled td .row-btn {
   text-decoration: line-through;
-  color: #a0aec0;
+  color: var(--color-text-tertiary);
+}
+.row-cancelled td .gift-check,
+.row-cancelled td .gift-check-text {
+  text-decoration: none;
+  color: inherit;
+}
+.row-cancelled td .gift-check-input {
+  opacity: 1;
+  pointer-events: auto;
 }
 .row-cancelled td .stock-mono {
-  color: #a0aec0 !important;
+  color: var(--color-text-tertiary) !important;
 }
-.row-cancelled td input,
+.row-cancelled td .edit-input,
 .row-cancelled td select {
-  opacity: 0.35;
+  opacity: 1;
   pointer-events: none;
+  color: var(--color-text-tertiary) !important;
+  background: transparent;
+  text-decoration: line-through;
 }
 
 .mobile-card.bg-cancelled {
   background: #F1F5F9 !important;
-  opacity: 0.6;
+}
+
+.mobile-card.bg-cancelled .source-badge,
+.mobile-card.bg-cancelled .mc-label,
+.mobile-card.bg-cancelled .mc-value,
+.mobile-card.bg-cancelled .gift-stock-only,
+.mobile-card.bg-cancelled .gift-stock-note,
+.mobile-card.bg-cancelled .mc-note {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+}
+
+.mobile-card.bg-cancelled .gift-check,
+.mobile-card.bg-cancelled .gift-check-text {
+  text-decoration: none;
+  color: inherit;
+}
+
+.mobile-card.bg-cancelled .gift-check-input {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-card.bg-cancelled .edit-input,
+.mobile-card.bg-cancelled .edit-select {
+  opacity: 1;
+  color: var(--color-text-tertiary) !important;
+  background: transparent;
+  text-decoration: line-through;
 }
 
 .restore-btn {
-  border: 0.5px solid #059669;
+  border: none;
   background: transparent;
-  color: #059669;
+  color: var(--color-text-danger) !important;
+  font-size: 12px;
+  padding: 0;
+  text-decoration: none !important;
 }
 
 /* ── 新增品項 ─────────────────────── */
@@ -1213,6 +1432,39 @@ export default {
   justify-content: center;
 }
 
+/* ── 拋轉結果 ─────────────────────── */
+.transfer-card {
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.section-title {
+  margin: 0 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.transfer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.transfer-id {
+  font-family: var(--font-mono);
+}
+
+.failure-text {
+  color: #b42318;
+}
+
+.info-item--full {
+  grid-column: 1 / -1;
+}
+
 /* ── 底部操作區 ───────────────────── */
 .bottom-bar {
   position: fixed;
@@ -1289,6 +1541,10 @@ export default {
   }
 
   .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .transfer-grid {
     grid-template-columns: 1fr 1fr;
   }
 

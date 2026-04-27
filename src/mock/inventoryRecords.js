@@ -1,6 +1,6 @@
 // 盤點歷史紀錄 mock 資料（用於首次載入的示範資料）
 // checkerId / checker 對應 users.js 中的 sales01 測試帳號
-export const inventoryRecords = [
+const rawInventoryRecords = [
   {
     id: 'IC-1001',
     checkerId: 'sales01',
@@ -113,3 +113,21 @@ export const inventoryRecords = [
     submittedAt: '2026-03-15T09:45:00.000Z'
   }
 ]
+
+const bestBeforeDateMap = {
+  'IC-1001': ['2026-06-30', '2026-07-15'],
+  'IC-1002': ['2026-06-20'],
+  'IC-1003': ['2026-06-10', '2026-06-25']
+}
+
+export const inventoryRecords = rawInventoryRecords.map(record => ({
+  ...record,
+  checkBlocks: Array.isArray(record.checkBlocks)
+    ? record.checkBlocks.map((block, idx) => ({
+        ...block,
+        bestBeforeDate: bestBeforeDateMap[record.id] && bestBeforeDateMap[record.id][idx]
+          ? bestBeforeDateMap[record.id][idx]
+          : ''
+      }))
+    : []
+}))

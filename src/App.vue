@@ -3,7 +3,7 @@
     <app-snackbar :message="snackbar.message" :type="snackbar.type" />
     <app-loading :show="false" />
     <router-view />
-    <ThemeSwitcher />
+    <ThemeSwitcher mode="init" />
   </div>
 </template>
 
@@ -79,9 +79,11 @@ export default {
   --morandi-divider: #E9E4ED;
   --morandi-primary-light: #E6E6F2;
   --morandi-hover: #E6E6F2;
-  /* 全站主題變數（預設商務深藍） */
+  /* 固定主題色（永遠使用第一套顏色） */
   --c-primary: var(--business-primary);
-  --c-bg: var(--business-bg);
+  --c-primary-rgb: 44, 62, 80;
+  --color-background-page: #F4F7F6;
+  --c-bg: var(--color-background-page);
   --c-surface: var(--business-surface);
   --c-stripe: var(--business-stripe);
   --c-border: var(--business-border);
@@ -122,7 +124,7 @@ export default {
 
 body {
   margin: 0;
-  background: var(--c-bg);
+  background: var(--color-background-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -136,7 +138,7 @@ body {
   line-height: 1.6;
   color: var(--c-text-body);
   background:
-    radial-gradient(ellipse 80% 60% at 50% 40%, var(--c-bg) 0%, var(--c-surface) 100%);
+    radial-gradient(ellipse 80% 60% at 50% 40%, var(--color-background-page) 0%, var(--c-surface) 100%);
   position: relative;
   overflow-x: hidden;
 }
@@ -197,6 +199,36 @@ body {
 .mono {
   font-family: var(--font-mono);
   letter-spacing: 0.02em;
+}
+
+/* ── PROMO badge 共用樣式 ─────────────── */
+.promo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #D85A30;
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  white-space: nowrap;
+  border: none;
+  text-decoration: none;
+  vertical-align: middle;
+  text-shadow: none;
+  filter: none;
+  opacity: 1;
+}
+
+.promo-badge--icon {
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 /* ── 頁面大標題輔助工具類 ───────────────

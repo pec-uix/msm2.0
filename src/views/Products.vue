@@ -54,6 +54,16 @@
       </div>
     </div>
 
+    <section class="catalog-banner-placeholder" aria-label="banner 預留區">
+      <div class="banner-icon-wrap">
+        <image-icon :size="18" :stroke-width="1.5" />
+      </div>
+      <div class="banner-copy">
+        <p class="banner-title">Banner 預留區</p>
+        <p class="banner-desc">未來可放促銷圖、活動訊息或品牌視覺。</p>
+      </div>
+    </section>
+
     <!-- 格狀 / 直列 -->
     <div :class="['products-grid', 'view-' + viewMode]">
       <article v-for="product in filteredProducts" :key="product.id" class="product-card">
@@ -72,8 +82,21 @@
             @error="onImgReady(product.id, true)"
           />
           <div v-if="imgErrorMap[product.id]" class="img-placeholder">
-            <span class="placeholder-watermark">MSM 2.0</span>
+            <span class="placeholder-watermark">MSM 2</span>
           </div>
+          <button
+            type="button"
+            class="favorite-toggle"
+            :class="{ active: isFavorite(product.id) }"
+            :aria-label="isFavorite(product.id) ? '取消我的最愛' : '加入我的最愛'"
+            @click.stop="toggleFavorite(product.id)"
+          >
+            <heart-icon
+              :size="14"
+              :stroke-width="1.8"
+              :fill="isFavorite(product.id) ? 'currentColor' : 'none'"
+            />
+          </button>
         </div>
 
         <!-- 內容 -->
@@ -87,7 +110,14 @@
                 class="single-pkg-badge"
               >{{ packageOptionsMap[product.id][0].label }}</span>
             </div>
-            <p class="product-id">{{ product.id }}</p>
+            <div class="product-id-row">
+              <p class="product-id">{{ product.id }}</p>
+              <ProductPromotionBadge
+                :product-id="product.id"
+                :product-name="product.name"
+                :promotions="promotionList"
+              />
+            </div>
             <p v-if="product.description" class="product-desc">{{ product.description }}</p>
             <div class="pkg-area">
               <select
@@ -128,26 +158,42 @@
         </div>
       </article>
     </div>
+
+    <PromotionNotice :promotions="promotionList" />
   </div>
 </template>
 
 <script>
 import { products } from '../mock/products'
 import { salesCompanies } from '../mock/salesCompanies'
+import { promotions } from '../mock/promotions'
+import ProductPromotionBadge from '../components/ProductPromotionBadge.vue'
+import PromotionNotice from '../components/PromotionNotice.vue'
 import {
   Search as SearchIcon,
   AlignJustify as AlignJustifyIcon,
-  LayoutGrid as LayoutGridIcon
+  LayoutGrid as LayoutGridIcon,
+  Heart as HeartIcon,
+  Image as ImageIcon
 } from 'lucide-vue'
 
 export default {
   name: 'ProductsPage',
-  components: { SearchIcon, AlignJustifyIcon, LayoutGridIcon },
+  components: {
+    SearchIcon,
+    AlignJustifyIcon,
+    LayoutGridIcon,
+    HeartIcon,
+    ImageIcon,
+    ProductPromotionBadge,
+    PromotionNotice
+  },
   data () {
     return {
       keyword: '',
-      viewMode: 'list',
+      viewMode: 'grid',
       productList: products,
+      promotionList: promotions,
       salesCompanies,
       selectedPackageMap: {},
       quantityMap: {},
@@ -187,6 +233,9 @@ export default {
     },
     selectedSalesCompany () {
       return this.$store.state.selectedSalesCompany
+    },
+    favoriteProductIds () {
+      return this.$store.state.favoriteProductIds || []
     }
   },
   created () {
@@ -233,6 +282,17 @@ export default {
       const option = this.selectedOption(productId)
       return option.price === 0 && !option.isGift
     },
+    isFavorite (productId) {
+      return this.favoriteProductIds.includes(productId)
+    },
+    toggleFavorite (productId) {
+      const willFavorite = !this.isFavorite(productId)
+      this.$store.dispatch('toggleFavoriteProduct', productId)
+      this.$store.dispatch('showSnackbar', {
+        message: willFavorite ? '已加入我的最愛' : '已從我的最愛移除',
+        type: 'success'
+      })
+    },
     addToCart (product) {
       const option = this.selectedOption(product.id)
       const quantity = this.quantityMap[product.id]
@@ -243,7 +303,8 @@ export default {
         image: product.image,
         packageName: option.label,
         unitPrice: option.price,
-        quantity
+        quantity,
+        companyId: this.selectedSalesCompany.id
       })
       this.$store.dispatch('showSnackbar', { message: '已加入購物車', type: 'success' })
     }
@@ -255,7 +316,7 @@ export default {
 .products-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .page-title-block {
@@ -275,6 +336,408 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.catalog-banner-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 88px;
+  padding: 14px 16px;
+  border: 1px dashed rgba(100, 116, 139, 0.35);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.72), rgba(255, 255, 255, 0.9));
+}
+
+.banner-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-primary);
+  background: rgba(37, 99, 235, 0.08);
+  flex-shrink: 0;
+}
+
+.banner-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.banner-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-text-body);
+}
+
+.banner-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+  line-height: 1.5;
+}
+
+.promotion-notice-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+}
+
+.promotion-notice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.promotion-notice-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  min-width: 0;
+}
+
+.promotion-notice-column-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.promotion-notice-column-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-title);
+}
+
+.promotion-notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promotion-notice-empty {
+  padding: 14px 10px;
+  border: 0.5px dashed var(--c-border);
+  border-radius: 10px;
+  color: var(--c-text-muted);
+  font-size: 12px;
+  text-align: center;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.promotion-notice-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.promotion-notice-card--button {
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.promotion-notice-card--button:hover {
+  background: #FFF7ED;
+  border-color: rgba(249, 115, 22, 0.24);
+  transform: translateY(-1px);
+}
+
+.promotion-notice-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.promotion-notice-name {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1E293B;
+  line-height: 1.45;
+}
+
+.promotion-notice-desc {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.promotion-notice-gifts {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--c-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.promotion-notice-more {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #c2410c;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--c-text-faint);
+}
+
+.panel-title {
+  margin: 0;
+  color: var(--c-text-title);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel-hint {
+  color: var(--c-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.promotion-banner-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+}
+
+.promotion-banner-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promotion-carousel-view {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+}
+
+.promotion-carousel-view--desktop {
+  display: flex;
+}
+
+.promotion-carousel-view--mobile {
+  display: none;
+}
+
+.promo-viewport {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.promo-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.45s ease;
+  will-change: transform;
+  transform: translate3d(calc(var(--carousel-index, 0) * -50%), 0, 0);
+}
+
+.promo-slide {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.promo-slide--desktop {
+  flex: 0 0 50%;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+.promo-slide--mobile {
+  flex: 0 0 100%;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+.promo-banner-card {
+  height: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 0.5px solid var(--c-border);
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.promo-banner-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.promo-banner-card.is-current {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: linear-gradient(180deg, rgba(255, 247, 247, 0.98), #ffffff);
+}
+
+.promo-banner-card.is-future {
+  border-color: rgba(100, 116, 139, 0.22);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), #ffffff);
+}
+
+.promo-banner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.promo-banner-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.promo-banner-tag.is-current {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+.promo-banner-tag.is-future {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+}
+
+.promo-banner-id {
+  font-size: 11px;
+  color: var(--c-text-faint);
+}
+
+.promo-banner-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text-title);
+  line-height: 1.5;
+}
+
+.promo-banner-desc {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.promo-banner-gifts {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--c-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.promo-banner-date {
+  margin-top: auto;
+  font-size: 11px;
+  color: var(--c-text-faint);
+}
+
+.promo-nav-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  margin: auto 0;
+  border: 1px solid rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--c-text-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.promo-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.promo-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.42);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.promo-dot.active {
+  width: 24px;
+  background: var(--c-primary);
+}
+
+.promotion-banner-empty {
+  padding: 18px 12px;
+  border-radius: 12px;
+  border: 0.5px dashed var(--c-border);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--c-text-muted);
+  font-size: 12px;
+  text-align: center;
 }
 
 .company-switcher {
@@ -395,7 +858,7 @@ export default {
 
 /* 格狀模式：桌機 4 欄 */
 .view-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
 }
 
 /* 直列模式 */
@@ -408,7 +871,7 @@ export default {
 .product-card {
   border: 0.5px solid var(--c-border);
   border-top: 2px solid var(--c-primary);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--c-surface);
   overflow: hidden;
   display: flex;
@@ -419,7 +882,7 @@ export default {
 /* ── 圖片容器 ──────────────────────── */
 .product-img-wrap {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   background: var(--c-stripe);
   overflow: hidden;
   position: relative;
@@ -467,6 +930,32 @@ export default {
   background: var(--c-bg);
 }
 
+.favorite-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.68);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.favorite-toggle:hover {
+  transform: translateY(-1px);
+}
+
+.favorite-toggle.active {
+  background: #ef4444;
+  color: #fff;
+}
+
 .placeholder-watermark {
   font-size: 11px;
   font-weight: 500;
@@ -477,11 +966,11 @@ export default {
 
 /* ── 內容通用 ──────────────────────── */
 .product-content {
-  padding: 10px;
+  padding: 9px;
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 8px;
+  gap: 7px;
 }
 
 .info-group {
@@ -501,13 +990,13 @@ export default {
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .product-name {
   margin: 0;
   color: var(--c-text-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -525,9 +1014,17 @@ export default {
   letter-spacing: 0.04em;
 }
 
+.product-id-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
 .product-desc {
-  margin: 2px 0 4px;
-  font-size: 11px;
+  margin: 1px 0 2px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--c-text-muted);
   line-height: 1.5;
@@ -542,7 +1039,7 @@ export default {
 .view-grid .product-desc {
   -webkit-line-clamp: 1;
   line-clamp: 1;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .pkg-area {
@@ -552,7 +1049,7 @@ export default {
 
 .package-select {
   width: 100%;
-  height: 30px;
+  height: 28px;
   padding: 0 24px 0 8px;
   border: 0.5px solid var(--c-border);
   border-radius: 5px;
@@ -564,7 +1061,7 @@ export default {
   appearance: none;
   -webkit-appearance: none;
   color: var(--c-text-body);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   outline: none;
   cursor: pointer;
@@ -591,7 +1088,7 @@ export default {
 
 .price-text {
   color: var(--c-text-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   font-family: var(--font-mono);
 }
@@ -606,8 +1103,8 @@ export default {
 }
 
 .quantity-btn {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: #ffffff;
   color: var(--c-primary);
@@ -617,10 +1114,10 @@ export default {
 }
 
 .quantity-value {
-  width: 26px;
+  width: 24px;
   text-align: center;
   color: #334155;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
 }
 
@@ -633,12 +1130,12 @@ export default {
 
 .add-cart-btn {
   width: 100%;
-  height: 38px;
+  height: 34px;
   border: none;
   border-radius: 6px;
   background: var(--c-primary);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   flex-shrink: 0;
@@ -647,6 +1144,152 @@ export default {
 .add-cart-btn:disabled {
   background: #9ca7ba;
   cursor: not-allowed;
+}
+
+/* ── 促銷 Modal ───────────────────── */
+.promotion-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: rgba(15, 23, 42, 0.46);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.promotion-modal {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(84vh, 760px);
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--c-surface);
+  border: 0.5px solid var(--c-border);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.24);
+  display: flex;
+  flex-direction: column;
+}
+
+.promotion-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.promotion-modal-head {
+  padding: 20px 20px 12px;
+  border-bottom: 0.5px solid var(--c-divider);
+}
+
+.promotion-modal-eyebrow {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--c-text-faint);
+}
+
+.promotion-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--c-text-title);
+  line-height: 1.4;
+}
+
+.promotion-modal-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.promotion-modal-list {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promotion-modal-card {
+  border: 0.5px solid var(--c-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promotion-modal-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.promotion-modal-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-text-title);
+}
+
+.promotion-modal-period,
+.promotion-modal-desc,
+.promotion-modal-condition,
+.promotion-modal-gifts {
+  font-size: 13px;
+  color: var(--c-text-body);
+  line-height: 1.6;
+}
+
+.promotion-modal-label {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.promotion-modal-text {
+  color: var(--c-text-body);
+}
+
+.promotion-modal-gifts ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.promotion-modal-footer {
+  padding: 0 20px 20px;
+}
+
+.promotion-modal-btn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.promotion-modal-empty {
+  padding: 20px;
+  color: var(--c-text-muted);
+  font-size: 13px;
 }
 
 /* ── 直列模式覆蓋 ──────────────────── */
@@ -694,6 +1337,30 @@ export default {
 
 /* ── RWD 768px ─────────────────────── */
 @media (max-width: 768px) {
+  .promotion-notice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-head {
+    flex-direction: column;
+  }
+
+  .panel-hint {
+    text-align: left;
+  }
+
+  .promotion-carousel-view--desktop {
+    display: none;
+  }
+
+  .promotion-carousel-view--mobile {
+    display: flex;
+  }
+
+  .promo-track {
+    transform: translate3d(calc(var(--carousel-index, 0) * -100%), 0, 0);
+  }
+
   /* 格狀：手機 3 欄 */
   .view-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

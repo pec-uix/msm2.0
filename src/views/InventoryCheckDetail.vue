@@ -18,7 +18,8 @@
         </div>
         <div class="info-item">
           <span class="info-label">盤點日期</span>
-          <input v-model="checkDate" type="date" class="date-input" />
+          <input :value="checkDate" type="date" class="date-input" disabled />
+          <span class="info-hint">固定為當日</span>
         </div>
       </div>
     </section>
@@ -40,6 +41,14 @@
             <select v-model="block.package" class="package-select">
               <option v-for="pkg in packageOptions" :key="pkg" :value="pkg">{{ pkg }}</option>
             </select>
+            <div class="best-before-inline">
+              <span class="best-before-label">有效日期（最差日期）</span>
+              <input
+                v-model="block.bestBeforeDate"
+                type="date"
+                class="best-before-input"
+              />
+            </div>
           </div>
           <button type="button" class="remove-block-btn" @click="removeBlock(bIdx)">移除</button>
         </div>
@@ -92,19 +101,26 @@
                 class="block-photo-del"
                 @click.prevent="removeBlockPhoto(bIdx, pi)"
                 title="刪除"
-              >×</button>
+                >×</button>
             </div>
-            <label class="block-upload-label">
-              <camera-icon :size="14" :stroke-width="1.5" />
-              新增照片
-              <input
-                type="file"
-                accept="image/*"
-                class="file-input"
-                multiple
-                @change="e => onBlockPhotoUpload(e, bIdx)"
-              />
-            </label>
+            <div class="block-photo-actions">
+              <label class="block-upload-label">
+                <camera-icon :size="14" :stroke-width="1.5" />
+                新增照片
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="file-input"
+                  multiple
+                  @change="e => onBlockPhotoUpload(e, bIdx)"
+                />
+              </label>
+              <span class="photo-action-divider" aria-hidden="true"></span>
+              <button type="button" class="block-scan-btn" @click="openBarcodeScanner(bIdx)">
+                <barcode-icon :size="14" :stroke-width="1.5" />
+                掃描條碼
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -121,17 +137,24 @@
       <div class="proof-header">
         <span class="proof-eyebrow">PHOTO EVIDENCE</span>
         <span class="proof-title">拍照存證</span>
-        <label class="proof-upload-btn">
-          <camera-icon :size="14" :stroke-width="1.5" />
-          新增照片
-          <input
-            type="file"
-            accept="image/*"
-            class="file-input"
-            multiple
-            @change="onProofPhotoUpload"
-          />
-        </label>
+        <div class="proof-actions">
+          <label class="proof-upload-btn">
+            <camera-icon :size="14" :stroke-width="1.5" />
+            新增照片
+            <input
+              type="file"
+              accept="image/*"
+              class="file-input"
+              multiple
+              @change="onProofPhotoUpload"
+            />
+          </label>
+          <span class="photo-action-divider" aria-hidden="true"></span>
+          <button type="button" class="proof-scan-btn" @click="openBarcodeScanner(null)">
+            <barcode-icon :size="14" :stroke-width="1.5" />
+            掃描條碼
+          </button>
+        </div>
       </div>
       <div v-if="proofPhotos.length > 0" class="proof-grid">
         <img
@@ -155,17 +178,28 @@
       <span class="preview-close">點擊任意處關閉</span>
     </div>
 
+    <barcode-scanner-modal
+      :visible="barcodeScannerVisible"
+      title="條碼掃描"
+      hint="掃描 EAN-13 國際條碼後，將自動帶入對應商品品號"
+      @close="closeBarcodeScanner"
+      @scanned="handleBarcodeScanned"
+    />
+
   </div>
 </template>
 
 <script>
 import { customers } from '../mock/customers'
 import { products } from '../mock/products'
+import { findProductByBarcode } from '../utils/barcode'
 import {
   ChevronLeft as ChevronLeftIcon,
   Plus as PlusIcon,
-  Camera as CameraIcon
+  Camera as CameraIcon,
+  Barcode as BarcodeIcon
 } from 'lucide-vue'
+import BarcodeScannerModal from '../components/BarcodeScannerModal.vue'
 
 const LOCATIONS = [
   { key: 'warehouse', label: '倉庫' },
@@ -193,6 +227,7 @@ function newBlock () {
     _id: blockIdCounter++,
     productId: '',
     package: '單件',
+    bestBeforeDate: '',
     qty: emptyQty(),
     photos: []
   }
@@ -207,7 +242,7 @@ function todayStr () {
 
 export default {
   name: 'InventoryCheckDetailPage',
-  components: { ChevronLeftIcon, PlusIcon, CameraIcon },
+  components: { ChevronLeftIcon, PlusIcon, CameraIcon, BarcodeIcon, BarcodeScannerModal },
   props: ['checkId'],
   data () {
     const customer = customers.find(c => c.id === this.checkId)
@@ -219,7 +254,9 @@ export default {
       locations: LOCATIONS,
       packageOptions: buildPackageOptions(),
       previewUrl: null,
-      proofPhotos: []
+      proofPhotos: [],
+      barcodeScannerVisible: false,
+      barcodeTargetBlockIdx: null
     }
   },
   computed: {
@@ -227,7 +264,19 @@ export default {
       return this.customer ? this.customer.name : this.checkId
     }
   },
+  created () {
+    this.applyInitialProductFromQuery()
+  },
   methods: {
+    applyInitialProductFromQuery () {
+      const productId = this.$route.query.productId
+      if (!productId) return
+      const product = this.products.find(p => p.id === productId)
+      if (!product) return
+      this.$set(this.checkBlocks[0], 'productId', product.id)
+      this.$set(this.checkBlocks[0], 'package', product.packages && product.packages[0] ? product.packages[0].name : '單件')
+      this.onProductChange(0)
+    },
     onProductChange (bIdx) {
       const block = this.checkBlocks[bIdx]
       const product = products.find(p => p.id === block.productId)
@@ -291,6 +340,45 @@ export default {
         this.proofPhotos.push(url)
       })
       e.target.value = ''
+    },
+    openBarcodeScanner (blockIdx) {
+      this.barcodeTargetBlockIdx = blockIdx
+      this.barcodeScannerVisible = true
+    },
+    closeBarcodeScanner () {
+      this.barcodeScannerVisible = false
+      this.barcodeTargetBlockIdx = null
+    },
+    resolveBarcodeTargetBlockIdx () {
+      if (typeof this.barcodeTargetBlockIdx === 'number' && this.checkBlocks[this.barcodeTargetBlockIdx]) {
+        return this.barcodeTargetBlockIdx
+      }
+      const emptyIdx = this.checkBlocks.findIndex(block => !block.productId)
+      if (emptyIdx !== -1) return emptyIdx
+      return null
+    },
+    handleBarcodeScanned (code) {
+      const product = findProductByBarcode(this.products, code)
+      if (!product) {
+        this.$store.dispatch('showSnackbar', {
+          message: `找不到條碼 ${code} 對應的商品`,
+          type: 'warning'
+        })
+        return
+      }
+      const targetIdx = this.resolveBarcodeTargetBlockIdx()
+      if (targetIdx === null || !this.checkBlocks[targetIdx]) {
+        this.addBlock()
+      }
+      const idx = this.checkBlocks[targetIdx] ? targetIdx : this.checkBlocks.length - 1
+      this.$set(this.checkBlocks[idx], 'productId', product.id)
+      this.$set(this.checkBlocks[idx], 'package', product.packages && product.packages[0] ? product.packages[0].name : '單件')
+      this.onProductChange(idx)
+      this.$store.dispatch('showSnackbar', {
+        message: `已掃描 ${product.name}，品號 ${product.id} 已帶入`,
+        type: 'success'
+      })
+      this.closeBarcodeScanner()
     }
   }
 }
@@ -351,6 +439,11 @@ export default {
   color: #334155;
 }
 
+.info-hint {
+  font-size: 11px;
+  color: #8b95a8;
+}
+
 .date-input {
   height: 36px;
   padding: 0 10px;
@@ -396,6 +489,13 @@ export default {
   flex-wrap: wrap;
 }
 
+.best-before-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .product-select {
   height: 36px;
   padding: 0 10px;
@@ -430,6 +530,26 @@ export default {
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
+}
+
+.best-before-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.best-before-input {
+  height: 36px;
+  padding: 0 10px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 400;
+  outline: none;
+  width: 168px;
 }
 
 /* ── 位置 Grid ────────────────────── */
@@ -545,6 +665,15 @@ export default {
   flex: 1;
 }
 
+.proof-actions,
+.block-photo-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
 .proof-upload-btn {
   display: inline-flex;
   align-items: center;
@@ -603,6 +732,8 @@ export default {
 .block-photo-area {
   display: flex;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .block-photo-thumb {
@@ -623,6 +754,28 @@ export default {
   border: 0.5px solid var(--c-primary);
   border-radius: 4px;
   color: var(--c-primary);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.photo-action-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border-secondary);
+  flex-shrink: 0;
+}
+
+.block-scan-btn,
+.proof-scan-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: 0.5px solid #cbd5e1;
+  border-radius: 4px;
+  background: transparent;
+  color: #475569;
   font-size: 12px;
   font-weight: 400;
   cursor: pointer;
@@ -667,6 +820,15 @@ export default {
 
   .location-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .best-before-inline {
+    width: 100%;
+  }
+
+  .best-before-input {
+    width: 100%;
+    max-width: 220px;
   }
 }
 </style>

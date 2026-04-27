@@ -1,6 +1,7 @@
 export const products = [
   {
     id: 'P001',
+    barcode: '4710000000011',
     name: '台灣啤酒（罐裝）',
     description: '鋁罐 330ml',
     packages: [
@@ -13,6 +14,7 @@ export const products = [
   },
   {
     id: 'P002',
+    barcode: '4710000000028',
     name: '麥香紅茶（利樂包）',
     description: '利樂包 375ml',
     packages: [
@@ -25,6 +27,7 @@ export const products = [
   },
   {
     id: 'P003',
+    barcode: '4710000000035',
     name: '維他露 O 鋁罐',
     description: '鋁罐 340ml',
     packages: [
@@ -37,6 +40,7 @@ export const products = [
   },
   {
     id: 'P004',
+    barcode: '4710000000042',
     name: '統一奶茶（寶特瓶）',
     description: 'PET 瓶 500ml',
     packages: [
@@ -49,6 +53,7 @@ export const products = [
   },
   {
     id: 'P005',
+    barcode: '4710000000059',
     name: '舒跑運動飲料（瓶裝）',
     description: 'PET 瓶 590ml',
     packages: [
@@ -61,6 +66,7 @@ export const products = [
   },
   {
     id: 'P006',
+    barcode: '4710000000066',
     name: '黑松沙士（罐裝）',
     description: '鋁罐 330ml',
     packages: [
@@ -73,6 +79,7 @@ export const products = [
   },
   {
     id: 'P007',
+    barcode: '4710000000073',
     name: '御茶園每朝健康綠茶',
     description: 'PET 瓶 550ml',
     packages: [
@@ -85,6 +92,7 @@ export const products = [
   },
   {
     id: 'P008',
+    barcode: '4710000000080',
     name: '光泉鮮乳（瓶裝）',
     description: 'HDPE 瓶 936ml',
     packages: [
@@ -97,6 +105,7 @@ export const products = [
   },
   {
     id: 'P009',
+    barcode: '4710000000097',
     name: '可口可樂（罐裝）',
     description: '鋁罐 330ml',
     packages: [
@@ -109,6 +118,7 @@ export const products = [
   },
   {
     id: 'P010',
+    barcode: '4710000000103',
     name: '百事可樂（寶特瓶）',
     description: 'PET 瓶 600ml',
     packages: [

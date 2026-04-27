@@ -1,4 +1,4 @@
-export const promotionActivities = [
+const rawPromotionActivities = [
   {
     id: 'ACT001',
     name: '春季新品陳列推廣',
@@ -11,6 +11,7 @@ export const promotionActivities = [
         customerId: 'C001',
         name: '大洋貿易',
         address: '台北市信義區光復南路123號',
+        location: { lat: 25.040, lng: 121.565 },
         todos: [
           { id: 'ACT1-C001-T1', text: '完成輕量防水工作鞋主題陳列布置', requiresPhoto: true, completed: false, photos: [] },
           { id: 'ACT1-C001-T2', text: '張貼春季新品 POP 標牌', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=400&auto=format&fit=crop', 'https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=400&auto=format&fit=crop'] },
@@ -21,6 +22,7 @@ export const promotionActivities = [
         customerId: 'C002',
         name: '迅速供應',
         address: '新北市板橋區中山路200號',
+        location: { lat: 25.014, lng: 121.462 },
         todos: [
           { id: 'ACT1-C002-T1', text: '補充陳列架庫存至安全水位', requiresPhoto: false, completed: false, photos: [] },
           { id: 'ACT1-C002-T2', text: '拍攝完成後陳列全貌照片', requiresPhoto: true, completed: false, photos: [] }
@@ -30,6 +32,7 @@ export const promotionActivities = [
         customerId: 'C003',
         name: '綠能物流',
         address: '桃園市中壢區中正路456號',
+        location: { lat: 24.954, lng: 121.224 },
         todos: [
           { id: 'ACT1-C003-T1', text: '更換入口展示區商品', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop', 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT1-C003-T2', text: '確認春季品類標示牌', requiresPhoto: false, completed: true, photos: [] },
@@ -40,6 +43,7 @@ export const promotionActivities = [
         customerId: 'C004',
         name: '金堡科技',
         address: '台中市西屯區市政路89號',
+        location: { lat: 24.163, lng: 120.647 },
         todos: [
           { id: 'ACT1-C004-T1', text: '調整工作防護品展區位置', requiresPhoto: true, completed: false, photos: [] },
           { id: 'ACT1-C004-T2', text: '補充環保提袋贈品庫存', requiresPhoto: false, completed: false, photos: [] }
@@ -49,6 +53,7 @@ export const promotionActivities = [
         customerId: 'C005',
         name: '雄獅建材',
         address: '高雄市前鎮區中山二路78號',
+        location: { lat: 22.612, lng: 120.301 },
         todos: [
           { id: 'ACT1-C005-T1', text: '完成工地安全用品展示區', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT1-C005-T2', text: '確認訂購截止日告知客戶', requiresPhoto: false, completed: true, photos: [] }
@@ -68,6 +73,7 @@ export const promotionActivities = [
         customerId: 'C001',
         name: '大洋貿易',
         address: '台北市信義區光復南路123號',
+        location: { lat: 25.040, lng: 121.565 },
         todos: [
           { id: 'ACT2-C001-T1', text: '確認備貨清單並提交訂單', requiresPhoto: false, completed: false, photos: [] },
           { id: 'ACT2-C001-T2', text: '張貼長假優惠活動海報', requiresPhoto: true, completed: false, photos: [] }
@@ -77,6 +83,7 @@ export const promotionActivities = [
         customerId: 'C003',
         name: '綠能物流',
         address: '桃園市中壢區中正路456號',
+        location: { lat: 24.954, lng: 121.224 },
         todos: [
           { id: 'ACT2-C003-T1', text: '確認進貨時程與倉庫容量', requiresPhoto: false, completed: false, photos: [] },
           { id: 'ACT2-C003-T2', text: '完成收銀台周邊促銷品擺設', requiresPhoto: true, completed: false, photos: [] },
@@ -87,6 +94,7 @@ export const promotionActivities = [
         customerId: 'C005',
         name: '雄獅建材',
         address: '高雄市前鎮區中山二路78號',
+        location: { lat: 22.612, lng: 120.301 },
         todos: [
           { id: 'ACT2-C005-T1', text: '討論備貨方案與店長確認', requiresPhoto: false, completed: false, photos: [] }
         ]
@@ -105,6 +113,7 @@ export const promotionActivities = [
         customerId: 'C004',
         name: '金堡科技',
         address: '台中市西屯區市政路89號',
+        location: { lat: 24.163, lng: 120.647 },
         todos: [
           { id: 'ACT3-C004-T1', text: '設置安全防護品專區', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=400&auto=format&fit=crop', 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT3-C004-T2', text: '發送安全週宣傳折頁', requiresPhoto: false, completed: true, photos: [] },
@@ -115,6 +124,7 @@ export const promotionActivities = [
         customerId: 'C005',
         name: '雄獅建材',
         address: '高雄市前鎮區中山二路78號',
+        location: { lat: 22.612, lng: 120.301 },
         todos: [
           { id: 'ACT3-C005-T1', text: '更新安全防護展示架商品', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT3-C005-T2', text: '回傳客戶宣導活動執行照', requiresPhoto: true, completed: false, photos: [] }
@@ -124,6 +134,7 @@ export const promotionActivities = [
         customerId: 'C002',
         name: '迅速供應',
         address: '新北市板橋區中山路200號',
+        location: { lat: 25.014, lng: 121.462 },
         todos: [
           { id: 'ACT3-C002-T1', text: '補充安全手套及護目鏡庫存', requiresPhoto: false, completed: false, photos: [] }
         ]
@@ -142,6 +153,7 @@ export const promotionActivities = [
         customerId: 'C001',
         name: '大洋貿易',
         address: '台北市信義區光復南路123號',
+        location: { lat: 25.040, lng: 121.565 },
         todos: [
           { id: 'ACT4-C001-T1', text: '完成清倉品項盤點回報', requiresPhoto: false, completed: true, photos: [] },
           { id: 'ACT4-C001-T2', text: '張貼清倉特賣標示', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=400&auto=format&fit=crop'] },
@@ -152,6 +164,7 @@ export const promotionActivities = [
         customerId: 'C002',
         name: '迅速供應',
         address: '新北市板橋區中山路200號',
+        location: { lat: 25.014, lng: 121.462 },
         todos: [
           { id: 'ACT4-C002-T1', text: '確認清倉品折扣標示', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?q=80&w=400&auto=format&fit=crop', 'https://images.unsplash.com/photo-1608270586620-248524c67de9?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT4-C002-T2', text: '回報滯銷品剩餘數量', requiresPhoto: false, completed: true, photos: [] }
@@ -161,6 +174,7 @@ export const promotionActivities = [
         customerId: 'C003',
         name: '綠能物流',
         address: '桃園市中壢區中正路456號',
+        location: { lat: 24.954, lng: 121.224 },
         todos: [
           { id: 'ACT4-C003-T1', text: '完成清倉區陳列', requiresPhoto: true, completed: true, photos: ['https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop', 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=400&auto=format&fit=crop'] },
           { id: 'ACT4-C003-T2', text: '提交回收品清單', requiresPhoto: false, completed: true, photos: [] }
@@ -169,3 +183,26 @@ export const promotionActivities = [
     ]
   }
 ]
+
+function buildActivityItems (activity) {
+  return (Array.isArray(activity.stores) ? activity.stores : []).flatMap(store => {
+    const todos = Array.isArray(store.todos) ? store.todos : []
+    return todos.map((todo, todoIndex) => ({
+      id: todo.id || `${activity.id}-${store.customerId}-${todoIndex}`,
+      storeCustomerId: store.customerId,
+      storeName: store.name,
+      storeAddress: store.address,
+      storeLocation: store.location ? { ...store.location } : null,
+      todoIndex,
+      requiresPhoto: !!todo.requiresPhoto,
+      completed: !!todo.completed,
+      photos: Array.isArray(todo.photos) ? [...todo.photos] : [],
+      todo
+    }))
+  })
+}
+
+export const promotionActivities = rawPromotionActivities.map(activity => ({
+  ...activity,
+  items: buildActivityItems(activity)
+}))

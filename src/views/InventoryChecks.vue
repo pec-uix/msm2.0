@@ -34,7 +34,7 @@
           v-for="customer in displayedCustomers"
           :key="customer.id"
           class="customer-item"
-          @click="$router.push('/inventory-checks/' + customer.id)"
+          @click="openInventoryDetail(customer.id)"
         >
           <div class="customer-main">
             <p class="customer-name">{{ customer.name }}</p>
@@ -46,7 +46,7 @@
           </div>
           <div class="customer-right">
             <span v-if="customer.distance !== null" class="distance-badge">
-              {{ customer.distance }}km
+              {{ formatDistanceLabel(customer.distance) }}
             </span>
             <span class="arrow">›</span>
           </div>
@@ -75,34 +75,73 @@
       </ul>
     </section>
 
+    <!-- 選擇客戶 Modal -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="customer-modal" role="dialog" aria-modal="true">
+        <div class="customer-modal-header">
+          <h3 class="customer-modal-title">選擇客戶</h3>
+          <button type="button" class="modal-close-btn" @click="closeModal" aria-label="關閉">×</button>
+        </div>
+
+        <input
+          v-model.trim="modalSearch"
+          type="text"
+          class="customer-modal-search"
+          placeholder="搜尋客戶名稱"
+        />
+
+        <div class="customer-modal-tabs">
+          <button
+            type="button"
+            :class="['customer-modal-tab', { active: selectionMode === 'my' }]"
+            @click="switchSelectionMode('my')"
+          >我的客戶</button>
+          <button
+            type="button"
+            :class="['customer-modal-tab', { active: selectionMode === 'other' }]"
+            @click="switchSelectionMode('other')"
+          >不是我的客戶</button>
+        </div>
+
+        <div class="customer-modal-list">
+          <button
+            v-for="customer in modalCustomers"
+            :key="customer.id"
+            type="button"
+            :class="['customer-modal-item', { selected: selectedCustomerId === customer.id }]"
+            @click="selectCustomer(customer.id)"
+          >
+            <span class="customer-modal-name">{{ customer.name }}</span>
+            <span class="customer-modal-address">{{ customer.address }}</span>
+          </button>
+          <div v-if="modalCustomers.length === 0" class="customer-modal-empty">沒有符合的客戶</div>
+        </div>
+
+        <div class="customer-modal-actions">
+          <button type="button" class="customer-modal-cancel" @click="closeModal">取消</button>
+          <button
+            type="button"
+            class="customer-modal-confirm"
+            :disabled="!selectedCustomerId"
+            @click="confirmCustomer"
+          >確認</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
-import { customers } from '../mock/customers'
 import { getCurrentUser } from '../services/auth'
+import { buildTodayStoreList } from '../mock/schedule'
+import { customers } from '../mock/customers'
+import { buildSelectableCustomers, getCustomerPoint } from '../utils/customerSelection'
+import { formatDistanceLabel } from '../utils/distance'
 import {
   Search as SearchIcon,
   MapPin as MapPinIcon
 } from 'lucide-vue'
-
-// 台灣主要城市中心座標（用於模擬距離）
-const CITY_COORDS = {
-  C001: { lat: 25.040, lng: 121.565 },
-  C002: { lat: 25.014, lng: 121.462 },
-  C003: { lat: 24.954, lng: 121.224 },
-  C004: { lat: 24.163, lng: 120.647 },
-  C005: { lat: 22.612, lng: 120.301 }
-}
-
-function haversineKm (lat1, lng1, lat2, lng2) {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
 
 export default {
   name: 'InventoryChecksPage',
@@ -112,10 +151,13 @@ export default {
       keyword: '',
       gpsLoading: false,
       gpsError: '',
-      userLat: null,
-      userLng: null,
-      customerList: customers.map(c => ({ ...c, distance: null })),
-      currentUser: getCurrentUser()
+      currentLocation: null,
+      currentUser: getCurrentUser(),
+      showModal: false,
+      modalSearch: '',
+      selectionMode: 'my',
+      selectedCustomerId: null,
+      selectionLocation: null
     }
   },
   computed: {
@@ -125,25 +167,52 @@ export default {
         .filter(r => r.checkerId === this.currentUser.id)
         .sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''))
     },
+    todayStoreList () {
+      return buildTodayStoreList(this.currentLocation)
+    },
     filteredCustomers () {
-      if (!this.keyword) return this.customerList
+      if (!this.keyword) return this.todayStoreList
       const kw = this.keyword.toLowerCase()
-      return this.customerList.filter(
+      return this.todayStoreList.filter(
         c => c.name.toLowerCase().includes(kw) || c.address.toLowerCase().includes(kw)
       )
     },
     displayedCustomers () {
-      if (this.userLat !== null) {
-        return [...this.filteredCustomers].sort((a, b) => {
-          const da = a.distance !== null ? a.distance : Infinity
-          const db = b.distance !== null ? b.distance : Infinity
-          return da - db
-        })
-      }
       return this.filteredCustomers
+    },
+    modalCustomers () {
+      return buildSelectableCustomers({
+        customers,
+        currentUserId: this.currentUser ? this.currentUser.id : '',
+        mode: this.selectionMode,
+        currentLocation: this.selectionLocation || this.currentLocation,
+        keyword: this.modalSearch
+      })
     }
   },
   methods: {
+    formatDistanceLabel,
+    loadSelectionLocation () {
+      if (!navigator.geolocation) return
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          this.selectionLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          }
+        },
+        () => {
+          this.selectionLocation = null
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      )
+    },
+    openInventoryDetail (customerId) {
+      this.$router.push({
+        path: '/inventory-checks/' + customerId,
+        query: {}
+      })
+    },
     lastCheckDate (customerId) {
       const record = this.myRecords.find(r => r.customerId === customerId)
       return record ? record.checkDate : null
@@ -157,14 +226,10 @@ export default {
       this.gpsError = ''
       navigator.geolocation.getCurrentPosition(
         pos => {
-          this.userLat = pos.coords.latitude
-          this.userLng = pos.coords.longitude
-          this.customerList = this.customerList.map(c => {
-            const coord = CITY_COORDS[c.id]
-            if (!coord) return c
-            const dist = haversineKm(this.userLat, this.userLng, coord.lat, coord.lng)
-            return { ...c, distance: Math.round(dist * 10) / 10 }
-          })
+          this.currentLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          }
           this.gpsLoading = false
         },
         err => {
@@ -177,6 +242,40 @@ export default {
         },
         { timeout: 10000 }
       )
+    },
+    openModal () {
+      this.modalSearch = ''
+      this.selectionMode = 'my'
+      this.selectedCustomerId = null
+      this.selectionLocation = null
+      this.showModal = true
+      this.loadSelectionLocation()
+    },
+    closeModal () {
+      this.showModal = false
+      this.modalSearch = ''
+      this.selectionMode = 'my'
+      this.selectedCustomerId = null
+      this.selectionLocation = null
+    },
+    switchSelectionMode (mode) {
+      this.selectionMode = mode
+      this.selectedCustomerId = null
+    },
+    selectCustomer (customerId) {
+      this.selectedCustomerId = customerId
+    },
+    confirmCustomer () {
+      if (!this.selectedCustomerId) return
+      const customer = customers.find(c => c.id === this.selectedCustomerId)
+      const point = getCustomerPoint(customer)
+      const query = { customerId: this.selectedCustomerId }
+      if (point) {
+        query.customerLat = String(point.lat)
+        query.customerLng = String(point.lng)
+      }
+      this.closeModal()
+      this.$router.push({ path: '/orders/new/review', query })
     }
   }
 }
@@ -440,5 +539,180 @@ export default {
   color: #8b95a8;
   font-size: 14px;
   font-weight: 400;
+}
+
+/* ── Modal ───────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.customer-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: min(80vh, 640px);
+}
+
+.customer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.customer-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.customer-modal-search {
+  height: 38px;
+  padding: 0 12px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 14px;
+  outline: none;
+}
+
+.customer-modal-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.customer-modal-tab {
+  flex: 1;
+  height: 36px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.customer-modal-tab.active {
+  background: var(--c-primary);
+  color: #ffffff;
+  border-color: var(--c-primary);
+}
+
+.customer-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 320px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.customer-modal-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 0.5px solid #E2E8F0;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.customer-modal-item:last-child {
+  border-bottom: none;
+}
+
+.customer-modal-item:hover {
+  background: #f8fafc;
+}
+
+.customer-modal-item.selected {
+  background: #eef3fb;
+}
+
+.customer-modal-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.customer-modal-address {
+  font-size: 12px;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.customer-modal-empty {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.customer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.customer-modal-cancel {
+  height: 40px;
+  padding: 0 16px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 8px;
+  background: transparent;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.customer-modal-confirm {
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--c-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.customer-modal-confirm:disabled {
+  background: #9ca7ba;
+  cursor: not-allowed;
 }
 </style>

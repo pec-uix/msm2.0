@@ -3,7 +3,7 @@
     <header class="layout-header">
       <div class="brand">
         <span class="live-dot" aria-hidden="true"></span>
-        <router-link to="/" class="brand-logo">MSM 2.0</router-link>
+        <router-link to="/" class="brand-logo">MSM 2</router-link>
         <span class="brand-sep" aria-hidden="true"></span>
         <span class="brand-name">行動訂單管理系統</span>
       </div>
@@ -38,7 +38,7 @@
 
     <main class="layout-main">
       <router-view />
-      <div class="demo-footer">MSM 2.0 展示版本 — 所有資料均為模擬資料</div>
+      <div class="demo-footer">MSM 2 展示版本 — 所有資料均為模擬資料</div>
     </main>
 
     <!-- 手機抽屜選單 -->
@@ -84,7 +84,7 @@
 <script>
 import { getCurrentUser } from '../services/auth'
 import {
-  Home, Package, ShoppingCart, FileText, ClipboardCheck, Tag, LogOut, Menu, X
+  Home, Package, Heart, ShoppingCart, FileText, ClipboardCheck, Tag, LogOut, Menu, X
 } from 'lucide-vue'
 
 export default {
@@ -96,6 +96,7 @@ export default {
       tabs: [
         { label: '首頁', path: '/', roles: ['customer', 'sales'], icon: Home },
         { label: '產品', path: '/products', roles: ['customer'], icon: Package },
+        { label: '我的最愛', path: '/favorites', roles: ['customer'], icon: Heart },
         { label: '購物車', path: '/cart', roles: ['customer'], icon: ShoppingCart },
         { label: '訂單', path: '/orders', icon: FileText },
         { label: '庫存盤點', path: '/inventory-checks', roles: ['sales'], icon: ClipboardCheck },

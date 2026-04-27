@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import LoginView from '../views/Login.vue'
 import HomeView from '../views/Home.vue'
 import ProductsView from '../views/Products.vue'
+import FavoritesView from '../views/Favorites.vue'
 import CartView from '../views/Cart.vue'
 import CartConfirmView from '../views/CartConfirm.vue'
 import OrdersView from '../views/Orders.vue'
@@ -44,6 +45,12 @@ const routes = [
         path: 'products',
         name: 'products',
         component: ProductsView,
+        meta: { roles: ['customer'] }
+      },
+      {
+        path: 'favorites',
+        name: 'favorites',
+        component: FavoritesView,
         meta: { roles: ['customer'] }
       },
       {
