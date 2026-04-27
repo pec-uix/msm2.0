@@ -54,14 +54,50 @@
       </div>
     </div>
 
-    <section class="catalog-banner-placeholder" aria-label="banner 預留區">
-      <div class="banner-icon-wrap">
-        <image-icon :size="18" :stroke-width="1.5" />
+    <section class="catalog-banner-strip" aria-label="banner 輪播區">
+      <div
+        class="catalog-banner-carousel"
+        @touchstart.passive="onCatalogBannerTouchStart"
+        @touchend.passive="onCatalogBannerTouchEnd"
+      >
+        <div
+          ref="catalogBannerViewport"
+          class="catalog-banner-viewport"
+          @scroll.passive="onCatalogBannerScroll"
+        >
+          <div class="catalog-banner-track">
+            <article
+              v-for="banner in catalogBanners"
+              :key="banner.id"
+              class="catalog-banner-slide"
+            >
+              <div class="catalog-banner-card">
+                <picture class="catalog-banner-picture">
+                  <source :srcset="banner.imageMobile" media="(max-width: 768px)" />
+                  <img
+                    class="catalog-banner-image"
+                    :src="banner.imageDesktop"
+                    :alt="banner.title"
+                  />
+                </picture>
+              </div>
+            </article>
+          </div>
+        </div>
       </div>
-      <div class="banner-copy">
-        <p class="banner-title">Banner 預留區</p>
-        <p class="banner-desc">未來可放促銷圖、活動訊息或品牌視覺。</p>
+
+      <div class="catalog-banner-dots" aria-label="banner 分頁">
+        <button
+          v-for="(banner, index) in catalogBanners"
+          :key="banner.id"
+          type="button"
+          class="catalog-banner-dot"
+          :class="{ active: activeCatalogBannerIndex === index }"
+          :aria-label="`切換到 ${banner.title}`"
+          @click="scrollToCatalogBanner(index)"
+        />
       </div>
+
     </section>
 
     <!-- 格狀 / 直列 -->
@@ -173,8 +209,7 @@ import {
   Search as SearchIcon,
   AlignJustify as AlignJustifyIcon,
   LayoutGrid as LayoutGridIcon,
-  Heart as HeartIcon,
-  Image as ImageIcon
+  Heart as HeartIcon
 } from 'lucide-vue'
 
 export default {
@@ -184,7 +219,6 @@ export default {
     AlignJustifyIcon,
     LayoutGridIcon,
     HeartIcon,
-    ImageIcon,
     ProductPromotionBadge,
     PromotionNotice
   },
@@ -195,8 +229,25 @@ export default {
       productList: products,
       promotionList: promotions,
       salesCompanies,
+      catalogBanners: [
+        {
+          id: 'catalog-banner-1',
+          title: 'Drs F 洗髮系列新品上架',
+          imageDesktop: '/images/電腦banner1.png',
+          imageMobile: '/images/手機banner1.png'
+        },
+        {
+          id: 'catalog-banner-2',
+          title: '春季檔期促銷預告',
+          imageDesktop: '/images/電腦banner2.png',
+          imageMobile: '/images/手機banner2.png'
+        }
+      ],
+      activeCatalogBannerIndex: 0,
       selectedPackageMap: {},
       quantityMap: {},
+      bannerTouchStartX: 0,
+      bannerTouchEndX: 0,
       imgReadyMap: {},
       imgErrorMap: {}
     }
@@ -236,7 +287,7 @@ export default {
     },
     favoriteProductIds () {
       return this.$store.getters.favoriteProductIdsByCompanyId(this.selectedSalesCompany.id)
-    }
+    },
   },
   created () {
     this.initializeCardState()
@@ -284,6 +335,53 @@ export default {
     },
     isFavorite (productId) {
       return this.favoriteProductIds.includes(productId)
+    },
+    onCatalogBannerScroll () {
+      const viewport = this.$refs.catalogBannerViewport
+      if (!viewport || !viewport.children.length) return
+      const slide = viewport.querySelector('.catalog-banner-slide')
+      if (!slide) return
+      const slideWidth = slide.offsetWidth || 1
+      const nextIndex = Math.min(
+        this.catalogBanners.length - 1,
+        Math.max(0, Math.round(viewport.scrollLeft / slideWidth))
+      )
+      this.activeCatalogBannerIndex = nextIndex
+    },
+    onCatalogBannerTouchStart (event) {
+      if (!event.touches || !event.touches.length) return
+      this.bannerTouchStartX = event.touches[0].clientX
+    },
+    onCatalogBannerTouchEnd (event) {
+      if (!event.changedTouches || !event.changedTouches.length) return
+      this.bannerTouchEndX = event.changedTouches[0].clientX
+      const delta = this.bannerTouchEndX - this.bannerTouchStartX
+      if (Math.abs(delta) < 30) return
+      if (delta < 0) {
+        this.goToNextCatalogBanner()
+      } else {
+        this.goToPrevCatalogBanner()
+      }
+    },
+    goToPrevCatalogBanner () {
+      const nextIndex = (this.activeCatalogBannerIndex - 1 + this.catalogBanners.length) % this.catalogBanners.length
+      this.scrollToCatalogBanner(nextIndex)
+    },
+    goToNextCatalogBanner () {
+      const nextIndex = (this.activeCatalogBannerIndex + 1) % this.catalogBanners.length
+      this.scrollToCatalogBanner(nextIndex)
+    },
+    scrollToCatalogBanner (index) {
+      const viewport = this.$refs.catalogBannerViewport
+      if (!viewport) return
+      const slide = viewport.querySelector('.catalog-banner-slide')
+      if (!slide) return
+      const slideWidth = slide.offsetWidth || 1
+      viewport.scrollTo({
+        left: slideWidth * index,
+        behavior: 'smooth'
+      })
+      this.activeCatalogBannerIndex = index
     },
     toggleFavorite (productId) {
       const willFavorite = !this.isFavorite(productId)
@@ -341,47 +439,110 @@ export default {
   gap: 12px;
 }
 
-.catalog-banner-placeholder {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 88px;
-  padding: 14px 16px;
-  border: 1px dashed rgba(100, 116, 139, 0.35);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(241, 245, 249, 0.72), rgba(255, 255, 255, 0.9));
-}
-
-.banner-icon-wrap {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--c-primary);
-  background: rgba(37, 99, 235, 0.08);
-  flex-shrink: 0;
-}
-
-.banner-copy {
+.catalog-banner-strip {
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
-.banner-title {
+.catalog-banner-carousel {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
   margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--c-text-body);
 }
 
-.banner-desc {
-  margin: 0;
-  font-size: 12px;
-  color: var(--c-text-muted);
-  line-height: 1.5;
+.catalog-banner-viewport {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.catalog-banner-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.catalog-banner-track {
+  display: flex;
+  width: 100%;
+  min-width: max-content;
+}
+
+.catalog-banner-slide {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+  flex: 0 0 50%;
+  padding-right: 12px;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+}
+
+.catalog-banner-dots {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.catalog-banner-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.42);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.catalog-banner-dot.active {
+  width: 24px;
+  background: var(--c-primary);
+}
+
+.catalog-banner-card {
+  height: 88px;
+  border-radius: 14px;
+  border: 0.5px solid var(--c-border);
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
+}
+
+.catalog-banner-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.catalog-banner-picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.catalog-banner-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .promotion-notice-section {
@@ -886,11 +1047,13 @@ export default {
 .product-img-wrap {
   width: 100%;
   aspect-ratio: 4 / 3;
-  background: var(--c-stripe);
+  background: #fff;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
   border-bottom: 0.5px solid var(--c-divider);
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .product-img-wrap.is-skeleton {
@@ -914,7 +1077,7 @@ export default {
 .product-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -930,7 +1093,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--c-bg);
+  background: #fff;
 }
 
 .favorite-toggle {
@@ -1307,6 +1470,7 @@ export default {
   flex-shrink: 0;
   border-bottom: none;
   border-right: 0.5px solid var(--c-divider);
+  padding: 8px;
 }
 
 .view-list .product-content {
@@ -1340,6 +1504,20 @@ export default {
 
 /* ── RWD 768px ─────────────────────── */
 @media (max-width: 768px) {
+  .catalog-banner-dots {
+    display: flex;
+  }
+
+  .catalog-banner-card {
+    height: 76px;
+  }
+
+  .catalog-banner-slide {
+    flex: 0 0 88%;
+    padding-right: 12px;
+    scroll-snap-align: start;
+  }
+
   .promotion-notice-grid {
     grid-template-columns: 1fr;
   }

@@ -332,14 +332,16 @@ export default {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--c-stripe);
+  background: #fff;
   border-bottom: 0.5px solid var(--c-divider);
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .favorite-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -356,7 +358,7 @@ export default {
   align-items: center;
   justify-content: center;
   color: var(--c-border);
-  background: var(--c-bg);
+  background: #fff;
 }
 
 .favorite-content {

@@ -128,5 +128,41 @@ export const products = [
       { name: '單罐', price: 38 }
     ],
     image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=400&auto=format&fit=crop'
+  },
+  {
+    id: 'P011',
+    barcode: '4710000000110',
+    name: 'Drs F溫潤舒活洗髮精-三代580ml*12',
+    description: '洗髮精 580ml',
+    packages: [
+      { name: '束/6瓶', price: 780 },
+      { name: '打/12瓶', price: 1520 },
+      { name: '箱/24瓶', price: 2980 }
+    ],
+    image: '/images/溫潤舒活洗髮精.webp'
+  },
+  {
+    id: 'P012',
+    barcode: '4710000000127',
+    name: 'Drs F髮根強化洗髮精-清爽三代580',
+    description: '洗髮精 580ml',
+    packages: [
+      { name: '束/6瓶', price: 760 },
+      { name: '打/12瓶', price: 1480 },
+      { name: '箱/24瓶', price: 2900 }
+    ],
+    image: '/images/溫潤舒活洗髮精.webp'
+  },
+  {
+    id: 'P013',
+    barcode: '4710000000134',
+    name: 'Drs F髮根強化洗髮精-潤澤三代580',
+    description: '洗髮精 580ml',
+    packages: [
+      { name: '束/6瓶', price: 760 },
+      { name: '打/12瓶', price: 1480 },
+      { name: '箱/24瓶', price: 2900 }
+    ],
+    image: '/images/溫潤舒活洗髮精.webp'
   }
 ]
