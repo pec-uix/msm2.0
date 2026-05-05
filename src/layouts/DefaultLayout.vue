@@ -3,7 +3,7 @@
     <header class="layout-header">
       <div class="brand">
         <span class="live-dot" aria-hidden="true"></span>
-        <router-link to="/" class="brand-logo">MSM 2</router-link>
+        <router-link to="/" class="brand-logo">MSM2</router-link>
         <span class="brand-sep" aria-hidden="true"></span>
         <span class="brand-name">行動訂單管理系統</span>
       </div>
