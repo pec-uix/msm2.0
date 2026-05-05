@@ -68,7 +68,7 @@ function buildStoreEntry (customer, source, extra = {}) {
 
 export function buildTodayStoreList (currentLocation = null, options = {}) {
   const radiusKm = typeof options.radiusKm === 'number' ? options.radiusKm : 30
-  const sortMode = options.sortMode === 'distance' ? 'distance' : 'default'
+  const sortMode = ['distance', 'distance_desc'].includes(options.sortMode) ? options.sortMode : 'default'
   const orderCustomerIds = options.orderCustomerIds instanceof Set
     ? options.orderCustomerIds
     : new Set(Array.isArray(options.orderCustomerIds) ? options.orderCustomerIds : [])
@@ -101,13 +101,20 @@ export function buildTodayStoreList (currentLocation = null, options = {}) {
     return true
   })
 
-  const ordered = currentLocation && sortMode === 'distance'
-    ? sortByDistance(
-        deduped,
-        currentLocation,
-        store => store.location
-      )
-    : deduped
+  let ordered = deduped
+  if (currentLocation && sortMode === 'distance') {
+    ordered = sortByDistance(
+      deduped,
+      currentLocation,
+      store => store.location
+    )
+  } else if (currentLocation && sortMode === 'distance_desc') {
+    ordered = sortByDistance(
+      deduped,
+      currentLocation,
+      store => store.location
+    ).reverse()
+  }
 
   return ordered.map(store => {
     const distance = currentLocation && store.location

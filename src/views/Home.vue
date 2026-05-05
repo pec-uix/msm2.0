@@ -168,6 +168,12 @@
               :disabled="!scheduleCurrentLocation"
               @click="scheduleSortMode = 'distance'"
             >由近到遠</button>
+            <button
+              type="button"
+              :class="['schedule-sort-btn', { active: scheduleSortMode === 'distance_desc' }]"
+              :disabled="!scheduleCurrentLocation"
+              @click="scheduleSortMode = 'distance_desc'"
+            >由遠到近</button>
           </div>
         </div>
         <ul class="schedule-list">
@@ -366,6 +372,12 @@
                 :disabled="!scheduleCurrentLocation"
                 @click="scheduleSortMode = 'distance'"
               >由近到遠</button>
+              <button
+                type="button"
+                :class="['schedule-sort-btn', { active: scheduleSortMode === 'distance_desc' }]"
+                :disabled="!scheduleCurrentLocation"
+                @click="scheduleSortMode = 'distance_desc'"
+              >由遠到近</button>
             </div>
           </div>
           <ul class="schedule-list schedule-modal-list">

@@ -194,6 +194,12 @@
                 :disabled="!selectionLocation"
                 @click="scheduleSortMode = 'distance'"
               >由近到遠</button>
+              <button
+                type="button"
+                :class="['customer-modal-chip', { active: scheduleSortMode === 'distance_desc' }]"
+                :disabled="!selectionLocation"
+                @click="scheduleSortMode = 'distance_desc'"
+              >由遠到近</button>
             </div>
           </div>
           <div class="customer-modal-list customer-modal-list--tab">
@@ -399,9 +405,12 @@ export default {
             (customer.address || '').toLowerCase().includes(keyword)
         })
 
-      const ordered = this.scheduleSortMode === 'distance'
-        ? sortByDistance(filtered, this.selectionLocation, customer => customer.location)
-        : filtered
+      let ordered = filtered
+      if (this.scheduleSortMode === 'distance') {
+        ordered = sortByDistance(filtered, this.selectionLocation, customer => customer.location)
+      } else if (this.scheduleSortMode === 'distance_desc') {
+        ordered = sortByDistance(filtered, this.selectionLocation, customer => customer.location).reverse()
+      }
 
       return ordered.map(customer => this.decorateCustomerDistance(customer))
     },
