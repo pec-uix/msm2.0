@@ -1654,30 +1654,31 @@ export default {
   border-radius: 8px;
   background: #ffffff;
   padding: 18px 20px;
-  display: grid;
-  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-  align-items: start;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
 .pending-overview {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 18px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid var(--c-divider);
 }
 
 .pending-left {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
   flex-shrink: 0;
 }
 
 .pending-number {
   font-family: var(--font-mono);
-  font-size: 48px;
+  font-size: 44px;
   font-weight: 500;
   color: var(--c-primary);
   line-height: 1;
@@ -1688,7 +1689,7 @@ export default {
   font-weight: 600;
   color: #94A3B8;
   letter-spacing: 0.12em;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .pending-right {
@@ -1696,18 +1697,19 @@ export default {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  flex: 1;
 }
 
 .pending-title-row {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .pending-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   color: #334155;
 }
@@ -1717,6 +1719,7 @@ export default {
   font-size: 13px;
   line-height: 1.5;
   color: #64748b;
+  max-width: 560px;
 }
 
 .pending-btn {
@@ -1733,7 +1736,7 @@ export default {
 
 .pending-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-self: stretch;
   align-items: stretch;
   gap: 10px;
@@ -2182,17 +2185,20 @@ export default {
   }
 
   .pending-card {
-    display: flex;
-    flex-direction: column;
     padding: 14px;
     gap: 12px;
   }
 
   .pending-overview,
-  .pending-title-row {
+  .pending-title-row,
+  .pending-left {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+  }
+
+  .pending-overview {
+    padding-bottom: 10px;
   }
 
   .pending-actions {
@@ -2270,10 +2276,16 @@ export default {
     padding: 12px;
   }
 
+  .pending-actions {
+    grid-template-columns: 1fr;
+  }
+
   .sales-entry-btn--hero {
-    min-height: 64px;
-    padding: 10px 8px;
+    min-height: 56px;
+    padding: 10px 12px;
     border-radius: 10px;
+    flex-direction: row;
+    align-items: center;
   }
 
   .sales-entry-btn--hero .entry-body {
