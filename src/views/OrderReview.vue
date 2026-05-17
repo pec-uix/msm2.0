@@ -193,15 +193,8 @@
                 </template>
                 <!-- 業務註記贈品：勾選框 + (sales_add 才顯示刪除) -->
                 <template v-else>
-                  <label class="gift-check">
-                    <input
-                      :checked="row.isGift"
-                      type="checkbox"
-                      class="gift-check-input"
-                      @change="setGiftChecked(idx, $event.target.checked)"
-                    />
-                    <span class="gift-check-text">贈品</span>
-                  </label>
+                  <span v-if="row.isGift" class="gift-locked-badge">贈品</span>
+                  <span v-else class="gift-empty-text">—</span>
                   <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
                     <trash2-icon :size="13" :stroke-width="1.5" />
                   </button>
@@ -249,15 +242,8 @@
               </button>
             </template>
             <template v-else>
-              <label class="gift-check gift-check--mobile">
-                <input
-                  :checked="row.isGift"
-                  type="checkbox"
-                  class="gift-check-input"
-                  @change="setGiftChecked(idx, $event.target.checked)"
-                />
-                <span class="gift-check-text">贈品</span>
-              </label>
+              <span v-if="row.isGift" class="gift-locked-badge">贈品</span>
+              <span v-else class="gift-empty-text">—</span>
               <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
                 <trash2-icon :size="13" :stroke-width="1.5" />
               </button>
@@ -405,6 +391,77 @@
       </div>
     </div>
 
+    <button type="button" class="floating-add-btn" @click="addRowAndScroll">
+      +
+    </button>
+
+    <transition name="preview-fade">
+      <div v-if="previewVisible" class="preview-overlay" @click.self="previewVisible = false">
+        <div class="preview-modal" role="dialog" aria-modal="true">
+          <div class="preview-modal-header">
+            <div>
+              <div class="preview-modal-eyebrow">PREVIEW</div>
+              <h3 class="preview-modal-title">拋轉內容預覽</h3>
+              <p class="preview-modal-subtitle">送出前請再次確認品項、數量、單價與贈品註記。</p>
+            </div>
+            <button type="button" class="preview-close-btn" @click="previewVisible = false" aria-label="關閉">×</button>
+          </div>
+          <div class="preview-summary-grid">
+            <div class="preview-summary-card">
+              <span class="preview-summary-label">客戶名稱</span>
+              <span class="preview-summary-value">{{ customerName }}</span>
+            </div>
+            <div class="preview-summary-card">
+              <span class="preview-summary-label">配送單位</span>
+              <span class="preview-summary-value">{{ orderDeliveryUnit }}</span>
+            </div>
+            <div class="preview-summary-card">
+              <span class="preview-summary-label">明細筆數</span>
+              <span class="preview-summary-value">{{ previewRows.length }} 筆</span>
+            </div>
+            <div class="preview-summary-card">
+              <span class="preview-summary-label">訂單小計</span>
+              <span class="preview-summary-value preview-summary-value--amount">$ {{ totalAmount.toLocaleString() }}</span>
+            </div>
+          </div>
+          <div class="preview-table-wrap">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>序號</th>
+                  <th>產品代號</th>
+                  <th>產品名稱</th>
+                  <th>包裝別</th>
+                  <th>單位數量</th>
+                  <th>單價</th>
+                  <th>贈品註記</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row, idx) in previewRows" :key="'preview_' + row._rowId">
+                  <td class="preview-col-index">{{ idx + 1 }}</td>
+                  <td class="preview-col-code">{{ row.productId || '—' }}</td>
+                  <td class="preview-col-name">{{ row.name || '—' }}</td>
+                  <td>{{ row.package || '—' }}</td>
+                  <td class="preview-col-qty">{{ formatPreviewQty(row) }}</td>
+                  <td class="preview-col-price">{{ row.isGift ? '—' : '$ ' + (row.unitPrice || 0).toLocaleString() }}</td>
+                  <td>
+                    <span :class="['preview-gift-badge', row.isGift ? 'is-gift' : 'is-normal']">
+                      {{ row.isGift ? '贈品' : '一般品' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="preview-modal-footer">
+            <button type="button" class="preview-secondary-btn" @click="previewVisible = false">返回修改</button>
+            <button type="button" class="submit-btn" @click="confirmSubmit">確認拋轉</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
@@ -544,7 +601,8 @@ export default {
         promotions,
         // 行內搜尋
         productSearch: '',
-        productSearchIdx: null   // 哪一列正在搜尋
+        productSearchIdx: null,   // 哪一列正在搜尋
+        previewVisible: false
     }
   },
   computed: {
@@ -603,6 +661,9 @@ export default {
         if (row.isGift) return sum
         return sum + (row.mainQty || 0) * (row.unitPrice || 0)
       }, 0)
+    },
+    previewRows () {
+      return this.editRows.filter(row => !row._cancelled && (row.productId || row.name))
     }
   },
   methods: {
@@ -718,6 +779,11 @@ export default {
     onQtyChange () {
       this.recalcPromotions()
     },
+    formatPreviewQty (row) {
+      const mainQty = Number(row.mainQty) || 0
+      const subQty = Number(row.subQty) || 0
+      return subQty > 0 ? `${mainQty} / ${subQty}` : `${mainQty}`
+    },
     toggleGift (idx) {
       const row = this.editRows[idx]
       if (!row || this.isGiftCodeRow(row)) return
@@ -756,7 +822,20 @@ export default {
     addRow () {
       this.editRows.push(newSalesRow())
     },
+    addRowAndScroll () {
+      this.addRow()
+      this.$nextTick(() => {
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth'
+        })
+      })
+    },
     removeRow (idx) {
+      const row = this.editRows[idx]
+      if (!row) return
+      const label = row.name || row.productId || '此品項'
+      if (!window.confirm(`確定要刪除「${label}」嗎？`)) return
       this.editRows.splice(idx, 1)
     },
     recalcPromotions () {
@@ -790,6 +869,14 @@ export default {
       })
     },
     submitOrder () {
+      if (this.previewRows.length === 0) {
+        this.$store.dispatch('showSnackbar', { message: '請先新增至少一筆有效品項', type: 'error' })
+        return
+      }
+      this.previewVisible = true
+    },
+    confirmSubmit () {
+      this.previewVisible = false
       if (this.isNew) {
         // 產生新訂單號（SO- + 時間戳末6碼）
         const newId = 'SO-' + Date.now().toString().slice(-6)
@@ -1201,8 +1288,41 @@ export default {
   cursor: pointer;
 }
 
+.gift-check-input:disabled {
+  cursor: not-allowed;
+  accent-color: #111827;
+}
+
 .gift-check-text {
   white-space: nowrap;
+}
+
+.gift-check-text.is-locked {
+  color: #111827;
+  font-weight: 600;
+}
+
+.gift-locked-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gift-empty-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .gift-stock-only {
@@ -1255,8 +1375,8 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   padding: 0;
 }
 
@@ -1516,6 +1636,256 @@ export default {
   cursor: pointer;
 }
 
+.floating-add-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 78px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 999px;
+  background: var(--c-primary);
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
+  cursor: pointer;
+  z-index: 55;
+}
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 120;
+}
+
+.preview-modal {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.16);
+  padding: 20px;
+}
+
+.preview-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.preview-modal-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+}
+
+.preview-modal-title {
+  margin: 4px 0 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.preview-modal-subtitle {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.preview-close-btn {
+  width: 36px;
+  height: 36px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.preview-table-wrap {
+  overflow: auto;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 12px;
+}
+
+.preview-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preview-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.preview-summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.preview-summary-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.preview-summary-value--amount {
+  color: var(--c-primary);
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 840px;
+}
+
+.preview-table th,
+.preview-table td {
+  padding: 14px 16px;
+  border-bottom: 0.5px solid #E2E8F0;
+  text-align: left;
+  font-size: 14px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.preview-table thead tr {
+  background: #f8fafc;
+}
+
+.preview-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.preview-table tbody tr:nth-child(even) td {
+  background: #fcfdff;
+}
+
+.preview-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.preview-col-index {
+  width: 64px;
+  text-align: center;
+  color: #64748b;
+  font-family: var(--font-mono);
+}
+
+.preview-col-code {
+  font-family: var(--font-mono);
+  color: var(--c-primary);
+  white-space: nowrap;
+}
+
+.preview-col-name {
+  min-width: 180px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.preview-col-qty,
+.preview-col-price {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.preview-gift-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.preview-gift-badge.is-gift {
+  background: #111827;
+  color: #ffffff;
+}
+
+.preview-gift-badge.is-normal {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.preview-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.preview-secondary-btn {
+  height: 40px;
+  padding: 0 16px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+}
+
+.preview-fade-enter-active,
+.preview-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.preview-fade-enter,
+.preview-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .preview-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .preview-modal {
+    padding: 16px;
+  }
+
+  .preview-modal-footer {
+    flex-wrap: wrap;
+  }
+
+  .preview-secondary-btn,
+  .preview-modal-footer .submit-btn {
+    width: 100%;
+  }
+}
+
 /* ── 無價格警告 ─────────────────────── */
 .price-cell {
   display: inline-flex;
@@ -1565,6 +1935,29 @@ export default {
 
   .submit-btn {
     flex: 1;
+  }
+
+  .floating-add-btn {
+    right: 16px;
+    bottom: calc(124px + max(0px, env(safe-area-inset-bottom)));
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-grid,
+  .transfer-grid,
+  .preview-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-overlay {
+    padding: 16px;
+  }
+
+  .preview-modal-title {
+    font-size: 20px;
   }
 }
 </style>

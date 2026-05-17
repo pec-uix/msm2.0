@@ -84,7 +84,7 @@
 <script>
 import { getCurrentUser } from '../services/auth'
 import {
-  Home, Package, Heart, ShoppingCart, FileText, ClipboardCheck, Tag, LogOut, Menu, X
+  Home, FileText, ClipboardCheck, Tag, LogOut, Menu, X
 } from 'lucide-vue'
 
 export default {
@@ -94,10 +94,7 @@ export default {
     return {
       menuOpen: false,
       tabs: [
-        { label: '首頁', path: '/', roles: ['customer', 'sales'], icon: Home },
-        { label: '產品', path: '/products', roles: ['customer'], icon: Package },
-        { label: '我的最愛', path: '/favorites', roles: ['customer'], icon: Heart },
-        { label: '購物車', path: '/cart', roles: ['customer'], icon: ShoppingCart },
+        { label: '首頁', path: '/', roles: ['sales'], icon: Home },
         { label: '訂單', path: '/orders', icon: FileText },
         { label: '庫存盤點', path: '/inventory-checks', roles: ['sales'], icon: ClipboardCheck },
         { label: '市場活動', path: '/promotions', roles: ['sales'], icon: Tag }

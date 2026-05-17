@@ -238,8 +238,67 @@
       </section>
 
       <!-- 個人業績圖（by 業務員） -->
-      <div class="sales-chart-grid">
-        <section class="dashboard-card chart-card">
+      <section class="sales-entry-section sales-entry-section--primary">
+        <div class="section-head">
+          <span class="section-eyebrow">QUICK START</span>
+        </div>
+        <div class="sales-entry-grid">
+          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders?launch=new">
+            <div class="entry-icon-box">
+              <package-icon :size="20" :stroke-width="1.5" />
+            </div>
+            <div class="entry-body">
+              <span class="entry-label">新增訂單</span>
+              <span class="entry-desc">從首頁直接建立業務訂單</span>
+            </div>
+          </router-link>
+          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders?filter=pending">
+            <div class="entry-icon-box">
+              <file-text-icon :size="20" :stroke-width="1.5" />
+            </div>
+            <div class="entry-body">
+              <span class="entry-label">審單</span>
+              <span class="entry-desc">集中處理待確認訂單</span>
+            </div>
+          </router-link>
+          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders">
+            <div class="entry-icon-box">
+              <clipboard-check-icon :size="20" :stroke-width="1.5" />
+            </div>
+            <div class="entry-body">
+              <span class="entry-label">全部訂單</span>
+              <span class="entry-desc">查看所有客戶與業務訂單</span>
+            </div>
+          </router-link>
+        </div>
+      </section>
+
+      <section class="chart-carousel-card">
+        <div class="card-title-row">
+          <span class="card-title-dot"></span>
+          <h3 class="card-title">業績圖表</h3>
+          <span class="card-eyebrow">SWIPE</span>
+        </div>
+        <div class="chart-carousel-head">
+          <p class="chart-carousel-meta">左右切換查看本月業績與目標差距</p>
+          <div class="chart-carousel-nav">
+            <button
+              type="button"
+              class="chart-nav-btn"
+              :disabled="chartSlideIndex === 0"
+              @click="chartSlideIndex = 0"
+            >‹</button>
+            <button
+              type="button"
+              class="chart-nav-btn"
+              :disabled="chartSlideIndex === chartSlides.length - 1"
+              @click="chartSlideIndex = chartSlides.length - 1"
+            >›</button>
+          </div>
+        </div>
+        <div class="chart-carousel-window">
+          <div class="chart-carousel-track" :style="chartTrackStyle">
+            <section class="dashboard-card chart-card chart-card--slide">
           <div class="card-title-row">
             <span class="card-title-dot"></span>
             <h3 class="card-title">當月目前業績圖</h3>
@@ -251,9 +310,9 @@
             <span class="kpi-label">目前業績</span>
             <span class="kpi-value">$ {{ currentSalesAmount.toLocaleString() }}</span>
           </div>
-        </section>
+            </section>
 
-        <section class="dashboard-card chart-card">
+            <section class="dashboard-card chart-card chart-card--slide">
           <div class="card-title-row">
             <span class="card-title-dot"></span>
             <h3 class="card-title">目標差距圖</h3>
@@ -265,42 +324,18 @@
             <span class="kpi-label">尚差目標</span>
             <span class="kpi-value is-gap">$ {{ gapAmount.toLocaleString() }}</span>
           </div>
-        </section>
-      </div>
-
-      <!-- 快速入口 -->
-      <section class="sales-entry-section">
-        <div class="section-head">
-          <span class="section-eyebrow">QUICK START</span>
+            </section>
+          </div>
         </div>
-        <router-link class="sales-entry-btn" to="/orders">
-          <div class="entry-icon-box">
-            <file-text-icon :size="20" :stroke-width="1.5" />
-          </div>
-          <div class="entry-body">
-            <span class="entry-label">訂單列表</span>
-            <span class="entry-desc">查看所有客戶訂單</span>
-          </div>
-        </router-link>
-
-        <router-link class="sales-entry-btn" to="/inventory-checks">
-          <div class="entry-icon-box">
-            <clipboard-check-icon :size="20" :stroke-width="1.5" />
-          </div>
-          <div class="entry-body">
-            <span class="entry-label">盤點作業</span>
-            <span class="entry-desc">管理庫存盤點記錄</span>
-          </div>
-        </router-link>
-        <router-link class="sales-entry-btn" to="/promotions">
-          <div class="entry-icon-box">
-            <gift-icon :size="20" :stroke-width="1.5" />
-          </div>
-          <div class="entry-body">
-            <span class="entry-label">市場活動</span>
-            <span class="entry-desc">查看促銷與贈品規則</span>
-          </div>
-        </router-link>
+        <div class="chart-carousel-dots" role="tablist" aria-label="業績圖表切換">
+          <button
+            v-for="(_, idx) in chartSlides"
+            :key="idx"
+            type="button"
+            :class="['chart-dot', { active: chartSlideIndex === idx }]"
+            @click="chartSlideIndex = idx"
+          ></button>
+        </div>
       </section>
 
       <!-- 背景色設定 -->
@@ -531,7 +566,8 @@ export default {
       scheduleModal: false,
       scheduleSortMode: 'default',
       scheduleCurrentLocation: null,
-      selectedScheduleId: null
+      selectedScheduleId: null,
+      chartSlideIndex: 0
     }
   },
   computed: {
@@ -689,6 +725,14 @@ export default {
     },
     salesGapChartSrc () {
       return this.buildGapChart(this.currentSalesAmount, this.monthlyTargetAmount)
+    },
+    chartSlides () {
+      return ['trend', 'gap']
+    },
+    chartTrackStyle () {
+      return {
+        transform: `translateX(-${this.chartSlideIndex * 100}%)`
+      }
     }
   },
   mounted () {
@@ -1349,6 +1393,16 @@ export default {
   gap: 10px;
 }
 
+.sales-entry-section--primary {
+  gap: 14px;
+}
+
+.sales-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .bg-theme-card {
   padding-bottom: 18px;
 }
@@ -1358,10 +1412,78 @@ export default {
 }
 
 /* ── Sales 業績圖區 ─────────────────────── */
-.sales-chart-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.chart-carousel-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chart-carousel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-carousel-meta {
+  margin: 0;
+  font-size: 12px;
+  color: #64748B;
+}
+
+.chart-carousel-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-nav-btn {
+  width: 34px;
+  height: 34px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--c-text-body);
+  cursor: pointer;
+}
+
+.chart-nav-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.chart-carousel-window {
+  overflow: hidden;
+}
+
+.chart-carousel-track {
+  display: flex;
+  transition: transform 0.28s ease;
+}
+
+.chart-card--slide {
+  min-width: 100%;
+}
+
+.chart-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chart-dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chart-dot.active {
+  width: 22px;
+  background: var(--c-primary);
 }
 
 .sales-summary-card {
@@ -1496,6 +1618,10 @@ export default {
   text-decoration: none;
   transition: background 0.15s;
   color: inherit;
+}
+
+.sales-entry-btn--primary {
+  min-height: 92px;
 }
 
 .sales-entry-btn:hover {
@@ -2024,12 +2150,17 @@ export default {
   .quick-entry-section,
   .dashboard-grid,
   .overview-grid,
-  .sales-chart-grid,
+  .sales-entry-grid,
   .customer-board-grid,
   .sales-top-grid,
   .sales-summary-grid {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+
+  .chart-carousel-head {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .pending-card {

@@ -47,15 +47,10 @@
       <div class="quick-login">
         <p class="quick-label">
           <span class="quick-line"></span>
-          <span class="quick-text">展示快速登入</span>
+          <span class="quick-text">業務版快速登入</span>
           <span class="quick-line"></span>
         </p>
         <div class="role-grid">
-          <button type="button" class="role-card" @click="quickLogin('customer')">
-            <shopping-cart-icon :size="20" :stroke-width="1.5" class="role-icon" />
-            <span class="role-name">客戶</span>
-            <span class="role-hint">可體驗下單流程</span>
-          </button>
           <button type="button" class="role-card" @click="quickLogin('sales')">
             <briefcase-icon :size="20" :stroke-width="1.5" class="role-icon" />
             <span class="role-name">銷售人員</span>
@@ -75,12 +70,11 @@ import {
   User as UserIcon,
   Lock as LockIcon,
   LogIn as LogInIcon,
-  ShoppingCart as ShoppingCartIcon,
   Briefcase as BriefcaseIcon
 } from 'lucide-vue'
 
 const roleRedirectMap = {
-  customer: '/',
+  customer: '/403',
   sales: '/',
   company_admin: '/orders',
   group_admin: '/orders'
@@ -88,7 +82,7 @@ const roleRedirectMap = {
 
 export default {
   name: 'LoginPage',
-  components: { UserIcon, LockIcon, LogInIcon, ShoppingCartIcon, BriefcaseIcon },
+  components: { UserIcon, LockIcon, LogInIcon, BriefcaseIcon },
   data () {
     return {
       username: '',

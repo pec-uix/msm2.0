@@ -39,31 +39,31 @@ const routes = [
         path: '',
         name: 'home',
         component: HomeView,
-        meta: { roles: ['customer', 'sales'] }
+        meta: { roles: ['sales'] }
       },
       {
         path: 'products',
         name: 'products',
         component: ProductsView,
-        meta: { roles: ['customer'] }
+        meta: { roles: ['internal_disabled'] }
       },
       {
         path: 'favorites',
         name: 'favorites',
         component: FavoritesView,
-        meta: { roles: ['customer'] }
+        meta: { roles: ['internal_disabled'] }
       },
       {
         path: 'cart',
         name: 'cart',
         component: CartView,
-        meta: { roles: ['customer'] }
+        meta: { roles: ['internal_disabled'] }
       },
       {
         path: 'cart/confirm',
         name: 'cart-confirm',
         component: CartConfirmView,
-        meta: { roles: ['customer'] }
+        meta: { roles: ['internal_disabled'] }
       },
       {
         path: 'orders',
