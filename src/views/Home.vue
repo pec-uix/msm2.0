@@ -1654,23 +1654,24 @@ export default {
   border-radius: 8px;
   background: #ffffff;
   padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  align-items: start;
   gap: 14px;
 }
 
 .pending-overview {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 18px;
 }
 
 .pending-left {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   flex-shrink: 0;
 }
 
@@ -1694,15 +1695,14 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
   min-width: 0;
 }
 
 .pending-title-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .pending-title {
@@ -1733,7 +1733,9 @@ export default {
 
 .pending-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  align-self: stretch;
+  align-items: stretch;
   gap: 10px;
 }
 
@@ -2180,6 +2182,8 @@ export default {
   }
 
   .pending-card {
+    display: flex;
+    flex-direction: column;
     padding: 14px;
     gap: 12px;
   }
