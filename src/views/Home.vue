@@ -1607,9 +1607,9 @@ export default {
 }
 
 .sales-entry-btn--hero {
-  min-height: 112px;
-  padding: 18px 20px;
-  border-radius: 14px;
+  min-height: 84px;
+  padding: 14px 16px;
+  border-radius: 12px;
   box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.06);
 }
 
@@ -1653,16 +1653,17 @@ export default {
   border-top: 2px solid var(--c-primary);
   border-radius: 8px;
   background: #ffffff;
-  padding: 22px 24px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 18px;
+  gap: 14px;
 }
 
 .pending-overview {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 24px;
 }
 
@@ -1692,8 +1693,9 @@ export default {
 .pending-right {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .pending-title-row {
@@ -1705,15 +1707,15 @@ export default {
 
 .pending-title {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   color: #334155;
 }
 
 .pending-copy {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   color: #64748b;
 }
 
@@ -1732,7 +1734,7 @@ export default {
 .pending-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 10px;
 }
 
 /* ── 班表 ──────────────────────────────────── */
@@ -2178,22 +2180,24 @@ export default {
   }
 
   .pending-card {
-    padding: 14px 16px;
-    gap: 14px;
+    padding: 14px;
+    gap: 12px;
   }
 
   .pending-overview,
   .pending-title-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .pending-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .pending-number {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   .pending-approval-label {
@@ -2201,12 +2205,37 @@ export default {
   }
 
   .pending-title {
-    font-size: 22px;
+    font-size: 18px;
   }
 
   .pending-btn {
     font-size: 12px;
     padding: 6px 12px;
+  }
+
+  .pending-copy {
+    display: none;
+  }
+
+  .sales-entry-btn--hero {
+    min-height: 72px;
+    padding: 12px 10px;
+    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sales-entry-btn--hero .entry-icon-box {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sales-entry-btn--hero .entry-label {
+    font-size: 14px;
+  }
+
+  .sales-entry-btn--hero .entry-desc {
+    display: none;
   }
 
   .schedule-item {
@@ -2234,12 +2263,21 @@ export default {
   }
 
   .pending-card {
-    padding: 14px;
+    padding: 12px;
   }
 
   .sales-entry-btn--hero {
-    min-height: 96px;
-    padding: 16px;
+    min-height: 64px;
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+
+  .sales-entry-btn--hero .entry-body {
+    gap: 0;
+  }
+
+  .sales-entry-btn--hero .entry-label {
+    font-size: 13px;
   }
 
   .schedule-sort-switch,
