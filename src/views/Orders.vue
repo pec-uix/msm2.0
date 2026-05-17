@@ -109,13 +109,6 @@
             <span class="kv-value kv-amount">$ {{ order.amount.toLocaleString() }}</span>
           </div>
         </div>
-        <div v-if="isSales && canBatchTransfer(order)" class="mobile-actions">
-          <button
-            type="button"
-            class="review-btn-mobile"
-            @click.stop="$router.push('/orders/' + order.orderId + '/review')"
-          >前往審單</button>
-        </div>
       </li>
       <li v-if="pagedOrders.length === 0" class="mobile-empty">沒有符合的訂單</li>
     </ul>
@@ -488,6 +481,11 @@ export default {
       return idx === -1 ? '—' : idx + 1
     },
     goToOrder (orderId) {
+      const order = this.$store.state.orders.find(item => item.orderId === orderId)
+      if (this.isSales && this.canBatchTransfer(order)) {
+        this.$router.push(`/orders/${orderId}/review`)
+        return
+      }
       this.$router.push(`/orders/${orderId}`)
     },
     sourceLabel (source) {
@@ -853,30 +851,8 @@ tr.is-pending td:first-child {
   font-weight: 500;
 }
 
-.mobile-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.review-btn-mobile {
-  min-height: 44px;
-  padding: 0 16px;
-  border: 0.5px solid var(--c-primary);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--c-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 .mobile-card.is-pending {
   border-left: 4px solid var(--c-primary);
-}
-
-.mobile-card.is-selected {
-  border-color: #10b981;
 }
 
 .mobile-empty {

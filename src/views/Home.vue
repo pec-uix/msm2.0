@@ -114,13 +114,47 @@
 
         <!-- 待審核訂單卡片 -->
         <section class="pending-card">
-          <div class="pending-left">
-            <div class="pending-number">{{ pendingCount }}</div>
-            <div class="pending-approval-label">PENDING APPROVAL</div>
+          <div class="pending-overview">
+            <div class="pending-left">
+              <div class="pending-number">{{ pendingCount }}</div>
+              <div class="pending-approval-label">PENDING APPROVAL</div>
+            </div>
+            <div class="pending-right">
+              <div class="pending-title-row">
+                <h3 class="pending-title">筆訂單待審核</h3>
+                <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
+              </div>
+              <p class="pending-copy">將常用業務入口集中在此區，方便快速建立訂單與切換審單。</p>
+            </div>
           </div>
-          <div class="pending-right">
-            <div class="pending-sub">筆訂單待審核</div>
-            <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
+          <div class="pending-actions">
+            <router-link class="sales-entry-btn sales-entry-btn--hero" to="/orders?launch=new">
+              <div class="entry-icon-box">
+                <package-icon :size="20" :stroke-width="1.5" />
+              </div>
+              <div class="entry-body">
+                <span class="entry-label">新增訂單</span>
+                <span class="entry-desc">從首頁直接建立業務訂單</span>
+              </div>
+            </router-link>
+            <router-link class="sales-entry-btn sales-entry-btn--hero" to="/orders?filter=pending">
+              <div class="entry-icon-box">
+                <file-text-icon :size="20" :stroke-width="1.5" />
+              </div>
+              <div class="entry-body">
+                <span class="entry-label">審單</span>
+                <span class="entry-desc">集中處理待確認訂單</span>
+              </div>
+            </router-link>
+            <router-link class="sales-entry-btn sales-entry-btn--hero" to="/orders">
+              <div class="entry-icon-box">
+                <clipboard-check-icon :size="20" :stroke-width="1.5" />
+              </div>
+              <div class="entry-body">
+                <span class="entry-label">全部訂單</span>
+                <span class="entry-desc">查看所有客戶與業務訂單</span>
+              </div>
+            </router-link>
           </div>
         </section>
 
@@ -238,41 +272,6 @@
       </section>
 
       <!-- 個人業績圖（by 業務員） -->
-      <section class="sales-entry-section sales-entry-section--primary">
-        <div class="section-head">
-          <span class="section-eyebrow">QUICK START</span>
-        </div>
-        <div class="sales-entry-grid">
-          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders?launch=new">
-            <div class="entry-icon-box">
-              <package-icon :size="20" :stroke-width="1.5" />
-            </div>
-            <div class="entry-body">
-              <span class="entry-label">新增訂單</span>
-              <span class="entry-desc">從首頁直接建立業務訂單</span>
-            </div>
-          </router-link>
-          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders?filter=pending">
-            <div class="entry-icon-box">
-              <file-text-icon :size="20" :stroke-width="1.5" />
-            </div>
-            <div class="entry-body">
-              <span class="entry-label">審單</span>
-              <span class="entry-desc">集中處理待確認訂單</span>
-            </div>
-          </router-link>
-          <router-link class="sales-entry-btn sales-entry-btn--primary" to="/orders">
-            <div class="entry-icon-box">
-              <clipboard-check-icon :size="20" :stroke-width="1.5" />
-            </div>
-            <div class="entry-body">
-              <span class="entry-label">全部訂單</span>
-              <span class="entry-desc">查看所有客戶與業務訂單</span>
-            </div>
-          </router-link>
-        </div>
-      </section>
-
       <section class="chart-carousel-card">
         <div class="card-title-row">
           <span class="card-title-dot"></span>
@@ -1386,23 +1385,6 @@ export default {
   color: #334155;
 }
 
-/* ── Sales 快速入口 ───────────────────────── */
-.sales-entry-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sales-entry-section--primary {
-  gap: 14px;
-}
-
-.sales-entry-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
 .bg-theme-card {
   padding-bottom: 18px;
 }
@@ -1624,6 +1606,13 @@ export default {
   min-height: 92px;
 }
 
+.sales-entry-btn--hero {
+  min-height: 112px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.06);
+}
+
 .sales-entry-btn:hover {
   background: #F8FAFC;
 }
@@ -1664,11 +1653,17 @@ export default {
   border-top: 2px solid var(--c-primary);
   border-radius: 8px;
   background: #ffffff;
-  padding: 18px 20px;
+  padding: 22px 24px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+
+.pending-overview {
+  display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .pending-left {
@@ -1697,18 +1692,32 @@ export default {
 .pending-right {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
 }
 
-.pending-sub {
+.pending-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pending-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.pending-copy {
+  margin: 0;
   font-size: 14px;
-  font-weight: 400;
-  color: #4b5568;
+  line-height: 1.6;
+  color: #64748b;
 }
 
 .pending-btn {
-  align-self: flex-start;
   padding: 8px 16px;
   background: #FDF8EE;
   color: #8A6A28;
@@ -1718,6 +1727,12 @@ export default {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
+}
+
+.pending-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
 }
 
 /* ── 班表 ──────────────────────────────────── */
@@ -2150,7 +2165,6 @@ export default {
   .quick-entry-section,
   .dashboard-grid,
   .overview-grid,
-  .sales-entry-grid,
   .customer-board-grid,
   .sales-top-grid,
   .sales-summary-grid {
@@ -2168,6 +2182,16 @@ export default {
     gap: 14px;
   }
 
+  .pending-overview,
+  .pending-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pending-actions {
+    grid-template-columns: 1fr;
+  }
+
   .pending-number {
     font-size: 36px;
   }
@@ -2176,8 +2200,8 @@ export default {
     font-size: 9px;
   }
 
-  .pending-sub {
-    font-size: 13px;
+  .pending-title {
+    font-size: 22px;
   }
 
   .pending-btn {
@@ -2207,6 +2231,15 @@ export default {
   .schedule-sort-bar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .pending-card {
+    padding: 14px;
+  }
+
+  .sales-entry-btn--hero {
+    min-height: 96px;
+    padding: 16px;
   }
 
   .schedule-sort-switch,

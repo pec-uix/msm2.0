@@ -174,16 +174,8 @@
               <td class="col-action">
                 <!-- 系統贈品 / 僅核對庫存：改為可軟刪除 -->
                 <template v-if="isSoftDeleteGiftRow(row)">
+                  <span class="gift-locked-badge">贈品</span>
                   <button
-                    v-if="row._cancelled"
-                    type="button"
-                    class="row-btn restore-btn"
-                    @click="toggleGiftSoftDelete(idx)"
-                  >
-                    取消刪除
-                  </button>
-                  <button
-                    v-else
                     type="button"
                     class="row-btn delete-btn"
                     @click="toggleGiftSoftDelete(idx)"
@@ -191,11 +183,14 @@
                     <trash2-icon :size="13" :stroke-width="1.5" />
                   </button>
                 </template>
-                <!-- 業務註記贈品：勾選框 + (sales_add 才顯示刪除) -->
                 <template v-else>
-                  <span v-if="row.isGift" class="gift-locked-badge">贈品</span>
-                  <span v-else class="gift-empty-text">—</span>
-                  <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+                  <span class="gift-empty-text">—</span>
+                  <button
+                    v-if="canRemoveStandardRow(row)"
+                    type="button"
+                    class="row-btn delete-btn"
+                    @click="removeRow(idx)"
+                  >
                     <trash2-icon :size="13" :stroke-width="1.5" />
                   </button>
                 </template>
@@ -224,16 +219,8 @@
           <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row) }}</span>
           <div class="mc-actions">
             <template v-if="isSoftDeleteGiftRow(row)">
+              <span class="gift-locked-badge">贈品</span>
               <button
-                v-if="row._cancelled"
-                type="button"
-                class="row-btn restore-btn"
-                @click="toggleGiftSoftDelete(idx)"
-              >
-                取消刪除
-              </button>
-              <button
-                v-else
                 type="button"
                 class="row-btn delete-btn"
                 @click="toggleGiftSoftDelete(idx)"
@@ -242,9 +229,13 @@
               </button>
             </template>
             <template v-else>
-              <span v-if="row.isGift" class="gift-locked-badge">贈品</span>
-              <span v-else class="gift-empty-text">—</span>
-              <button v-if="row.source === 'sales_add'" type="button" class="row-btn delete-btn" @click="removeRow(idx)">
+              <span class="gift-empty-text">—</span>
+              <button
+                v-if="canRemoveStandardRow(row)"
+                type="button"
+                class="row-btn delete-btn"
+                @click="removeRow(idx)"
+              >
                 <trash2-icon :size="13" :stroke-width="1.5" />
               </button>
             </template>
@@ -551,7 +542,9 @@ function newSalesRow () {
     package: '單罐',
     mainQty: 1,
     _originalMainQty: 1,
+    _lastValidMainQty: 1,
     subQty: 0,
+    _lastValidSubQty: 0,
     currentStock: 0,
     conversionRate: 1,
     unitPrice: 0,
@@ -689,6 +682,9 @@ export default {
     isSystemGiftRow (row) {
       return !!(row && row.isGift && !this.isGiftCodeRow(row) && row.sourceLabel === '系統贈品')
     },
+    canRemoveStandardRow (row) {
+      return !!(row && row.source === 'sales_add' && !row.isGift)
+    },
     rowBgClass (source, isGift) {
       if (isGift) return 'bg-gift'
       const map = { customer: 'bg-customer', sales_add: 'bg-sales', system_gift: 'bg-gift' }
@@ -725,6 +721,15 @@ export default {
       const val = (row.mainQty || 0) * (row.unitPrice || 0)
       return '$ ' + val.toLocaleString()
     },
+    rememberLastValidQty (idx) {
+      const row = this.editRows[idx]
+      if (!this.canRemoveStandardRow(row)) return
+      const mainQty = Number(row.mainQty) || 0
+      const subQty = Number(row.subQty) || 0
+      if (mainQty === 0 && subQty === 0) return
+      this.$set(this.editRows[idx], '_lastValidMainQty', mainQty)
+      this.$set(this.editRows[idx], '_lastValidSubQty', subQty)
+    },
     normalizeSubQty (idx) {
       const row = this.editRows[idx]
       if (!row) return
@@ -738,6 +743,8 @@ export default {
         this.$set(this.editRows[idx], 'mainQty', (row.mainQty || 0) + Math.floor(sub / rate))
         this.$set(this.editRows[idx], 'subQty', sub % rate)
       }
+      this.rememberLastValidQty(idx)
+      this.promptRemoveIfEmpty(idx)
     },
     onSubQtyInput (idx) {
       this.normalizeSubQty(idx)
@@ -777,7 +784,26 @@ export default {
       this.recalcPromotions()
     },
     onQtyChange () {
+      this.editRows.forEach((row, idx) => {
+        if (!row || row.isGift) return
+        this.rememberLastValidQty(idx)
+        this.promptRemoveIfEmpty(idx)
+      })
       this.recalcPromotions()
+    },
+    promptRemoveIfEmpty (idx) {
+      const row = this.editRows[idx]
+      if (!this.canRemoveStandardRow(row)) return
+      const mainQty = Number(row.mainQty) || 0
+      const subQty = Number(row.subQty) || 0
+      if (mainQty !== 0 || subQty !== 0) return
+      const label = row.name || row.productId || '此品項'
+      if (window.confirm(`「${label}」數量已為 0，是否刪除此品項？`)) {
+        this.editRows.splice(idx, 1)
+        return
+      }
+      this.$set(this.editRows[idx], 'mainQty', row._lastValidMainQty || row._originalMainQty || 1)
+      this.$set(this.editRows[idx], 'subQty', row._lastValidSubQty || row._originalSubQty || 0)
     },
     formatPreviewQty (row) {
       const mainQty = Number(row.mainQty) || 0
