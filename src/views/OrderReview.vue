@@ -11,10 +11,8 @@
 
     <!-- 頁面標題 -->
     <div class="page-title-block">
-      <span class="eyebrow">MSM-CORE / {{ isNew ? 'NEW ORDER' : 'ORDER REVIEW' }}</span>
       <div class="title-row">
         <h2 class="page-title">{{ isNew ? '新增客戶訂單' : '訂單審核' }}</h2>
-        <span class="title-en-badge">{{ isNew ? 'NEW ORDER' : 'ORDER REVIEW' }}</span>
       </div>
     </div>
 
@@ -389,7 +387,6 @@
         <div class="preview-modal" role="dialog" aria-modal="true">
           <div class="preview-modal-header">
             <div>
-              <div class="preview-modal-eyebrow">PREVIEW</div>
               <h3 class="preview-modal-title">拋轉內容預覽</h3>
               <p class="preview-modal-subtitle">送出前請再次確認品項、數量、單價與贈品註記。</p>
             </div>

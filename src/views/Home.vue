@@ -121,10 +121,12 @@
             </div>
             <div class="pending-main">
               <span class="pending-kicker">今日待處理</span>
-              <h3 class="pending-title">筆訂單待審核</h3>
+              <div class="pending-title-row">
+                <h3 class="pending-title">筆訂單待審核</h3>
+                <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
+              </div>
               <p class="pending-copy">將常用業務入口集中在此區，方便快速建立訂單與切換審單。</p>
             </div>
-            <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
           </div>
           <div class="pending-actions">
             <router-link class="sales-entry-btn sales-entry-btn--hero" to="/orders?launch=new">
@@ -2037,14 +2039,25 @@ export default {
 .bulletin-toggle-btn {
   width: 32px;
   height: 32px;
-  border: 0.5px solid var(--c-border);
+  border: 0.5px solid rgba(51, 65, 85, 0.22);
   border-radius: 999px;
-  background: #ffffff;
-  color: #64748b;
+  background: rgba(248, 250, 252, 0.92);
+  color: var(--c-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.bulletin-toggle-btn:hover {
+  border-color: rgba(51, 65, 85, 0.38);
+  background: #ffffff;
+}
+
+.bulletin-toggle-btn:focus-visible {
+  outline: 2px solid rgba(51, 65, 85, 0.14);
+  outline-offset: 2px;
 }
 
 .bulletin-item {

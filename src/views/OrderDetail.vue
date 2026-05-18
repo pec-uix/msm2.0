@@ -23,7 +23,6 @@
 
     <!-- 頁面標題 -->
     <div class="page-title-block">
-      <span class="eyebrow">MSM-CORE / ORDER DETAIL</span>
       <h2 class="page-title">訂單明細</h2>
     </div>
 

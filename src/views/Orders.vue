@@ -3,7 +3,6 @@
 
     <!-- 頁面標題 -->
     <div class="page-title-block">
-      <span class="eyebrow">MSM-CORE / ORDER MANAGEMENT</span>
       <h2 class="page-title">訂單列表</h2>
     </div>
 
@@ -21,9 +20,6 @@
         <input v-model="dateFrom" type="date" class="date-input" :max="dateTo || undefined" />
         <span class="date-sep">~</span>
         <input v-model="dateTo" type="date" class="date-input" :min="dateFrom || undefined" />
-      </div>
-      <div class="filter-summary">
-        共 {{ filteredOrders.length }} 筆
       </div>
     </div>
 
@@ -585,19 +581,6 @@ export default {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.filter-summary {
-  margin-left: auto;
-  padding: 0 14px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  background: #eef3fb;
-  color: var(--c-primary);
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .filter-select {
@@ -1183,14 +1166,6 @@ tr.is-pending td:first-child {
     min-height: 44px;
     height: 44px;
     line-height: 44px;
-  }
-
-  .filter-summary {
-    width: 100%;
-    min-height: 44px;
-    height: 44px;
-    margin-left: 0;
-    justify-content: center;
   }
 
   .customer-modal-chip-group {
