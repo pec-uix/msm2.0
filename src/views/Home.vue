@@ -1833,6 +1833,7 @@ export default {
   border: 1px solid var(--c-border);
   border-radius: 999px;
   background: #f8fafc;
+  width: 100%;
 }
 
 .schedule-sort-btn {
@@ -1845,6 +1846,9 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
 }
 
 .schedule-sort-btn.active {
@@ -2062,30 +2066,31 @@ export default {
 }
 
 .bulletin-toggle-btn {
-  width: 36px;
-  height: 36px;
-  border: 0.5px solid rgba(51, 65, 85, 0.24);
-  border-radius: 999px;
-  background: #f8fafc;
+  width: auto;
+  height: auto;
+  padding: 4px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: var(--c-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+  transition: color 0.18s ease, transform 0.18s ease;
 }
 
 .bulletin-toggle-glyph {
   display: block;
   color: var(--c-primary);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1;
 }
 
 .bulletin-toggle-btn:hover {
-  border-color: rgba(51, 65, 85, 0.38);
-  background: #ffffff;
+  color: #1e293b;
+  transform: translateY(1px);
 }
 
 .bulletin-toggle-btn:focus-visible {
@@ -2304,17 +2309,19 @@ export default {
 
   .pending-main {
     gap: 4px;
-    padding-top: 2px;
+    padding-top: 0;
   }
 
   .pending-title-row {
-    flex-wrap: wrap;
-    gap: 10px 12px;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .pending-btn {
     min-height: 64px;
-    min-width: 152px;
+    min-width: 0;
+    width: 100%;
     padding: 0 18px;
     margin-left: 0;
     font-size: 15px;
@@ -2416,15 +2423,15 @@ export default {
   }
 
   .pending-title-row {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
     gap: 8px;
   }
 
   .pending-btn {
     min-height: 60px;
-    min-width: 132px;
-    width: auto;
+    min-width: 0;
+    width: 100%;
     padding: 0 16px;
     font-size: 14px;
   }
