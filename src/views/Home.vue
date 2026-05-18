@@ -168,7 +168,6 @@
               <bell-icon :size="13" :stroke-width="1.5" class="card-title-icon" />
             </div>
             <div class="bulletin-head-actions">
-              <span class="card-eyebrow">BULLETIN</span>
               <button
                 type="button"
                 class="bulletin-toggle-btn"
@@ -200,7 +199,6 @@
         <div class="card-title-row">
           <span class="card-title-dot"></span>
           <h3 class="card-title card-title--serif">今日班表</h3>
-          <span class="card-eyebrow">SCHEDULE</span>
         </div>
         <div class="schedule-sort-bar">
           <span class="schedule-sort-label">排序</span>
