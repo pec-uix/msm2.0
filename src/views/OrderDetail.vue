@@ -337,16 +337,16 @@ export default {
 
 /* ── 頂部資訊卡片 ─────────────────── */
 .info-card {
-  border: 0.5px solid var(--c-border);
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 18px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 0 0;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px 32px;
+  gap: 18px 32px;
 }
 
 .info-item--full {
@@ -356,20 +356,22 @@ export default {
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+  padding: 0 0 14px;
+  border-bottom: 0.5px solid #E2E8F0;
 }
 
 .info-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--c-text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: #8b95a8;
+  letter-spacing: 0.03em;
+  text-transform: none;
 }
 
 .info-value {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--c-text-title);
 }
 

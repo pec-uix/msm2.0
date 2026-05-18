@@ -413,35 +413,43 @@
               <span class="preview-summary-value preview-summary-value--amount">$ {{ totalAmount.toLocaleString() }}</span>
             </div>
           </div>
-          <div class="preview-table-wrap">
-            <table class="preview-table">
-              <thead>
-                <tr>
-                  <th>序號</th>
-                  <th>產品代號</th>
-                  <th>產品名稱</th>
-                  <th>包裝別</th>
-                  <th>單位數量</th>
-                  <th>單價</th>
-                  <th>贈品註記</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(row, idx) in previewRows" :key="'preview_' + row._rowId">
-                  <td class="preview-col-index">{{ idx + 1 }}</td>
-                  <td class="preview-col-code">{{ row.productId || '—' }}</td>
-                  <td class="preview-col-name">{{ row.name || '—' }}</td>
-                  <td>{{ row.package || '—' }}</td>
-                  <td class="preview-col-qty">{{ formatPreviewQty(row) }}</td>
-                  <td class="preview-col-price">{{ row.isGift ? '—' : '$ ' + (row.unitPrice || 0).toLocaleString() }}</td>
-                  <td>
+          <div class="preview-list">
+            <article
+              v-for="(row, idx) in previewRows"
+              :key="'preview_' + row._rowId"
+              class="preview-item"
+            >
+              <div class="preview-item-index">
+                <span class="preview-item-index-label">序號</span>
+                <span class="preview-item-index-value">{{ idx + 1 }}</span>
+              </div>
+              <div class="preview-item-main">
+                <div class="preview-item-head">
+                  <span class="preview-item-code">{{ row.productId || '—' }}</span>
+                  <span class="preview-item-name">{{ row.name || '—' }}</span>
+                </div>
+                <div class="preview-item-meta">
+                  <div class="preview-item-meta-block">
+                    <span class="preview-item-meta-label">包裝別</span>
+                    <span class="preview-item-meta-value">{{ row.package || '—' }}</span>
+                  </div>
+                  <div class="preview-item-meta-block">
+                    <span class="preview-item-meta-label">單位數量</span>
+                    <span class="preview-item-meta-value">{{ formatPreviewQty(row) }}</span>
+                  </div>
+                  <div class="preview-item-meta-block">
+                    <span class="preview-item-meta-label">單價</span>
+                    <span class="preview-item-meta-value">{{ row.isGift ? '—' : '$ ' + (row.unitPrice || 0).toLocaleString() }}</span>
+                  </div>
+                  <div class="preview-item-meta-block">
+                    <span class="preview-item-meta-label">贈品註記</span>
                     <span :class="['preview-gift-badge', row.isGift ? 'is-gift' : 'is-normal']">
                       {{ row.isGift ? '贈品' : '一般品' }}
                     </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              </div>
+            </article>
           </div>
           <div class="preview-modal-footer">
             <button type="button" class="preview-secondary-btn" @click="previewVisible = false">返回修改</button>
@@ -1745,12 +1753,6 @@ export default {
   cursor: pointer;
 }
 
-.preview-table-wrap {
-  overflow: auto;
-  border: 0.5px solid #E2E8F0;
-  border-radius: 12px;
-}
-
 .preview-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1784,67 +1786,96 @@ export default {
   color: var(--c-primary);
 }
 
-.preview-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 840px;
+.preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.preview-table th,
-.preview-table td {
-  padding: 14px 16px;
-  border-bottom: 0.5px solid #E2E8F0;
-  text-align: left;
-  font-size: 14px;
-  color: #334155;
-  vertical-align: middle;
+.preview-item {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 18px;
+  border: 0.5px solid #E2E8F0;
+  border-radius: 14px;
+  background: #fbfcfe;
 }
 
-.preview-table thead tr {
-  background: #f8fafc;
+.preview-item-index {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 0.5px solid #E2E8F0;
+  padding: 10px 8px;
 }
 
-.preview-table th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  font-size: 12px;
+.preview-item-index-label,
+.preview-item-meta-label {
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #64748b;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
 }
 
-.preview-table tbody tr:nth-child(even) td {
-  background: #fcfdff;
-}
-
-.preview-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.preview-col-index {
-  width: 64px;
-  text-align: center;
-  color: #64748b;
+.preview-item-index-value {
   font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: #334155;
 }
 
-.preview-col-code {
+.preview-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.preview-item-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+
+.preview-item-code {
   font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
   color: var(--c-primary);
   white-space: nowrap;
 }
 
-.preview-col-name {
-  min-width: 180px;
-  font-weight: 600;
-  color: #0f172a;
+.preview-item-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 0;
 }
 
-.preview-col-qty,
-.preview-col-price {
-  white-space: nowrap;
+.preview-item-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preview-item-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.preview-item-meta-value {
+  font-size: 16px;
   font-weight: 600;
+  color: #334155;
+  line-height: 1.4;
 }
 
 .preview-gift-badge {
@@ -1903,6 +1934,20 @@ export default {
 
   .preview-modal {
     padding: 16px;
+  }
+
+  .preview-item {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .preview-item-name {
+    font-size: 18px;
+  }
+
+  .preview-item-meta {
+    grid-template-columns: 1fr 1fr;
   }
 
   .preview-modal-footer {
@@ -1983,6 +2028,25 @@ export default {
   .transfer-grid,
   .preview-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .preview-item {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-item-index {
+    align-items: flex-start;
+  }
+
+  .preview-item-head,
+  .preview-item-meta {
+    grid-template-columns: 1fr;
+    display: grid;
+    gap: 10px;
+  }
+
+  .preview-item-code {
+    white-space: normal;
   }
 
   .info-item {

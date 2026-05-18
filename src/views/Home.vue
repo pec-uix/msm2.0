@@ -160,12 +160,25 @@
         <!-- 業務公佈欄 -->
         <section class="dashboard-card compact-card bulletin-card">
           <div class="card-title-row">
-            <span class="card-title-dot"></span>
-            <h3 class="card-title">公佈欄</h3>
-            <bell-icon :size="13" :stroke-width="1.5" class="card-title-icon" />
-            <span class="card-eyebrow">BULLETIN</span>
+            <div class="bulletin-title-group">
+              <span class="card-title-dot"></span>
+              <h3 class="card-title">公佈欄</h3>
+              <bell-icon :size="13" :stroke-width="1.5" class="card-title-icon" />
+            </div>
+            <div class="bulletin-head-actions">
+              <span class="card-eyebrow">BULLETIN</span>
+              <button
+                type="button"
+                class="bulletin-toggle-btn"
+                @click="bulletinCollapsed = !bulletinCollapsed"
+                :aria-expanded="(!bulletinCollapsed).toString()"
+                aria-label="收合或展開公佈欄"
+              >
+                <component :is="bulletinCollapsed ? ChevronDownIcon : ChevronUpIcon" :size="16" :stroke-width="1.8" />
+              </button>
+            </div>
           </div>
-          <ul class="bulletin-list">
+          <ul v-if="!bulletinCollapsed" class="bulletin-list">
             <li
               v-for="notice in salesBulletins"
               :key="notice.id"
@@ -241,35 +254,6 @@
         </div>
       </section>
 
-      <!-- 當日業績統計 -->
-      <section class="dashboard-card compact-card sales-summary-card">
-        <div class="card-title-row">
-          <span class="card-title-dot"></span>
-          <h3 class="card-title">當日業績統計</h3>
-          <span class="card-eyebrow">TODAY {{ referenceDateLabel }}</span>
-        </div>
-        <div class="sales-summary-grid">
-          <div class="summary-metric">
-            <span class="summary-label">當日成交客戶數</span>
-            <span class="summary-value">{{ dailyUniqueCustomers }}</span>
-          </div>
-          <div class="summary-metric">
-            <span class="summary-label">當日業績</span>
-            <span class="summary-value">$ {{ dailyTotalAmount.toLocaleString() }}</span>
-          </div>
-        </div>
-        <div class="sales-breakdown">
-          <div class="breakdown-row">
-            <span class="breakdown-label">業務下單</span>
-            <span class="breakdown-value">$ {{ dailySalesAmount.toLocaleString() }}</span>
-          </div>
-          <div class="breakdown-row">
-            <span class="breakdown-label">客戶下單</span>
-            <span class="breakdown-value">$ {{ dailyCustomerAmount.toLocaleString() }}</span>
-          </div>
-        </div>
-      </section>
-
       <!-- 個人業績圖（by 業務員） -->
       <section class="chart-carousel-card">
         <div class="card-title-row">
@@ -278,7 +262,7 @@
           <span class="card-eyebrow">SWIPE</span>
         </div>
         <div class="chart-carousel-head">
-          <p class="chart-carousel-meta">左右切換查看本月業績與目標差距</p>
+          <p class="chart-carousel-meta">左右切換查看當日統計、本月業績與目標差距。</p>
           <div class="chart-carousel-nav">
             <button
               type="button"
@@ -297,31 +281,60 @@
         <div class="chart-carousel-window">
           <div class="chart-carousel-track" :style="chartTrackStyle">
             <section class="dashboard-card chart-card chart-card--slide">
-          <div class="card-title-row">
-            <span class="card-title-dot"></span>
-            <h3 class="card-title">當月目前業績圖</h3>
-            <span class="card-eyebrow">PERSONAL MTD</span>
-          </div>
-          <p class="chart-meta">業務員：{{ currentUser.name }}</p>
-          <img class="chart-image" :src="salesTrendChartSrc" :alt="currentUser.name + ' 當月業績趨勢圖'" />
-          <div class="chart-kpi-row">
-            <span class="kpi-label">目前業績</span>
-            <span class="kpi-value">$ {{ currentSalesAmount.toLocaleString() }}</span>
-          </div>
+              <div class="card-title-row">
+                <span class="card-title-dot"></span>
+                <h3 class="card-title">當日業績統計</h3>
+                <span class="card-eyebrow">TODAY {{ referenceDateLabel }}</span>
+              </div>
+              <p class="chart-meta">快速查看今日成交客戶數與業績分布。</p>
+              <div class="sales-summary-grid">
+                <div class="summary-metric">
+                  <span class="summary-label">當日成交客戶數</span>
+                  <span class="summary-value">{{ dailyUniqueCustomers }}</span>
+                </div>
+                <div class="summary-metric">
+                  <span class="summary-label">當日業績</span>
+                  <span class="summary-value">$ {{ dailyTotalAmount.toLocaleString() }}</span>
+                </div>
+              </div>
+              <div class="sales-breakdown">
+                <div class="breakdown-row">
+                  <span class="breakdown-label">業務下單</span>
+                  <span class="breakdown-value">$ {{ dailySalesAmount.toLocaleString() }}</span>
+                </div>
+                <div class="breakdown-row">
+                  <span class="breakdown-label">客戶下單</span>
+                  <span class="breakdown-value">$ {{ dailyCustomerAmount.toLocaleString() }}</span>
+                </div>
+              </div>
             </section>
 
             <section class="dashboard-card chart-card chart-card--slide">
-          <div class="card-title-row">
-            <span class="card-title-dot"></span>
-            <h3 class="card-title">目標差距圖</h3>
-            <span class="card-eyebrow">GAP TO TARGET</span>
-          </div>
-          <p class="chart-meta">目前達成：{{ achievementRate }}%</p>
-          <img class="chart-image" :src="salesGapChartSrc" :alt="currentUser.name + ' 業績目標差距圖'" />
-          <div class="chart-kpi-row">
-            <span class="kpi-label">尚差目標</span>
-            <span class="kpi-value is-gap">$ {{ gapAmount.toLocaleString() }}</span>
-          </div>
+              <div class="card-title-row">
+                <span class="card-title-dot"></span>
+                <h3 class="card-title">當月目前業績圖</h3>
+                <span class="card-eyebrow">PERSONAL MTD</span>
+              </div>
+              <p class="chart-meta">業務員：{{ currentUser.name }}</p>
+              <img class="chart-image" :src="salesTrendChartSrc" :alt="currentUser.name + ' 當月業績趨勢圖'" />
+              <div class="chart-kpi-row">
+                <span class="kpi-label">目前業績</span>
+                <span class="kpi-value">$ {{ currentSalesAmount.toLocaleString() }}</span>
+              </div>
+            </section>
+
+            <section class="dashboard-card chart-card chart-card--slide">
+              <div class="card-title-row">
+                <span class="card-title-dot"></span>
+                <h3 class="card-title">目標差距圖</h3>
+                <span class="card-eyebrow">GAP TO TARGET</span>
+              </div>
+              <p class="chart-meta">目前達成：{{ achievementRate }}%</p>
+              <img class="chart-image" :src="salesGapChartSrc" :alt="currentUser.name + ' 業績目標差距圖'" />
+              <div class="chart-kpi-row">
+                <span class="kpi-label">尚差目標</span>
+                <span class="kpi-value is-gap">$ {{ gapAmount.toLocaleString() }}</span>
+              </div>
             </section>
           </div>
         </div>
@@ -542,6 +555,8 @@ import {
   ClipboardCheck as ClipboardCheckIcon,
   Gift as GiftIcon,
   Bell as BellIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronUp as ChevronUpIcon,
   X as XIcon,
 } from 'lucide-vue'
 import CustomerListItem from '../components/CustomerListItem.vue'
@@ -554,7 +569,7 @@ const FALLBACK_SORT_LOCATION = {
 
 export default {
   name: 'HomePage',
-  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, BellIcon, XIcon, CustomerListItem, ThemeSwitcher },
+  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, BellIcon, ChevronDownIcon, ChevronUpIcon, XIcon, CustomerListItem, ThemeSwitcher },
   data () {
     return {
       notices: announcements,
@@ -565,7 +580,8 @@ export default {
       scheduleSortMode: 'default',
       scheduleCurrentLocation: null,
       selectedScheduleId: null,
-      chartSlideIndex: 0
+      chartSlideIndex: 0,
+      bulletinCollapsed: false
     }
   },
   computed: {
@@ -615,7 +631,7 @@ export default {
       return this.promotionItems.find(promo => promo.id === this.promoModal.promoId) || null
     },
     salesBulletins () {
-      return this.announcementItems.slice(0, 3)
+      return this.notices.slice(0, 3)
     },
     todayOrderedCustomerIds () {
       return new Set(this.dailyOrders.map(order => order.customerId).filter(Boolean))
@@ -725,7 +741,7 @@ export default {
       return this.buildGapChart(this.currentSalesAmount, this.monthlyTargetAmount)
     },
     chartSlides () {
-      return ['trend', 'gap']
+      return ['today', 'trend', 'gap']
     },
     chartTrackStyle () {
       return {
@@ -2005,6 +2021,30 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.bulletin-title-group,
+.bulletin-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulletin-head-actions {
+  margin-left: auto;
+}
+
+.bulletin-toggle-btn {
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .bulletin-item {
