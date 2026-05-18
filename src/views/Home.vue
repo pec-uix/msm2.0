@@ -175,7 +175,7 @@
                 :aria-expanded="(!bulletinCollapsed).toString()"
                 aria-label="收合或展開公佈欄"
               >
-                <component :is="bulletinCollapsed ? ChevronDownIcon : ChevronUpIcon" :size="16" :stroke-width="1.8" />
+                <span class="bulletin-toggle-glyph" aria-hidden="true">{{ bulletinCollapsed ? '▾' : '▴' }}</span>
               </button>
             </div>
           </div>
@@ -556,8 +556,6 @@ import {
   ClipboardCheck as ClipboardCheckIcon,
   Gift as GiftIcon,
   Bell as BellIcon,
-  ChevronDown as ChevronDownIcon,
-  ChevronUp as ChevronUpIcon,
   X as XIcon,
 } from 'lucide-vue'
 import CustomerListItem from '../components/CustomerListItem.vue'
@@ -570,7 +568,7 @@ const FALLBACK_SORT_LOCATION = {
 
 export default {
   name: 'HomePage',
-  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, BellIcon, ChevronDownIcon, ChevronUpIcon, XIcon, CustomerListItem, ThemeSwitcher },
+  components: { PackageIcon, ShoppingCartIcon, FileTextIcon, ClipboardCheckIcon, GiftIcon, BellIcon, XIcon, CustomerListItem, ThemeSwitcher },
   data () {
     return {
       notices: announcements,
@@ -2077,12 +2075,12 @@ export default {
   transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
-.bulletin-toggle-btn svg {
-  width: 16px;
-  height: 16px;
+.bulletin-toggle-glyph {
   display: block;
-  stroke: currentColor;
-  stroke-width: 2;
+  color: var(--c-primary);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .bulletin-toggle-btn:hover {
@@ -2315,9 +2313,9 @@ export default {
   }
 
   .pending-btn {
-    min-height: 42px;
-    min-width: 112px;
-    padding: 0 16px;
+    min-height: 64px;
+    min-width: 152px;
+    padding: 0 18px;
     margin-left: 0;
     font-size: 15px;
     border-radius: 12px;
@@ -2424,10 +2422,10 @@ export default {
   }
 
   .pending-btn {
-    min-height: 40px;
-    min-width: 0;
+    min-height: 60px;
+    min-width: 132px;
     width: auto;
-    padding: 0 14px;
+    padding: 0 16px;
     font-size: 14px;
   }
 
