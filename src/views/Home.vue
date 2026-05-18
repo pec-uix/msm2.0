@@ -259,7 +259,6 @@
         <div class="card-title-row">
           <span class="card-title-dot"></span>
           <h3 class="card-title">業績圖表</h3>
-          <span class="card-eyebrow">SWIPE</span>
         </div>
         <div class="chart-carousel-head">
           <p class="chart-carousel-meta">左右切換查看當日統計、本月業績與目標差距。</p>
@@ -284,7 +283,6 @@
               <div class="card-title-row">
                 <span class="card-title-dot"></span>
                 <h3 class="card-title">當日業績統計</h3>
-                <span class="card-eyebrow">TODAY {{ referenceDateLabel }}</span>
               </div>
               <p class="chart-meta">快速查看今日成交客戶數與業績分布。</p>
               <div class="sales-summary-grid">
@@ -313,7 +311,6 @@
               <div class="card-title-row">
                 <span class="card-title-dot"></span>
                 <h3 class="card-title">當月目前業績圖</h3>
-                <span class="card-eyebrow">PERSONAL MTD</span>
               </div>
               <p class="chart-meta">業務員：{{ currentUser.name }}</p>
               <img class="chart-image" :src="salesTrendChartSrc" :alt="currentUser.name + ' 當月業績趨勢圖'" />
@@ -327,7 +324,6 @@
               <div class="card-title-row">
                 <span class="card-title-dot"></span>
                 <h3 class="card-title">目標差距圖</h3>
-                <span class="card-eyebrow">GAP TO TARGET</span>
               </div>
               <p class="chart-meta">目前達成：{{ achievementRate }}%</p>
               <img class="chart-image" :src="salesGapChartSrc" :alt="currentUser.name + ' 業績目標差距圖'" />
@@ -354,7 +350,6 @@
         <div class="card-title-row">
           <span class="card-title-dot"></span>
           <h3 class="card-title">背景色設定</h3>
-          <span class="card-eyebrow">BACKGROUND</span>
         </div>
         <ThemeSwitcher mode="panel" />
       </section>
@@ -1751,14 +1746,14 @@ export default {
 }
 
 .pending-btn {
-  min-height: 52px;
-  min-width: 144px;
-  padding: 0 22px;
+  min-height: 84px;
+  min-width: 188px;
+  padding: 0 24px;
   background: #FDF8EE;
   color: #8A6A28;
   border: 0.5px solid #DFC97A;
-  border-radius: 14px;
-  font-size: 17px;
+  border-radius: 12px;
+  font-size: 16px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -1766,7 +1761,7 @@ export default {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  box-shadow: 0 6px 18px rgba(223, 201, 122, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(223, 201, 122, 0.08);
   margin-left: auto;
   flex-shrink: 0;
 }
@@ -2042,17 +2037,25 @@ export default {
 }
 
 .bulletin-toggle-btn {
-  width: 32px;
-  height: 32px;
-  border: 0.5px solid rgba(51, 65, 85, 0.22);
+  width: 36px;
+  height: 36px;
+  border: 0.5px solid rgba(51, 65, 85, 0.24);
   border-radius: 999px;
-  background: rgba(248, 250, 252, 0.92);
+  background: #f8fafc;
   color: var(--c-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.bulletin-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .bulletin-toggle-btn:hover {
