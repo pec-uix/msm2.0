@@ -1744,6 +1744,7 @@ export default {
 .pending-title-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
 }
 
@@ -1760,6 +1761,7 @@ export default {
   font-weight: 600;
   color: #334155;
   line-height: 1.08;
+  flex: 1;
 }
 
 .pending-copy {
@@ -1772,7 +1774,8 @@ export default {
 
 .pending-btn {
   min-height: 84px;
-  min-width: 188px;
+  width: 280px;
+  min-width: 280px;
   padding: 0 24px;
   background: #FDF8EE;
   color: #8A6A28;
@@ -1785,9 +1788,8 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap;
+  text-align: center;
   box-shadow: inset 0 0 0 1px rgba(223, 201, 122, 0.08);
-  margin-left: auto;
   flex-shrink: 0;
 }
 
