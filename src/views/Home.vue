@@ -259,9 +259,6 @@
         <div class="card-title-row">
           <span class="card-title-dot"></span>
           <h3 class="card-title">業績圖表</h3>
-        </div>
-        <div class="chart-carousel-head">
-          <p class="chart-carousel-meta">左右切換查看當日統計、本月業績與目標差距。</p>
           <div class="chart-carousel-nav">
             <button
               type="button"
@@ -276,6 +273,9 @@
               @click="chartSlideIndex = chartSlides.length - 1"
             >›</button>
           </div>
+        </div>
+        <div class="chart-carousel-head">
+          <p class="chart-carousel-meta">左右切換查看當日統計、本月業績與目標差距。</p>
         </div>
         <div class="chart-carousel-window">
           <div class="chart-carousel-track" :style="chartTrackStyle">
@@ -297,11 +297,17 @@
               </div>
               <div class="sales-breakdown">
                 <div class="breakdown-row">
-                  <span class="breakdown-label">業務下單</span>
+                  <div class="breakdown-copy">
+                    <span class="breakdown-label">業務下單</span>
+                    <span class="breakdown-note">今日由業務建立</span>
+                  </div>
                   <span class="breakdown-value">$ {{ dailySalesAmount.toLocaleString() }}</span>
                 </div>
                 <div class="breakdown-row">
-                  <span class="breakdown-label">客戶下單</span>
+                  <div class="breakdown-copy">
+                    <span class="breakdown-label">客戶下單</span>
+                    <span class="breakdown-note">今日由客戶送單</span>
+                  </div>
                   <span class="breakdown-value">$ {{ dailyCustomerAmount.toLocaleString() }}</span>
                 </div>
               </div>
@@ -1412,9 +1418,8 @@ export default {
 
 .chart-carousel-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .chart-carousel-meta {
@@ -1427,6 +1432,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
 }
 
 .chart-nav-btn {
@@ -1437,6 +1443,11 @@ export default {
   background: #ffffff;
   color: var(--c-text-body);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .chart-nav-btn:disabled {
@@ -1493,64 +1504,80 @@ export default {
 .summary-metric {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 126px;
+  padding: 16px 18px;
   border: 0.5px solid var(--c-border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--c-stripe);
 }
 
 .summary-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #64748B;
 }
 
 .summary-value {
   font-family: var(--font-mono);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
   color: #0F172A;
 }
 
 .sales-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 4px;
-  border-top: 0.5px solid var(--c-divider);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .breakdown-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 0.5px solid var(--c-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.breakdown-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .breakdown-label {
-  font-size: 12px;
-  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.breakdown-note {
+  font-size: 11px;
+  color: #94A3B8;
 }
 
 .breakdown-value {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #334155;
 }
 
 .chart-card {
-  min-height: 420px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .chart-meta {
   margin: 0;
   font-size: 12px;
   color: #64748B;
-  min-height: 18px;
+  line-height: 1.6;
 }
 
 .chart-image {
@@ -2249,14 +2276,14 @@ export default {
   .overview-grid,
   .customer-board-grid,
   .sales-top-grid,
-  .sales-summary-grid {
+  .sales-summary-grid,
+  .sales-breakdown {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 
   .chart-carousel-head {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 10px;
   }
 
   .pending-card {
@@ -2340,6 +2367,10 @@ export default {
     display: none;
   }
 
+  .summary-metric {
+    min-height: 0;
+  }
+
   .schedule-item {
     flex-wrap: wrap;
   }
@@ -2398,6 +2429,17 @@ export default {
     width: auto;
     padding: 0 14px;
     font-size: 14px;
+  }
+
+  .chart-nav-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+
+  .breakdown-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .sales-entry-btn--hero {
