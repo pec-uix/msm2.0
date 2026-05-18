@@ -1655,14 +1655,14 @@ export default {
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .pending-overview {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 22px;
-  padding-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 0.5px solid var(--c-divider);
 }
 
@@ -1698,10 +1698,11 @@ export default {
 .pending-main {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 6px;
   min-width: 0;
   flex: 1;
+  padding-top: 6px;
 }
 
 .pending-kicker {
@@ -1744,6 +1745,7 @@ export default {
   justify-content: center;
   white-space: nowrap;
   box-shadow: 0 6px 18px rgba(223, 201, 122, 0.18);
+  margin-left: auto;
 }
 
 .pending-actions {
