@@ -2315,15 +2315,15 @@ export default {
   }
 
   .pending-title-row {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
   }
 
   .pending-btn {
     min-height: 64px;
-    min-width: 0;
-    width: 100%;
+    min-width: 152px;
+    width: 152px;
     padding: 0 18px;
     margin-left: 0;
     font-size: 15px;
@@ -2425,15 +2425,15 @@ export default {
   }
 
   .pending-title-row {
-    align-items: stretch;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
   }
 
   .pending-btn {
     min-height: 60px;
-    min-width: 0;
-    width: 100%;
+    min-width: 132px;
+    width: 132px;
     padding: 0 16px;
     font-size: 14px;
   }
