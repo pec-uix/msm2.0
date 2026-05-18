@@ -2189,11 +2189,26 @@ export default {
     gap: 12px;
   }
 
-  .pending-overview,
-  .pending-title-row,
+  .pending-overview {
+    align-items: center;
+    gap: 12px;
+  }
+
   .pending-left {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 2px;
+    min-width: 70px;
+  }
+
+  .pending-right {
+    gap: 4px;
+  }
+
+  .pending-title-row {
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 10px;
   }
 
@@ -2228,20 +2243,22 @@ export default {
   }
 
   .sales-entry-btn--hero {
-    min-height: 72px;
-    padding: 12px 10px;
-    gap: 10px;
-    flex-direction: column;
-    align-items: flex-start;
+    min-height: 64px;
+    padding: 10px 8px;
+    gap: 8px;
+    flex-direction: row;
+    align-items: center;
   }
 
   .sales-entry-btn--hero .entry-icon-box {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
   }
 
   .sales-entry-btn--hero .entry-label {
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 1.2;
   }
 
   .sales-entry-btn--hero .entry-desc {
@@ -2276,16 +2293,10 @@ export default {
     padding: 12px;
   }
 
-  .pending-actions {
-    grid-template-columns: 1fr;
-  }
-
   .sales-entry-btn--hero {
-    min-height: 56px;
-    padding: 10px 12px;
+    min-height: 60px;
+    padding: 10px 8px;
     border-radius: 10px;
-    flex-direction: row;
-    align-items: center;
   }
 
   .sales-entry-btn--hero .entry-body {
@@ -2293,7 +2304,7 @@ export default {
   }
 
   .sales-entry-btn--hero .entry-label {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .schedule-sort-switch,

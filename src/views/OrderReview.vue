@@ -174,13 +174,12 @@
               <td class="col-action">
                 <!-- 系統贈品 / 僅核對庫存：改為可軟刪除 -->
                 <template v-if="isSoftDeleteGiftRow(row)">
-                  <span class="gift-locked-badge">贈品</span>
                   <button
                     type="button"
                     class="row-btn delete-btn"
                     @click="toggleGiftSoftDelete(idx)"
                   >
-                    <trash2-icon :size="13" :stroke-width="1.5" />
+                    <trash2-icon :size="18" :stroke-width="1.8" />
                   </button>
                 </template>
                 <template v-else>
@@ -219,13 +218,12 @@
           <span :class="['source-badge', 'source--' + row.source]">{{ sourceLabel(row) }}</span>
           <div class="mc-actions">
             <template v-if="isSoftDeleteGiftRow(row)">
-              <span class="gift-locked-badge">贈品</span>
               <button
                 type="button"
                 class="row-btn delete-btn"
                 @click="toggleGiftSoftDelete(idx)"
               >
-                <trash2-icon :size="13" :stroke-width="1.5" />
+                <trash2-icon :size="18" :stroke-width="1.8" />
               </button>
             </template>
             <template v-else>
@@ -988,33 +986,36 @@ export default {
 
 /* ── 資訊卡片 ─────────────────────── */
 .info-card {
-  border: 0.5px solid #E2E8F0;
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 18px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 0 0;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 18px 28px;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  padding: 0 0 14px;
+  border-bottom: 0.5px solid #E2E8F0;
 }
 
 .info-label {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   color: #8b95a8;
+  letter-spacing: 0.03em;
 }
 
 .info-value {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: #334155;
 }
 
@@ -1023,7 +1024,7 @@ export default {
 }
 
 .delivery-input {
-  height: 34px;
+  height: 42px;
   font-size: 14px;
   font-weight: 400;
 }
@@ -1046,7 +1047,8 @@ export default {
 }
 
 .edit-select {
-  padding: 4px 6px;
+  min-height: 42px;
+  padding: 8px 10px;
   cursor: pointer;
 }
 
@@ -1401,9 +1403,10 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
+  border-radius: 10px;
 }
 
 /* ── 系統贈品列（軟刪除） ─────────────── */
@@ -1940,6 +1943,10 @@ export default {
     grid-template-columns: 1fr 1fr;
   }
 
+  .info-card {
+    padding-top: 0;
+  }
+
   .transfer-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1976,6 +1983,10 @@ export default {
   .transfer-grid,
   .preview-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .info-item {
+    padding-bottom: 12px;
   }
 
   .preview-overlay {
