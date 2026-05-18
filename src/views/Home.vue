@@ -1723,6 +1723,12 @@ export default {
   padding-top: 6px;
 }
 
+.pending-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .pending-kicker {
   font-size: 12px;
   font-weight: 700;
@@ -1747,14 +1753,14 @@ export default {
 }
 
 .pending-btn {
-  min-height: 64px;
-  min-width: 148px;
-  padding: 0 24px;
+  min-height: 52px;
+  min-width: 144px;
+  padding: 0 22px;
   background: #FDF8EE;
   color: #8A6A28;
   border: 0.5px solid #DFC97A;
-  border-radius: 16px;
-  font-size: 18px;
+  border-radius: 14px;
+  font-size: 17px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
@@ -1764,6 +1770,7 @@ export default {
   white-space: nowrap;
   box-shadow: 0 6px 18px rgba(223, 201, 122, 0.18);
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 .pending-actions {
@@ -2271,13 +2278,21 @@ export default {
 
   .pending-main {
     gap: 4px;
+    padding-top: 2px;
+  }
+
+  .pending-title-row {
+    flex-wrap: wrap;
+    gap: 10px 12px;
   }
 
   .pending-btn {
-    grid-column: 1 / -1;
-    width: 100%;
-    min-height: 50px;
-    margin-top: 2px;
+    min-height: 42px;
+    min-width: 112px;
+    padding: 0 16px;
+    margin-left: 0;
+    font-size: 15px;
+    border-radius: 12px;
   }
 
   .pending-actions {
@@ -2368,6 +2383,20 @@ export default {
 
   .pending-title {
     font-size: 20px;
+  }
+
+  .pending-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pending-btn {
+    min-height: 40px;
+    min-width: 0;
+    width: auto;
+    padding: 0 14px;
+    font-size: 14px;
   }
 
   .sales-entry-btn--hero {
