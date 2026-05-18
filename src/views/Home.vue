@@ -115,17 +115,16 @@
         <!-- 待審核訂單卡片 -->
         <section class="pending-card">
           <div class="pending-overview">
-            <div class="pending-left">
+            <div class="pending-stat">
               <div class="pending-number">{{ pendingCount }}</div>
               <div class="pending-approval-label">PENDING APPROVAL</div>
             </div>
-            <div class="pending-right">
-              <div class="pending-title-row">
-                <h3 class="pending-title">筆訂單待審核</h3>
-                <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
-              </div>
+            <div class="pending-main">
+              <span class="pending-kicker">今日待處理</span>
+              <h3 class="pending-title">筆訂單待審核</h3>
               <p class="pending-copy">將常用業務入口集中在此區，方便快速建立訂單與切換審單。</p>
             </div>
+            <router-link class="pending-btn" to="/orders?filter=pending">前往審單</router-link>
           </div>
           <div class="pending-actions">
             <router-link class="sales-entry-btn sales-entry-btn--hero" to="/orders?launch=new">
@@ -1662,23 +1661,27 @@ export default {
 .pending-overview {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding-bottom: 12px;
+  gap: 22px;
+  padding-bottom: 14px;
   border-bottom: 0.5px solid var(--c-divider);
 }
 
-.pending-left {
+.pending-stat {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
+  justify-content: center;
+  min-width: 140px;
+  padding: 8px 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
   flex-shrink: 0;
 }
 
 .pending-number {
   font-family: var(--font-mono);
-  font-size: 44px;
+  font-size: 52px;
   font-weight: 500;
   color: var(--c-primary);
   line-height: 1;
@@ -1689,49 +1692,58 @@ export default {
   font-weight: 600;
   color: #94A3B8;
   letter-spacing: 0.12em;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
-.pending-right {
+.pending-main {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
 
-.pending-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+.pending-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #94A3B8;
 }
 
 .pending-title {
   margin: 0;
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 600;
   color: #334155;
+  line-height: 1.08;
 }
 
 .pending-copy {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   color: #64748b;
-  max-width: 560px;
+  max-width: 520px;
 }
 
 .pending-btn {
-  padding: 8px 16px;
+  min-height: 64px;
+  min-width: 148px;
+  padding: 0 24px;
   background: #FDF8EE;
   color: #8A6A28;
   border: 0.5px solid #DFC97A;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(223, 201, 122, 0.18);
 }
 
 .pending-actions {
@@ -2190,30 +2202,27 @@ export default {
   }
 
   .pending-overview {
-    align-items: center;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
     gap: 12px;
   }
 
-  .pending-left {
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    min-width: 70px;
+  .pending-stat {
+    min-width: 84px;
+    padding: 6px 10px;
+    border-radius: 12px;
   }
 
-  .pending-right {
+  .pending-main {
     gap: 4px;
   }
 
-  .pending-title-row {
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .pending-overview {
-    padding-bottom: 10px;
+  .pending-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 50px;
+    margin-top: 2px;
   }
 
   .pending-actions {
@@ -2222,7 +2231,7 @@ export default {
   }
 
   .pending-number {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .pending-approval-label {
@@ -2230,12 +2239,7 @@ export default {
   }
 
   .pending-title {
-    font-size: 18px;
-  }
-
-  .pending-btn {
-    font-size: 12px;
-    padding: 6px 12px;
+    font-size: 24px;
   }
 
   .pending-copy {
@@ -2291,6 +2295,24 @@ export default {
 
   .pending-card {
     padding: 12px;
+  }
+
+  .pending-overview {
+    grid-template-columns: 72px 1fr;
+    gap: 10px;
+  }
+
+  .pending-stat {
+    min-width: 72px;
+    padding: 6px 8px;
+  }
+
+  .pending-kicker {
+    font-size: 10px;
+  }
+
+  .pending-title {
+    font-size: 20px;
   }
 
   .sales-entry-btn--hero {
